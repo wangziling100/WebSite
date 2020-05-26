@@ -3,7 +3,7 @@ import { HelloAppear, Appear } from '../components/animation'
 export default function Hello(){
   return(
     <>
-    <div className="static text-white font-thin ml-40 text-purple-200 text-4xl">
+    <div className="static text-white font-thin ml-40 text-purple-200 text-4xl font-sans-Roboto">
       <HelloAppear className="mt-48 inline-block text-4xl font-normal " duration="6s">
         Hey!
       </HelloAppear>

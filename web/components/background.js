@@ -2,7 +2,7 @@ import CoverImage from '../components/cover-image'
 import Container from '../components/container'
 import cn from 'classnames'
 
-export default function Background({ imgAndSetting, children }) {
+export default function Background({ imgAndSetting=[], children }) {
   const setting = imgAndSetting.setting
   const url = imgAndSetting.img.image.responsiveImage.src
   return (

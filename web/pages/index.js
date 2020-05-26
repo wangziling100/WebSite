@@ -17,7 +17,7 @@ export default function IndexPage(data) {
   const main = (
     <>
       <Appear duration="14s">
-        <Navigation />
+        <Navigation page="index" />
       </Appear>
       <Hello/>
     </>
