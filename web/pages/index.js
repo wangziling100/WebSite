@@ -26,7 +26,7 @@ export default function IndexPage(data) {
   return (
     <div>
       <Head>
-        <title> My page title</title>
+        <title> Welcome to Wang Xingbo's website </title>
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
       </Head>
         <LinearAppear duration="6s">
