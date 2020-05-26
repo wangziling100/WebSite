@@ -5,24 +5,23 @@ import Button from '../components/button'
 import Layout from '../components/layout'
 import { getAllPostsForHome, getImageByReference } from '../lib/api'
 import Navigation from '../components/navigation'
-import { LinearAppear, Appear } from '../components/animation'
+import { LinearAppear, Appear, HelloAppear } from '../components/animation'
 import cn from 'classnames'
 import Hello from '../components/hello'
 
 export default function IndexPage(data) {
-  const setting = ["w-screen", "h-scree", "fixed"]
+  const setting = ["fixed"]
   const img = data.indexBg
   const bgImgAndSetting={img, setting}
 
   const main = (
-          <div className="flex.col">
-            <div className="h-1/10">
-              <Appear duration="8s">
-                <Navigation />
-              </Appear>
-            </div>
-          </div>
-        )
+    <>
+      <Appear duration="14s">
+        <Navigation />
+      </Appear>
+      <Hello/>
+    </>
+  )
 
   return (
     <div>

@@ -6,13 +6,11 @@ import Container from '../components/container'
 import Background from '../components/background'
 
 export default function Layout({ bgImgAndSetting, children , index=false}) {
-  //console.log(header)
-  //console.log('here')
   return (
     <>
       <Meta />
         <Background imgAndSetting={bgImgAndSetting}>
-          <div className="min-h-screen">
+          <div className="h-screen">
             <Container>
               <main>{children}</main>
             </Container>
