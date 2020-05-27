@@ -53,6 +53,34 @@ export async function getImageByReference( ref, preview=flase ){
   return data.picture
 }
 
+export async function getItemByReference( ref, preview=false ){
+  const ITEMS_QUERY = `
+    query Items($ref:String){
+      allItems(filter: {ref: {eq: $ref}}){
+        ref
+        refId
+        title
+        content
+        owner
+        contributor
+        priority
+        completeness
+        itemStatus
+        startTime
+        evaluation
+        allowPriorityChange
+      }
+    }
+  `
+  const data = await request({
+    query: ITEMS_QUERY, 
+    variables: {"ref": ref},
+    preview: preview
+  });
+  //console.log(data)
+  return data.allItems
+}
+
 async function fetchAPI(query, { variables, preview } = {}) {
   const res = await fetch(API_URL + (preview ? '/preview' : ''), {
     method: 'POST',
