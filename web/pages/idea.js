@@ -5,19 +5,29 @@ import Layout from '../components/layout'
 import { getItemByReference, getImageByReference } from '../lib/api'
 import { IdeaHeader, Ideas } from '../components/ideas'
 import Notice from '../components/notice'
+import { useRouter } from 'next/router'
 
-export default function IdeaPage(data) {
-  const img = data.ideaBg
-  const noticeTitle = data.ideaItemTitle[0].title
-  const noticeContent = data.ideaItemTitle[0].content
+export default function IdeaPage(props) {
+  const img = props.data.ideaBg
+  const noticeTitle = props.data.ideaItemTitle[0].title
+  const noticeContent = props.data.ideaItemTitle[0].content
   const setting=[]
   const bgImgAndSetting={img, setting}
+  const router = useRouter()
+  const orderBy = router.query.orderBy || "priority"
+  const selectedStatus = router.query.selectedStatus || "active"
+  console.log(selectedStatus)
   const main = (
+  
     <>
       <Navigation page="idea"/>
       <Notice title={noticeTitle} content={noticeContent} />
       <div className="mt-6">
-        <IdeaHeader />
+        <div className="flex mx-12 mb-2 justify-end">
+          <button className="h-8 w-32 bg-red-400 rounded-lg text-white font-semibold hover:shadow-lg hover:bg-blue-400"> + New Idea </button>
+        </div>
+        <IdeaHeader/>
+        <Ideas data={props.data.ideaItem} orderBy={orderBy} selectedStatus={selectedStatus} />
       </div>
     </>
   )
@@ -38,9 +48,11 @@ export async function getStaticProps({ preview=false }){
   const ideaBg = (await getImageByReference("idea_bg", preview))
   const ideaItemTitle = (await getItemByReference("idea_item_title", preview))
   const ideaItem = (await getItemByReference("idea_item", preview))
-  console.log(ideaItemTitle)
+  const orderBy = "priority-reverse"
   const data = {ideaBg, ideaItemTitle, ideaItem}
   return{
-    props: data,
+    props: {
+        data: data,
+    }
   }
 }

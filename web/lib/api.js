@@ -57,6 +57,7 @@ export async function getItemByReference( ref, preview=false ){
   const ITEMS_QUERY = `
     query Items($ref:String){
       allItems(filter: {ref: {eq: $ref}}){
+        id
         ref
         refId
         title
