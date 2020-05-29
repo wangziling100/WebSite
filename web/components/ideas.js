@@ -83,7 +83,7 @@ export function IdeaHeader(){
   )
 }
 export function IdeaItem({ data, orderBy="priority", selectedStatus="active" }){
-  const startTime = new Date(data.startTime).toGMTString()
+  const startTime = new Date(data._createdAt).toGMTString()
   const title = data.title
   const content = data.content
   const owner = data.owner || "Public"
@@ -93,7 +93,7 @@ export function IdeaItem({ data, orderBy="priority", selectedStatus="active" }){
   const itemStatus = data.itemStatus
   const evaluation = data.evaluation
   const icon = owner.substring(0,1) || "P"
-  const startTimestamp = new Date(data.startTime).getTime()-Date.now()
+  const startTimestamp = new Date(data._createdAt).getTime()-Date.now()
   var orderNum
   var selectedStatus
   switch ( orderBy ){

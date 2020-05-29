@@ -67,7 +67,7 @@ export async function getItemByReference( ref, preview=false ){
         priority
         completeness
         itemStatus
-        startTime
+        _createdAt
         evaluation
         allowPriorityChange
       }
