@@ -1,0 +1,15 @@
+{
+    "Statement": [
+        {
+            "Action": [
+                "apigateway:*",
+                "codedeploy:*",
+                "lambda:*",
+                "cloudformation:CreateChangeSet"
+            ],
+            "Resource": "*",
+            "Effect": "Allow"
+        }
+    ],
+    "Version": "2012-10-17"
+}

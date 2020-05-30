@@ -1,0 +1,41 @@
+name: lambda CICD
+
+on:
+  push:
+    branches: [ dev ]
+  pull_request:
+    branches: [ dev ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: chrislennon/action-aws-cli@v1.1
+    - id: set-matrix
+      run: bash create_user.sh -f policy/lambda.json
+      working-directory: ./github
+      env: 
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}   
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  clean:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{fromJson(needs.build.outputs.matrix)}}
+    steps:
+    - uses: chrislennon/action-aws-cli@v1.1
+    - run: bash clean.sh
+      working-directory: ./github
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        USER_NAME: ${{ matrix.user-name }}
+        ASSUME_POLICY: ${{ matrix.assume-policy }}
+        POLICY: ${{ matrix.policy }}
+        ACCESS_KEY_ID: ${{ matrix.access-key }}
+
+    
