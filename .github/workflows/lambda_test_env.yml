@@ -11,11 +11,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: sam build
-      uses: youyo/aws-sam-action/python3.8@master
-      with:
-        sam_command: build
+    - name: Install sam
+      run: pip install aws-sam-cli >/dev/null 2>&1
+    - name: sam init
+      run: bash hello-world/local_test.sh
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
         AWS_DEFAULT_REGION: eu-central-1
+        SAM_CLI_TELEMETRY: 0

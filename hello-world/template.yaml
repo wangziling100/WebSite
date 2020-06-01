@@ -17,3 +17,9 @@ Resources:
       Policies:
         - SESSendBouncePolicy:
             IdentityName: !Ref IdentityNameParameter
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /hello
+            Method: get
