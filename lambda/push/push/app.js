@@ -5,8 +5,8 @@ let response
 
 exports.lambdaHandler = async (event, context) =>{
     try{
-	console.log("-------")
-	console.log(JSON.parse(event.body).test)
+	    console.log("-------")
+	    console.log(JSON.parse(event.body).test)
         console.log("-------")
 	console.log(context)
         await client.items.create({
@@ -34,7 +34,6 @@ exports.lambdaHandler = async (event, context) =>{
             })
         }
     }catch (err) {
-        console.log(err);
         return err;
     }
 
