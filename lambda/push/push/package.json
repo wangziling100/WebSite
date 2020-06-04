@@ -1,0 +1,21 @@
+{
+  "name": "push",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "mocha tests/unit/"
+  },
+  "author": "wangziling100",
+  "license": "MIT",
+  "dependencies": {
+    "datocms-client": "^3.0.32"
+  },
+  "devDependencies": {
+      "chai": "^4.2.0",
+      "mocha": "^6.1.4"
+  }
+}
