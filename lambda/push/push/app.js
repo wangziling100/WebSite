@@ -9,21 +9,23 @@ exports.lambdaHandler = async (event, context) =>{
 	    //console.log(JSON.parse(event.body).test)
         //console.log("-------")
 	    //console.log(context)
+        console.log(event)
+        data = JSON.parse(event.body)
         await client.items.create({
-            itemType: "238671",
-            title: "abc",
-            content: "abc",
-            priority: 5,
-            completeness: 0,
-            startTime:  null,
-            evaluation:  null,
-            allowPriorityChange: false,
-            ref: "test",
-            refId: null,
-            owner: "",
-            contributor: "",
-            tag: "",
-            itemStatus: "active"
+            itemType: data.itemType,
+            title: data.title,
+            content: data.content,
+            priority: data.priority,
+            completeness: data.completeness,
+            startTime: data.startTime, 
+            evaluation:  data.evaluation,
+            allowPriorityChange: data.allowPriorityChange,
+            ref: data.ref,
+            refId: data.refId,
+            owner: data.owner,
+            contributor: data.contributor,
+            tag: data.tag,
+            itemStatus: data.itemStatus
         })
 	// const ret = await axios(url);
         response = {
