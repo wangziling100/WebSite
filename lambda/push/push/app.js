@@ -1,5 +1,5 @@
 const { SiteClient } = require("datocms-client");
-const token = '90837768f762fd5b292d797092d75d'
+const token = process.env.CMS_TOKEN
 const client = new SiteClient(token)
 let response
 
@@ -41,6 +41,7 @@ exports.lambdaHandler = async (event, context) =>{
             'statusCode': 500,
             'body': JSON.stringify({
                 message: 'failed',
+                error: err.message,
             })
         }
     }

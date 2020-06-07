@@ -22,6 +22,9 @@ Resources:
           Properties:
             Path: /push
             Method: post
+      Environment:
+        Variables:
+          CMS_TOKEN: "your token"
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function

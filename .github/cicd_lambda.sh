@@ -27,11 +27,14 @@ echo '---------- integration test ----------'
 cd ..
 sam local start-api > out 2>&1 &
 sleep 5
-response=$(bash push/tests/local/post_data.sh | grep message)
-response=$(echo "$response" | sed 's/{"message":"\(.*\)"}/\1/g')
+context=$(bash push/tests/local/post_data.sh)
+response=$(echo "$context" | grep message)
+response=$(echo "$response" | sed 's/{"message":"\(.*\)".*}/\1/g')
 if [[ "$response" == "succeed" ]]; then
     echo "succeed"
 else
+    echo "$context"
+    cat out
     echo "$response"
     exit 1
 fi

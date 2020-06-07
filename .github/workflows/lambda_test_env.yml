@@ -7,12 +7,16 @@ on:
     branches: [ dev ]
 
 jobs:
-  build:
+  pipeline:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - name: Install sam
       run: pip install aws-sam-cli >/dev/null 2>&1
+    - name: Preparation
+      run: cd .github && bash fill_token.sh
+      env: 
+        CMS_TOKEN: ${{ secrets.CMS_TOKEN }}
     - name: CICD pipeline
       run: cd .github && bash cicd_lambda.sh 
       env:
