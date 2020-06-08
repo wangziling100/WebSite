@@ -28,7 +28,7 @@ exports.lambdaHandler = async (event, context) =>{
             data = JSON.parse(event.body)
         }
         await client.items.create({
-            itemType: data.itemType,
+            itemType: "238671",
             title: data.title,
             content: data.content,
             priority: data.priority,
