@@ -10,7 +10,23 @@ exports.lambdaHandler = async (event, context) =>{
         //console.log("-------")
 	    //console.log(context)
         console.log(event)
-        data = JSON.parse(event.body)
+        let isBase64 = false
+        try{
+            let tmp = atob(event.body)
+            data = JSON.parse(tmp)
+            if(tmp.title===undefined){
+                // pass
+            }else{
+                isBase64 = true
+            }
+
+        }catch(err){
+            console.log(err.message)
+
+        }
+        if(!isBase64){
+            data = JSON.parse(event.body)
+        }
         await client.items.create({
             itemType: data.itemType,
             title: data.title,
