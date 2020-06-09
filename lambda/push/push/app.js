@@ -2,6 +2,7 @@ const { SiteClient } = require("datocms-client");
 const token = process.env.CMS_TOKEN
 const client = new SiteClient(token)
 let response
+let atob = require('atob')
 
 exports.lambdaHandler = async (event, context) =>{
     try{
@@ -9,7 +10,7 @@ exports.lambdaHandler = async (event, context) =>{
 	    //console.log(JSON.parse(event.body).test)
         //console.log("-------")
 	    //console.log(context)
-        console.log(event)
+        console.log(token)
         let isBase64 = false
         try{
             let tmp = atob(event.body)
@@ -27,6 +28,9 @@ exports.lambdaHandler = async (event, context) =>{
         if(!isBase64){
             data = JSON.parse(event.body)
         }
+        console.log('--------')
+        console.log(data)
+        console.log('---------')
         await client.items.create({
             itemType: "238671",
             title: data.title,
@@ -46,6 +50,7 @@ exports.lambdaHandler = async (event, context) =>{
 	// const ret = await axios(url);
         response = {
             'statusCode': 200,
+            'headers': {"Access-Control-Allow-Origin":"*", "Access-Control-Allow-Headers": "Content-Type",},
             'body': JSON.stringify({
                 message: 'succeed',
                 // location: ret.data.trim()
@@ -55,6 +60,7 @@ exports.lambdaHandler = async (event, context) =>{
         console.log(err)
         response = {
             'statusCode': 500,
+            'headers': {"Access-Control-Allow-Origin":"*", "Access-Control-Allow-Headers": "Content-Type",},
             'body': JSON.stringify({
                 message: 'failed',
                 error: err.message,

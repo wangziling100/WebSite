@@ -13,7 +13,8 @@
   "author": "wangziling100",
   "license": "MIT",
   "dependencies": {
-    "datocms-client": "^3.0.32"
+    "datocms-client": "^3.0.32",
+    "atob": "^2.1.2"
   },
   "devDependencies": {
     "chai": "^4.2.0",
