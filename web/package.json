@@ -17,6 +17,8 @@
     "react-dom": "16.13.1",
     "react-keyframes": "^0.2.3",
     "styled-components": "^5.1.0",
-    "tailwindcss": "^1.4.6"
+    "tailwindcss": "^1.4.6",
+    "remark": "11.0.2",
+    "remark-html": "10.0.0"
   }
 }

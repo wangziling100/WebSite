@@ -7,6 +7,7 @@ import { getItemByReference, getImageByReference } from '../../lib/api'
 import { IdeaHeader, Ideas } from '../../components/ideas'
 import Notice from '../../components/notice'
 import { useRouter } from 'next/router'
+import markdownToHtml from '../../lib/markdownToHtml'
 
 export default function IdeaPage(props) {
   const img = props.data.ideaBg
@@ -48,10 +49,15 @@ export default function IdeaPage(props) {
 
 export async function getStaticProps({ preview=false }){
   const ideaBg = (await getImageByReference("idea_bg", preview))
-  const ideaItemTitle = (await getItemByReference("idea_item_title", preview))
-  const ideaItem = (await getItemByReference("idea_item", preview))
+  let ideaItemTitle = (await getItemByReference("idea_item_title", preview))
+  let ideaItem = (await getItemByReference("idea_item", preview))
+  console.log(ideaItem)
+  for (let e of ideaItem){
+      e.content = await markdownToHtml(e.content || '')
+  }
   const orderBy = "priority-reverse"
   const data = {ideaBg, ideaItemTitle, ideaItem}
+  ideaItemTitle[0].content = await markdownToHtml(ideaItemTitle[0].content || '')
   return{
     props: {
         data: data,

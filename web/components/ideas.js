@@ -1,6 +1,6 @@
 import Router from 'next/router'
-
-
+import markdownToHtml from '../lib/markdownToHtml'
+import Markdown from '../components/markdown'
 
 export function IdeaHeader(){
   const active = {
@@ -122,7 +122,7 @@ export function IdeaItem({ data, orderBy="priority", selectedStatus="active" }){
           </div>
         </div>
         <div className="text-lg ">
-          {content}
+          <Markdown content={content}/>
         </div>
         <div className="text-sm flex justify-between text-gray-500">
           <div>
