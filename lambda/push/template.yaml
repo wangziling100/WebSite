@@ -32,7 +32,7 @@ Resources:
     Properties:
       LayerName: push-dependencies
       Description: Dependency layer for push function
-      ContentUri: dependencies/
+      ContentUri: push/node_modules/
       RetentionPolicy: Retain
 
 Outputs:
