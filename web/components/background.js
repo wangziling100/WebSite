@@ -1,5 +1,3 @@
-import CoverImage from '../components/cover-image'
-import Container from '../components/container'
 import cn from 'classnames'
 
 export default function Background({ imgAndSetting=[], children }) {
@@ -9,7 +7,7 @@ export default function Background({ imgAndSetting=[], children }) {
     <div className={cn("bg-img",...setting)}>
       <style jsx>{`
         .bg-img{
-          background: url(${url}) no-repeat;
+          background: url(${url});
           background-size: cover;
           width: 100%;
         }

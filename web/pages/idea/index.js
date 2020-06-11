@@ -13,7 +13,7 @@ export default function IdeaPage(props) {
   const img = props.data.ideaBg
   const noticeTitle = props.data.ideaItemTitle[0].title
   const noticeContent = props.data.ideaItemTitle[0].content
-  const setting=[]
+  const setting=["bg-repeat-y"]
   const bgImgAndSetting={img, setting}
   const router = useRouter()
   const orderBy = router.query.orderBy || "priority"
@@ -51,7 +51,6 @@ export async function getStaticProps({ preview=false }){
   const ideaBg = (await getImageByReference("idea_bg", preview))
   let ideaItemTitle = (await getItemByReference("idea_item_title", preview))
   let ideaItem = (await getItemByReference("idea_item", preview))
-  console.log(ideaItem)
   for (let e of ideaItem){
       e.content = await markdownToHtml(e.content || '')
   }
