@@ -6,40 +6,49 @@ import cn from 'classnames'
 import Link from 'next/link'
 
 export default function NewIdea(props){
+  // Variable
   let [ title, setTitle ] = useState("")
   let [ content, setContent ] = useState("")
   let [ tags, setTags ] = useState("")
   let [ priority, setPriority ] = useState(5)
   let [ owner, setOwner ] = useState('Public')
-  const isTest = false
+  
+  const isTest = true
   const max_title_l = "100"
   const max_content_l = "800"
   const max_tags_l = "100"
   const max_owner_l = "100"
   const router = useRouter()
+  const password = router.query.password
   const [ hideTitleWarning, setTitleWarning ] = useState('hidden')
   const [ hideContentWarning, setContentWarning ] = useState('hidden')
   const [ hideTagsWarning, setTagsWarning ] = useState(true)
   const [ hideFormWarning, setFormWarning ] = useState(true)
   const [ hideOwnerWarning, setOwnerWarning ] = useState(true)
+  // Actions
   const checkTitle = e => setTitleWarning((e.target.value.length < max_title_l) ? ((e.target.value.length > 0) ? 'hidden' : 'empty') : 'exceed')
   const checkContent = e => setContentWarning((e.target.value.length < max_content_l) ? ((e.target.value.length > 0) ? 'hidden' : 'empty') : 'exceed')
   const checkTags = e => setTagsWarning(e.target.value.length < max_tags_l)
   const checkOnwer = e => setOwnerWarning(e.target.value.length < max_owner_l)
+  const backOpt = {
+      pathname: '/idea',
+      query: { password: password, },
+  }
 
+  // CSS
   const inputCSS = ['mt-2', 'p-2', 'w-full', 'shadow', 'appearance-none', 'border', 'rounded', 'text-gray-700', 'leading-tight', 'focus:outline-none', 'focus:shadow-outline', 'focus:border-red-500']
   const itemCSS = ['font-normal', 'text-gray-300', 'mt-8']
   const hintCSS = ['font-light', 'text-xs', 'text-gray-400']
   const warningCSS = ['text-red-500', 'text-xs', 'italic']
   const priorityItemCSS = ['text-center']
   const buttonCSS = ['uppercase', 'bg-blue-400', 'w-32', 'h-8', 'rounded-md', 'hover:bg-blue-600', 'hover:shadow-outline']
+  // Actions
   const getTitle = e => {setTitle(e.target.value)}
   const getContent = e => {setContent(e.target.value)}
   const getTags = e => {setTags(tags=e.target.value)}
   const getPriority = e => {setPriority(priority=e.target.value)}
   const getOwner = e => {setOwner(e.target.value)}
   const getData = () => { 
-    console.log(title, content, tags, priority, owner)
     if(title===undefined || content===undefined || tags==undefined || title==="" || content===""){
         setFormWarning(false)
         return
@@ -59,7 +68,8 @@ export default function NewIdea(props){
         "refId": null,
         "owner": owner,
         "contributor": "",
-        "itemStatus": "active"
+        "itemStatus": "active",
+        "password" : password
 
     }
     const postData = JSON.stringify(form)
@@ -100,8 +110,9 @@ export default function NewIdea(props){
 
     req.write(postData)
     req.end()
-    Router.push('/idea')
+    Router.push(backOpt)
   }
+  // Variables
   const img = props.data.background
   const setting = ["h-full"]
   const bgImgAndSetting = {img, setting}
@@ -194,9 +205,7 @@ export default function NewIdea(props){
               </div>
             </div>
             <div className={cn(...itemCSS, 'flex', 'justify-around')}>
-              <Link href='/idea'>
-                <button className={cn(...buttonCSS)}> back </button>
-              </Link>
+                <button className={cn(...buttonCSS)} onClick={()=>Router.push(backOpt)}> back </button>
                 <button className={cn(...buttonCSS)} onClick={getData}> create </button>
             </div>
 

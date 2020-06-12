@@ -85,7 +85,7 @@ export function IdeaHeader(){
     </>
   )
 }
-export function IdeaItem({ data, orderBy="priority", selectedStatus="active" }){
+export function IdeaItem({ data, orderBy="priority", selectedStatus="active", password}){
   // States
   const [ hideContent, setHideContent ] = useState(true)
   
@@ -101,6 +101,7 @@ export function IdeaItem({ data, orderBy="priority", selectedStatus="active" }){
           option: "delete",
           overlayData: JSON.stringify({"id": data.id}),
           showOverlay: true,
+          password: password
         },
       }
       Router.push(deleteOpt)
@@ -198,12 +199,12 @@ export function IdeaItem({ data, orderBy="priority", selectedStatus="active" }){
     </>
   )
 }
-export function Ideas({ data, orderBy="priority", selectedStatus="active"}){
+export function Ideas({ data, savedPassword, orderBy="priority", selectedStatus="active"}){
   const items = []
   //console.log(router, "ideas router")
   const testAction = () => { console.log('here') }
   for (const item of data){
-    items.push(<IdeaItem data={item} key={item.id} orderBy={orderBy}  selectedStatus={selectedStatus} onClick={testAction} />)
+    items.push(<IdeaItem data={item} key={item.id} orderBy={orderBy}  selectedStatus={selectedStatus} onClick={testAction} password={savedPassword} />)
   }
   return (
     <div className="flex flex-wrap">

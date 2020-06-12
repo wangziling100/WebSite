@@ -6,11 +6,12 @@ import Layout from '../../components/layout'
 import { getItemByReference, getImageByReference } from '../../lib/api'
 import { IdeaHeader, Ideas } from '../../components/ideas'
 import Notice from '../../components/notice'
-import { useRouter } from 'next/router'
+import Router, { useRouter } from 'next/router'
 import markdownToHtml from '../../lib/markdownToHtml'
 import { Overlay } from '../../components/overlay'
 
 export default function IdeaPage(props) {
+  // Variables
   const img = props.data.ideaBg
   const noticeTitle = props.data.ideaItemTitle[0].title
   const noticeContent = props.data.ideaItemTitle[0].content
@@ -20,22 +21,27 @@ export default function IdeaPage(props) {
   const orderBy = router.query.orderBy || "priority"
   const selectedStatus = router.query.selectedStatus || "active"
   const showOverlay = router.query.showOverlay || false
-  const option = router.query.option 
+  const option = router.query.option || ""
+  const password = router.query.password || ""
   const overlayData = JSON.parse(router.query.overlayData || null) 
+  // Actions
+  const newIdeaOpt = {
+      pathname: '/idea/new',
+      query: { password: password },
+  }
   const main = (
   
     <>
-      <Navigation page="idea"/>
+      <Navigation page="idea" password={password}/>
       <Notice title={noticeTitle} content={noticeContent} />
       <div className="mt-6">
         <div className="flex mx-12 mb-2 justify-end">
-          <Link href="/idea/new">
-            <button className="h-8 w-32 bg-red-400 rounded-lg text-white font-semibold hover:shadow-lg hover:bg-blue-400"> + New Idea </button>
-          </Link>
+            <button className="h-8 w-32 bg-red-400 rounded-lg text-white font-semibold hover:shadow-lg hover:bg-blue-400" onClick={()=>Router.push(newIdeaOpt)}> + New Idea </button>
         </div>
         <IdeaHeader/>
-        <Ideas data={props.data.ideaItem} orderBy={orderBy} selectedStatus={selectedStatus} />
-        { showOverlay && <Overlay page={'idea'} option={option} overlayData={overlayData} />}
+        <Ideas data={props.data.ideaItem} orderBy={orderBy} selectedStatus={selectedStatus} savedPassword={password} />
+        { showOverlay && (option!='login') &&
+            <Overlay page={'idea'} option={option} overlayData={overlayData} password={password} />}
       </div>
     </>
   )

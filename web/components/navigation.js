@@ -1,43 +1,82 @@
 import Link from 'next/link'
 import cn from 'classnames'
+import Router, { useRouter } from 'next/router'
+import { useState } from 'react'
+import { Overlay } from '../components/overlay'
 
-export default function Navigation({ page }){
+export default function Navigation({ page, password }){
+    // Variable
+    const router = useRouter()
+    const showOverlay = router.query.showOverlay || false
+    const option = router.query.option || ""
+    const path = '/' + page
+    // Actions
+    const loginOpt = {
+        pathname: path,
+        query: { showOverlay: true , option: "login"},
+    }
+    const logoutOpt = {
+        pathname: path,
+        query: {},
+    }
+    const logInOutOpt = password?logoutOpt:loginOpt
+
+    const toIndexOpt = {
+        pathname: '/index',
+        query: {password: password}
+    }
+    const toIdeaOpt = {
+        pathname: '/idea',
+        query: {password: password}
+    }
+    const toPlanOpt = {
+        pathname: '/plan',
+        query: {password: password}
+    }
+    const toServiceOpt = {
+        pathname: '/service',
+        query: {password: password}
+    }
+    const toAboutOpt = {
+        pathname: '/about',
+        query: {password: password}
+    }
+
     const nav = (
-        <div className={cn("p-4 ", {"text-white": page=="index",})}>
-          <div className="w-full flex flex-raw items-center justify-start p-2 text-base font-serif-Georgia tracking-widest rounded-lg list-none">
+        <>
+        <div className={cn("p-4 ", {"text-white": page=="index",}, 'flex', 'justify-between')}>
+          <div className="flex flex-raw items-center justify-start p-2 text-base font-serif-Georgia tracking-widest rounded-lg list-none ">
             <div className={cn({"underline": page=="index"})}>
-              <Link href="/index">
-                <a className="px-4 hover:underline cursor-pointer">Home</a>
-              </Link>
+                <a className="px-4 hover:underline cursor-pointer" onClick={()=>Router.push(toIndexOpt)}>Home</a>
             </div >
             <div className={cn({"underline": page=="idea"})}>
-              <Link href="/idea">
-                <a className="px-4 hover:underline cursor-pointer">Idea</a>
-              </Link>
+                <a className="px-4 hover:underline cursor-pointer" onClick={()=>Router.push(toIdeaOpt)}>Idea</a>
             </div>
             <div className={cn({"underline": page=="plan"})}>
-              <Link href="/plan">
-                <a className="px-4 hover:underline cursor-pointer">
+                <a className="px-4 hover:underline cursor-pointer" onClick={()=>Router.push(toPlanOpt)}>
                   Plan
                 </a>
-              </Link>
             </div>
             <div className={cn({"underline": page=="service"})}>
-              <Link href="/service">
-                <a className="px-4 hover:underline cursor-pointer">
+                <a className="px-4 hover:underline cursor-pointer" onClick={()=>Router.push(toServiceOpt)}>
                   Service
                 </a>
-              </Link>
             </div>
             <div className={cn({"underline": page=="about"})}>
-              <Link href="/about">
-                <a className="px-4 hover:underline cursor-pointer">
+                <a className="px-4 hover:underline cursor-pointer" onClick={()=>Router.push(toAboutOpt)}>
                   About me
                 </a>
-              </Link>
             </div>
           </div>
+          <div className="px-4 cursor-pointer items-center justify-start p-2 text-base font-serif-Georgia tracking-widest rounded-lg" onClick={()=>Router.push(logInOutOpt)}>
+            { password?"Log out":"Sign in" }
+          </div>
         </div>
+        {
+          showOverlay && (option==='login') &&
+          <Overlay page={page} option='login' className='' password={password} />
+        }  
+        </>
     )
     return (
         <>

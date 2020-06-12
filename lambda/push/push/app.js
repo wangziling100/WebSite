@@ -28,6 +28,13 @@ exports.lambdaHandler = async (event, context) =>{
         //console.log(data)
         //console.log('---------')
         if (data.option===undefined){
+            let tmpRef = data.ref
+            if (data.password===password){
+                switch (data.ref){
+                    case 'idea_new': tmpRef='idea_item'; break;
+                }
+
+            }
             await client.items.create({
                 itemType: "238671",
                 title: data.title,
@@ -37,7 +44,7 @@ exports.lambdaHandler = async (event, context) =>{
                 startTime: data.startTime, 
                 evaluation:  data.evaluation,
                 allowPriorityChange: data.allowPriorityChange,
-                ref: data.ref,
+                ref: tmpRef,
                 refId: data.refId,
                 owner: data.owner,
                 contributor: data.contributor,

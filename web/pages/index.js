@@ -8,16 +8,19 @@ import Navigation from '../components/navigation'
 import { LinearAppear, Appear, HelloAppear } from '../components/animation'
 import cn from 'classnames'
 import Hello from '../components/hello'
+import { useRouter } from 'next/router'
 
 export default function IndexPage(data) {
   const setting = ["fixed"]
   const img = data.indexBg
   const bgImgAndSetting={img, setting}
+  const router = useRouter()
+  const password = router.query.password
 
   const main = (
     <>
       <Appear duration="14s">
-        <Navigation page="index" />
+        <Navigation page="index" password={password}/>
       </Appear>
       <Hello/>
     </>
