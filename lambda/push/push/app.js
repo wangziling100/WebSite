@@ -1,16 +1,12 @@
 const { SiteClient } = require("datocms-client");
 const token = process.env.CMS_TOKEN
+const password = process.env.PASSWORD
 const client = new SiteClient(token)
 let response
 let atob = require('atob')
 
 exports.lambdaHandler = async (event, context) =>{
     try{
-	    //console.log("-------")
-	    //console.log(JSON.parse(event.body).test)
-        //console.log("-------")
-	    //console.log(context)
-        console.log(token)
         let isBase64 = false
         try{
             let tmp = atob(event.body)
@@ -28,25 +24,34 @@ exports.lambdaHandler = async (event, context) =>{
         if(!isBase64){
             data = JSON.parse(event.body)
         }
-        console.log('--------')
-        console.log(data)
-        console.log('---------')
-        await client.items.create({
-            itemType: "238671",
-            title: data.title,
-            content: data.content,
-            priority: data.priority,
-            completeness: data.completeness,
-            startTime: data.startTime, 
-            evaluation:  data.evaluation,
-            allowPriorityChange: data.allowPriorityChange,
-            ref: data.ref,
-            refId: data.refId,
-            owner: data.owner,
-            contributor: data.contributor,
-            tag: data.tag,
-            itemStatus: data.itemStatus
-        })
+        //console.log('--------')
+        //console.log(data)
+        //console.log('---------')
+        if (data.option===undefined){
+            await client.items.create({
+                itemType: "238671",
+                title: data.title,
+                content: data.content,
+                priority: data.priority,
+                completeness: data.completeness,
+                startTime: data.startTime, 
+                evaluation:  data.evaluation,
+                allowPriorityChange: data.allowPriorityChange,
+                ref: data.ref,
+                refId: data.refId,
+                owner: data.owner,
+                contributor: data.contributor,
+                tag: data.tag,
+                itemStatus: data.itemStatus
+            })
+        }else if(data.option==='delete' && data.password===password){
+            await client.items.destroy(data.id)
+                .catch((error) => {
+                    console.error(error);
+                })
+
+        }
+        
 	// const ret = await axios(url);
         response = {
             'statusCode': 200,

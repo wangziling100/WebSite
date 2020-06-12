@@ -17,6 +17,7 @@ jobs:
       run: cd .github && bash fill_token.sh
       env: 
         CMS_TOKEN: ${{ secrets.CMS_TOKEN }}
+        PASSWORD: ${{ secrets.PASSWORD }}
     - name: CICD pipeline
       run: cd .github && bash cicd_lambda.sh 
       env:

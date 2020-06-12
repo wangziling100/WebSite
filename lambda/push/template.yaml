@@ -27,6 +27,7 @@ Resources:
       Environment:
         Variables:
           CMS_TOKEN: "your token"
+          PASSWORD: "your password"
   PushLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:

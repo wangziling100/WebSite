@@ -8,6 +8,7 @@ import { IdeaHeader, Ideas } from '../../components/ideas'
 import Notice from '../../components/notice'
 import { useRouter } from 'next/router'
 import markdownToHtml from '../../lib/markdownToHtml'
+import { Overlay } from '../../components/overlay'
 
 export default function IdeaPage(props) {
   const img = props.data.ideaBg
@@ -18,6 +19,9 @@ export default function IdeaPage(props) {
   const router = useRouter()
   const orderBy = router.query.orderBy || "priority"
   const selectedStatus = router.query.selectedStatus || "active"
+  const showOverlay = router.query.showOverlay || false
+  const option = router.query.option 
+  const overlayData = JSON.parse(router.query.overlayData || null) 
   const main = (
   
     <>
@@ -31,6 +35,7 @@ export default function IdeaPage(props) {
         </div>
         <IdeaHeader/>
         <Ideas data={props.data.ideaItem} orderBy={orderBy} selectedStatus={selectedStatus} />
+        { showOverlay && <Overlay page={'idea'} option={option} overlayData={overlayData} />}
       </div>
     </>
   )
