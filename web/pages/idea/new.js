@@ -1,5 +1,5 @@
 import Background from '../../components/background'
-import { getImageByReference } from '../../lib/api'
+import { getImageByReference, sendData } from '../../lib/api'
 import { useState } from 'react'
 import Router, { useRouter } from 'next/router'
 import cn from 'classnames'
@@ -48,7 +48,7 @@ export default function NewIdea(props){
   const getTags = e => {setTags(tags=e.target.value)}
   const getPriority = e => {setPriority(priority=e.target.value)}
   const getOwner = e => {setOwner(e.target.value)}
-  const getData = () => { 
+  const getData = async () => { 
     if(title===undefined || content===undefined || tags==undefined || title==="" || content===""){
         setFormWarning(false)
         return
@@ -72,44 +72,7 @@ export default function NewIdea(props){
         "password" : password
 
     }
-    const postData = JSON.stringify(form)
-    let host
-    let port
-    let route
-    let https
-    if (isTest){
-        host = 'localhost'
-        port = 4000
-        route = '/push'
-        https = require('http')
-    } else{
-        host = '0eaw1uy00c.execute-api.eu-central-1.amazonaws.com'
-        route = '/Prod/push'
-        port = 443
-        https = require('https')
-    }
-    const options = {
-        hostname: host,
-        port: port,
-        path: route,
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            accept: 'application/json',
-        },
-    }
-    var req = https.request(options, (res) => {
-        res.setEncoding('utf8')
-        res.on('data', (chunk) => {
-            console.log('Response: '+chunk)
-        })
-        res.on('end', () => {
-            console.log('Got error: ' )
-        })
-    })
-
-    req.write(postData)
-    req.end()
+    await sendData(form, isTest)
     Router.push(backOpt)
   }
   // Variables

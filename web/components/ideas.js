@@ -106,6 +106,28 @@ export function IdeaItem({ data, orderBy="priority", selectedStatus="active", pa
       }
       Router.push(deleteOpt)
   }
+  const completedAction = () =>{
+      const completedOpt = {
+          pathname: '/idea',
+          query: {
+              option: "completed",
+              overlayData: JSON.stringify({"id": data.id}),
+              password: password
+          }
+      }
+      console.log(data.id)
+      Router.push(completedOpt)
+  }
+  const unCompletedAction = () =>{
+      const unCompletedOpt = {
+          pathname: '/idea',
+          query: {
+              option: "active",
+              overlayData: JSON.stringify({"id": data.id}),
+              password: password
+          }
+      }
+  }
   //const switchOverlayState = () => {
   //    setHideOverlay(!hiddenOverlay)
   //}
@@ -120,12 +142,12 @@ export function IdeaItem({ data, orderBy="priority", selectedStatus="active", pa
   const contributor = data.contributor || "Nobody"
   const tags = data.tags
   const priority = data.priority
-  const itemStatus = data.itemStatus
+  const [ itemStatus, setItemStatus] = useState(data.itemStatus)
   const evaluation = data.evaluation
   const icon = owner.substring(0,1) || "P"
   const startTimestamp = new Date(data._createdAt).getTime()-Date.now()
   var orderNum
-  var selectedStatus
+  //var selectedStatus
   switch ( orderBy ){
     case "priority": orderNum = -priority; break;
     case "priority-reverse": orderNum = priority; break;
@@ -171,8 +193,8 @@ export function IdeaItem({ data, orderBy="priority", selectedStatus="active", pa
             <div className={cn(...optionCSS)}>
               comment
             </div>
-            <div className={cn(...optionCSS)}>
-              complete
+            <div className={cn(...optionCSS)} onClick={()=>{completedAction; setItemStatus(selectedStatus==='active'?'completed':'active')}}>
+              {(selectedStatus==='active')?'completed':'undo'}
             </div>
           </div>
         </div>

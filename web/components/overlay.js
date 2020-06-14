@@ -1,6 +1,7 @@
 import cn from 'classnames'
 import Router from 'next/router'
 import { useState } from 'react'
+import { sendData } from '../lib/api'
 
 export function Overlay({ page, option, overlayData, password }){
     let child
@@ -72,58 +73,25 @@ function DeleteWnd({ page, data, savedPassword }){
     // Variable
     const [ password, setPassword ] = useState("")
     let id = data.id
-    let isTest = false
+    let isTest = true
     const path = '/' + page
     // CSS
     const inputCSS = ['mt-2', 'p-2', 'w-full', 'shadow', 'appearance-none', 'border', 'rounded', 'text-gray-700', 'leading-tight', 'focus:outline-none', 'focus:shadow-outline', 'focus:border-red-500']
     const buttonCSS = ['uppercase', 'bg-blue-400', 'w-32', 'h-8', 'rounded-md', 'hover:bg-blue-600', 'hover:shadow-outline']
     // Actions
     
-    const confirmOpt = () => {
+    const confirmOpt = async () => {
         const tmpPassword = password?password:savedPassword
         let tmpData = {
           "id": id,
           "option": "delete",
           "password": tmpPassword,
         }
-        const postData = JSON.stringify(tmpData)
-        let host
-        let port
-        let route
-        let https
-        if (isTest){
-            host = 'localhost'
-            port = 4000
-            route = '/push'
-            https = require('http')
-        }else{
-            host = '0eaw1uy00c.execute-api.eu-central-1.amazonaws.com'
-            route = '/Prod/push'
-            port = 443
-            https = require('https')
-        }
-        const options = {
-            hostname: host,
-            port: port,
-            path: route,
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                accept: 'application/json',
-            }
-        }
-        let req = https.request(options, (res) => {
-            res.setEncoding('utf8')
-            res.on('data', (chunk) => {
-                console.log('Response: '+chunk)
-            })
-            res.on('end', () => {
-                console.log('Got error: ')
-            })
-        })
-        req.write(postData)
-        req.end()
+
+        await sendData(tmpData, isTest)
+        
     }
+
     const getPassword = e => { setPassword(e.target.value) }
 
     return(

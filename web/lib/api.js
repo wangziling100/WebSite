@@ -190,3 +190,42 @@ export async function getPostAndMorePosts(loc, preview) {
   )
   return data
 }
+export async function sendData(data, isTest){
+    const postData = JSON.stringify(data)
+    let host
+    let port
+    let route
+    let https
+    if (isTest){
+        host = 'localhost'
+        port = 4000
+        route = '/push'
+        https = require('http')
+    }else{
+        host = '0eaw1uy00c.execute-api.eu-central-1.amazonaws.com'
+        route = '/Prod/push'
+        port = 443
+        https = require('https')
+    }
+    const options = {
+        hostname: host,
+        port: port,
+        path: route,
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            accept: 'application/json',
+        }
+    }
+    let req = https.request(options, (res) => {
+        res.setEncoding('utf8')
+        res.on('data', (chunk) => {
+            console.log('Response: '+chunk)
+        })
+    }).on('err',(e) => {
+        console.log('Got error: ', e)
+    })
+    await req.write(postData)
+    await req.end()
+
+ }
