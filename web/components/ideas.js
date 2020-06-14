@@ -4,6 +4,7 @@ import Markdown from '../components/markdown'
 import { useState } from 'react'
 import cn from 'classnames'
 import { Overlay } from '../components/overlay'
+import { sendData } from '../lib/api'
 
 export function IdeaHeader(){
   const active = {
@@ -86,8 +87,9 @@ export function IdeaHeader(){
   )
 }
 export function IdeaItem({ data, orderBy="priority", selectedStatus="active", password}){
-  // States
+  // Variables
   const [ hideContent, setHideContent ] = useState(true)
+  const isTest = true
   
   // Actions
   const switchContentState = () => {
@@ -118,8 +120,8 @@ export function IdeaItem({ data, orderBy="priority", selectedStatus="active", pa
       console.log(data.id)
       Router.push(completedOpt)
   }
-  const unCompletedAction = () =>{
-      const unCompletedOpt = {
+  const activeAction = () =>{
+      const activeOpt = {
           pathname: '/idea',
           query: {
               option: "active",
@@ -127,11 +129,32 @@ export function IdeaItem({ data, orderBy="priority", selectedStatus="active", pa
               password: password
           }
       }
+      Router.push(activeOpt)
   }
-  //const switchOverlayState = () => {
-  //    setHideOverlay(!hiddenOverlay)
-  //}
- 
+  const completedRequest = async () => {
+      const postData = {
+          "id": data.id,
+          "option": "completed",
+          "password": password,
+      }
+      await sendData(postData, isTest)
+  }
+  const activeRequest = async () => {
+      const postData = {
+          "id": data.id,
+          "option": "active",
+          "password": password,
+      }
+      await sendData(postData, isTest)
+  }
+  
+  const activeCompletedAction = (selectedStatus==='active')?
+      () => {completedAction(); completedRequest(); setItemStatus('completed')}
+  :
+      () => {activeAction(); activeRequest(); setItemStatus('active')}
+  
+
+   
   // CSS
   const optionCSS = ['pr-1', 'hover:text-blue-500', 'cursor-pointer']
   // Attributes
@@ -193,7 +216,7 @@ export function IdeaItem({ data, orderBy="priority", selectedStatus="active", pa
             <div className={cn(...optionCSS)}>
               comment
             </div>
-            <div className={cn(...optionCSS)} onClick={()=>{completedAction; setItemStatus(selectedStatus==='active'?'completed':'active')}}>
+            <div className={cn(...optionCSS)} onClick={activeCompletedAction}>
               {(selectedStatus==='active')?'completed':'undo'}
             </div>
           </div>

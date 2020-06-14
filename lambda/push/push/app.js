@@ -57,6 +57,18 @@ exports.lambdaHandler = async (event, context) =>{
                     console.error(error);
                 })
 
+        }else if(data.option==='completed' && data.password===password){
+            await client.items.update(data.id, {
+                itemStatus: "completed",
+            }).catch((err) => {
+                console.error(err)
+            })
+        }else if(data.option==='active' && data.password===password){
+            await client.items.update(data.id, {
+                itemStatus: "active",
+            }).catch((err) => {
+                console.error(err)
+            })
         }
         
 	// const ret = await axios(url);
