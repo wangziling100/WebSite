@@ -1,6 +1,7 @@
 import { GraphQLClient } from "graphql-request"; 
 const API_URL = 'https://graphql.datocms.com'
 const API_TOKEN = process.env.NEXT_EXAMPLE_CMS_DATOCMS_API_TOKEN
+import React, { useState, useEffect } from 'react'
 
 // See: https://www.datocms.com/blog/offer-responsive-progressive-lqip-images-in-2020
 const responsiveImageFragment = `
@@ -229,3 +230,40 @@ export async function sendData(data, isTest){
     await req.end()
 
  }
+
+export function getItemList(list, setFunction){
+    let result
+    useEffect(() => {
+        result = sessionStorage.getItem(list)
+        if (result === "") result = {}
+        else result = JSON.parse(result)
+        setFunction(result)
+        console.log('getItemList1', result)
+    }, [result])
+}
+
+export function setItem(list, obj){
+    let result
+    console.log('setItem', obj)
+    useEffect(() => {
+        result = sessionStorage.getItem(list)
+        console.log('setItem1', result)
+        result = JSON.parse(result) || {}
+        console.log('setItem2', result, obj)
+        for (let key in obj){
+            if (obj[key]===undefined) continue
+            result[key] = obj[key]
+        }
+        //Object.keys(obj).map((k)=>result[k]=obj[k])
+        console.log('setItem3', result)
+        sessionStorage.setItem(list, JSON.stringify(result))
+    }, [obj])
+}
+
+export function getItem(persistentData, setFunction, key){
+    useEffect(() =>{
+        if (persistentData!==undefined && persistentData){
+            setFunction(persistentData[key])
+        }
+    }, [persistentData])
+}

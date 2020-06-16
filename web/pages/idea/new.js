@@ -13,7 +13,7 @@ export default function NewIdea(props){
   let [ priority, setPriority ] = useState(5)
   let [ owner, setOwner ] = useState('Public')
   
-  const isTest = true
+  const isTest = false
   const max_title_l = "100"
   const max_content_l = "800"
   const max_tags_l = "100"

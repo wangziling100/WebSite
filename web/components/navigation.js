@@ -4,22 +4,35 @@ import Router, { useRouter } from 'next/router'
 import { useState } from 'react'
 import { Overlay } from '../components/overlay'
 
-export default function Navigation({ page, password }){
+export default function Navigation({ page, password, actions, states}){
     // Variable
-    const router = useRouter()
-    const showOverlay = router.query.showOverlay || false
-    const option = router.query.option || ""
+    //const router = useRouter()
+    //const showOverlay = router.query.showOverlay || false
+    //const option = router.query.option || ""
+    //const showOverlay = false
+    const [ showOverlay, setShowOverlay ] = useState(false)
+    const [ option, setOption ] = useState("")
     const path = '/' + page
+    // downflow data
+    const downflowActions = {
+        setPassword: actions.setPassword,
+        setShowOverlay: setShowOverlay,
+        setOption: actions.setOption,
+    }
     // Actions
-    const loginOpt = {
-        pathname: path,
-        query: { showOverlay: true , option: "login"},
+    const loginAction= () => {
+        setShowOverlay(true)
+        setOption("login")
     }
-    const logoutOpt = {
-        pathname: path,
-        query: {},
+    const logoutAction = () => {
+        setShowOverlay(false)
+        setOption("")
+        actions.setPassword("")
     }
-    const logInOutOpt = password?logoutOpt:loginOpt
+    const logInOutAction = () => {
+        (password===undefined || password==="")?loginAction():logoutAction()
+    }
+
 
     const toIndexOpt = {
         pathname: '/index',
@@ -68,13 +81,13 @@ export default function Navigation({ page, password }){
                 </a>
             </div>
           </div>
-          <div className="px-4 cursor-pointer items-center justify-start p-2 text-base font-serif-Georgia tracking-widest rounded-lg" onClick={()=>Router.push(logInOutOpt)}>
+          <div className="px-4 cursor-pointer items-center justify-start p-2 text-base font-serif-Georgia tracking-widest rounded-lg" onClick={logInOutAction}>
             { password?"Log out":"Sign in" }
           </div>
         </div>
         {
           showOverlay && (option==='login') &&
-          <Overlay page={page} option='login' className='' password={password} />
+          <Overlay page={page} option='login' className='' password={password} actions={downflowActions}/>
         }  
         </>
     )

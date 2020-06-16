@@ -1,49 +1,36 @@
-import Router, { useRouter } from 'next/router'
+import Router from 'next/router'
 import markdownToHtml from '../lib/markdownToHtml'
 import Markdown from '../components/markdown'
 import { useState } from 'react'
 import cn from 'classnames'
 import { Overlay } from '../components/overlay'
-import { sendData } from '../lib/api'
+import { setItem, getItemList, sendData } from '../lib/api'
 import { NewCommentItem, Comment } from '../components/comment'
 
-export function IdeaHeader(){
-  const active = {
-    pathname: "/idea",
-    query: { selectedStatus: "active" },
+export function IdeaHeader({ actions }){
+  const [ selectedStatus, setSelectedStatus ] = useState("active")
+  const newestAction = () => actions.setOrderBy("newest")
+  const oldestAction = () => actions.setOrderBy("oldest")
+  const mostImportantAction = () => actions.setOrderBy("priority")
+  const leastImportantAction = () => actions.setOrderBy("priority-reverse")
+  const activeAction = () => {
+      actions.setSelectedStatus("active")
+      setSelectedStatus("active")
   }
-  const completed = {
-    pathname: "/idea",
-    query: { selectedStatus: "completed" }
+  const completedAction = () => {
+      actions.setSelectedStatus("completed")
+      setSelectedStatus("completed")
   }
-
-  const most_important = {
-    pathname: "/idea",
-    query: { orderBy: "priority" },
-  }
-  const least_important = {
-    pathname: "/idea",
-    query: { orderBy: "priority-reverse" },
-  }
-  const oldest = {
-    pathname: "/idea",
-    query: { orderBy: "oldest" },
-  }
-  const newest = {
-    pathname: "/idea",
-    query: { orderBy: "newest" },
-  }
+  
   return(
     <>
     <div className="flex mx-10 p-4 bg-white">
       <div className="w-1/2 flex">
         <div className="mx-2" >
-          <input className="hidden" type="radio" name="status" id="active" value="active" defaultChecked /> 
-          <label onClick={()=> Router.push(active)} htmlFor={"active"} className="hover:text-blue-600" > Active </label>
+          <div onClick={activeAction} className={cn({'underline':selectedStatus=="active"}, {'text-blue-800':selectedStatus=="active"}, "hover:text-blue-600", "cursor-pointer")} > Active </div>
         </div>
         <div className="mx-2">
-          <input className="hidden" type="radio" name="status" id="completed" value="completed" /> 
-          <label onClick={()=> Router.push(completed)} htmlFor={"completed"} className="hover:text-blue-600"> Completed </label>
+          <div onClick={completedAction} className={cn({'underline':selectedStatus=="completed"}, {'text-blue-800':selectedStatus=="completed"}, "hover:text-blue-600", "cursor-pointer")}> Completed </div>
         </div>
       </div>
       <div className="w-1/2 flex justify-end">
@@ -60,11 +47,11 @@ export function IdeaHeader(){
         <div className="flex mx-2 pr-4 items-center text-gray-600">
           <select className=" hover: cursor-pointer border-solid  appearance-none"> 
           
-            <option value="default" aria-selected="true" onClick={()=> Router.push(most_important)}> Default Sort</option>
-            <option onClick={()=> Router.push(newest)}> Newest </option>
-            <option onClick={()=> Router.push(oldest)}> Oldest </option>
-            <option onClick={()=> Router.push(most_important)}> Most Import </option>
-            <option onClick={()=> Router.push(least_important)}> Least Import </option>
+            <option value="default" aria-selected="true" onClick={mostImportantAction}> Default Sort</option>
+            <option onClick={newestAction}> Newest </option>
+            <option onClick={oldestAction}> Oldest </option>
+            <option onClick={mostImportantAction}> Most Import </option>
+            <option onClick={leastImportantAction}> Least Import </option>
           </select>
           <svg className="w-3 h-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 3">
             <path d="M0 1.5  L1.5 2.5 L3 1.5" fill="transparent" stroke="gray" strokeWidth="1" className="bg-red-500"/>
@@ -86,14 +73,13 @@ export function IdeaHeader(){
     </>
   )
 }
-export function IdeaItem({ data, orderBy="priority", selectedStatus="active", password}){
+export function IdeaItem({ data, password, actions, orderBy="priority", selectedStatus="active"}){
   // Variables
-  const router = useRouter()
-  const returnedId = router.query.id || null
   let [ showAddComment, setShowAddComment ] = useState(false)
   const [ hideContent, setHideContent ] = useState(true)
   const [ showComment, setShowComment ] = useState(false)
-  const isTest = true
+  const [ deleted, setDeleted ] = useState(false)
+  const isTest = false
   const path = '/idea'
   
   // Actions
@@ -102,39 +88,12 @@ export function IdeaItem({ data, orderBy="priority", selectedStatus="active", pa
   }
   let overlayData
   const deleteAction = () =>{
-      const deleteOpt = {
-        pathname: "/idea",
-        query: { 
-          option: "delete",
-          overlayData: JSON.stringify({"id": data.id}),
-          showOverlay: true,
-          password: password
-        },
-      }
-      Router.push(deleteOpt)
+      actions.setOption("delete")
+      actions.setShowOverlay(true)
+      actions.setOverlayData({id: data.id, setDeleted: setDeleted})
+      
   }
-  const completedAction = () =>{
-      const completedOpt = {
-          pathname: '/idea',
-          query: {
-              option: "completed",
-              overlayData: JSON.stringify({"id": data.id}),
-              password: password
-          }
-      }
-      Router.push(completedOpt)
-  }
-  const activeAction = () =>{
-      const activeOpt = {
-          pathname: '/idea',
-          query: {
-              option: "active",
-              overlayData: JSON.stringify({"id": data.id}),
-              password: password
-          }
-      }
-      Router.push(activeOpt)
-  }
+
   const completedRequest = async () => {
       const postData = {
           "id": data.id,
@@ -153,12 +112,16 @@ export function IdeaItem({ data, orderBy="priority", selectedStatus="active", pa
   }
   
   const activeCompletedAction = (selectedStatus==='active')?
-      () => {completedAction(); completedRequest(); setItemStatus('completed')}
+      () => { completedRequest(); setItemStatus('completed')}
   :
-      () => {activeAction(); activeRequest(); setItemStatus('active')}
+      () => { activeRequest(); setItemStatus('active')}
 
   const newCommentAction = () => {
       setShowAddComment(!showAddComment)
+  }
+  const editAction = () => {
+      actions.setItemData({data: data})
+      Router.push('/idea/edit')
   }
 
    
@@ -216,7 +179,7 @@ export function IdeaItem({ data, orderBy="priority", selectedStatus="active", pa
             contributors: {contributor}
           </div>
           <div className="flex">
-            <div className={cn(...optionCSS)}>
+            <div className={cn(...optionCSS)} onClick={editAction}>
               edit
             </div >
             <div className={cn(...optionCSS)} onClick={deleteAction}>
@@ -255,15 +218,15 @@ export function IdeaItem({ data, orderBy="priority", selectedStatus="active", pa
 
   return( 
     <>
-      { (selectedStatus==itemStatus) && item}
+      { (selectedStatus==itemStatus) && !deleted && item}
     </>
   )
 }
-export function Ideas({ data, savedPassword, orderBy="priority", selectedStatus="active"}){
+export function Ideas({ data, savedPassword, actions, orderBy="priority", selectedStatus="active"}){
   const items = []
   const testAction = () => { console.log('here') }
   for (const item of data){
-    items.push(<IdeaItem data={item} key={item.id} orderBy={orderBy}  selectedStatus={selectedStatus} onClick={testAction} password={savedPassword} />)
+    items.push(<IdeaItem data={item} key={item.id} orderBy={orderBy}  selectedStatus={selectedStatus} onClick={testAction} password={savedPassword} actions={actions}/>)
   }
   return (
     <div className="flex flex-wrap">
