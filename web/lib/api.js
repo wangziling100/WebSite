@@ -29,7 +29,7 @@ export function request({ query, variables, preview }){
 
 }
 
-export async function getImageByReference( ref, preview=flase ){
+export async function getImageByReference( ref, preview=false ){
   const IMAGE_QUERY = `
     query Image($ref:String){
       picture(filter: {ref: {eq: $ref}}){

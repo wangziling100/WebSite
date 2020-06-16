@@ -62,8 +62,17 @@ export async function getStaticProps({ preview=false }){
   const ideaBg = (await getImageByReference("idea_bg", preview))
   let ideaItemTitle = (await getItemByReference("idea_item_title", preview))
   let ideaItem = (await getItemByReference("idea_item", preview))
+  let comments = (await getItemByReference("idea_comment", preview))
   for (let e of ideaItem){
       e.content = await markdownToHtml(e.content || '')
+      e.comments = []
+      for (let c of comments){
+          console.log(c.refId, e.id)
+          if (e.id === c.refId){
+              e.comments.push(c)
+          }
+      }
+      console.log(e.comments)
   }
   const orderBy = "priority-reverse"
   const data = {ideaBg, ideaItemTitle, ideaItem}

@@ -5,6 +5,7 @@ import { useState } from 'react'
 import cn from 'classnames'
 import { Overlay } from '../components/overlay'
 import { sendData } from '../lib/api'
+import { NewCommentItem, Comment } from '../components/comment'
 
 export function IdeaHeader(){
   const active = {
@@ -32,7 +33,6 @@ export function IdeaHeader(){
     pathname: "/idea",
     query: { orderBy: "newest" },
   }
-  //console.log(router.query)
   return(
     <>
     <div className="flex mx-10 p-4 bg-white">
@@ -88,8 +88,13 @@ export function IdeaHeader(){
 }
 export function IdeaItem({ data, orderBy="priority", selectedStatus="active", password}){
   // Variables
+  const router = useRouter()
+  const returnedId = router.query.id || null
+  let [ showAddComment, setShowAddComment ] = useState(false)
   const [ hideContent, setHideContent ] = useState(true)
+  const [ showComment, setShowComment ] = useState(false)
   const isTest = true
+  const path = '/idea'
   
   // Actions
   const switchContentState = () => {
@@ -117,7 +122,6 @@ export function IdeaItem({ data, orderBy="priority", selectedStatus="active", pa
               password: password
           }
       }
-      console.log(data.id)
       Router.push(completedOpt)
   }
   const activeAction = () =>{
@@ -152,7 +156,10 @@ export function IdeaItem({ data, orderBy="priority", selectedStatus="active", pa
       () => {completedAction(); completedRequest(); setItemStatus('completed')}
   :
       () => {activeAction(); activeRequest(); setItemStatus('active')}
-  
+
+  const newCommentAction = () => {
+      setShowAddComment(!showAddComment)
+  }
 
    
   // CSS
@@ -165,6 +172,7 @@ export function IdeaItem({ data, orderBy="priority", selectedStatus="active", pa
   const contributor = data.contributor || "Nobody"
   const tags = data.tags
   const priority = data.priority
+  const comments = data.comments || []
   const [ itemStatus, setItemStatus] = useState(data.itemStatus)
   const evaluation = data.evaluation
   const icon = owner.substring(0,1) || "P"
@@ -181,7 +189,8 @@ export function IdeaItem({ data, orderBy="priority", selectedStatus="active", pa
   
   const item = (
     <>
-    <div className="order mt-1 flex mx-10 bg-white divide-x border-gray-400 border-2 w-full hover:shadow-xl">
+    <div className="order w-full mx-10">
+    <div className="mt-1 flex  bg-white divide-x border-gray-500 border-2 w-full hover:shadow-xl">
       <div className="w-1/10 flex items-center mx-3">
         <div className="w-10 h-10 bg-blue-600 text-blue-200 text-xl flex items-center justify-center">
           {icon}
@@ -213,7 +222,10 @@ export function IdeaItem({ data, orderBy="priority", selectedStatus="active", pa
             <div className={cn(...optionCSS)} onClick={deleteAction}>
               delete
             </div>
-            <div className={cn(...optionCSS)}>
+            <div className={cn(...optionCSS)} onClick={newCommentAction}>
+              +
+            </div>
+            <div className={cn(...optionCSS)} onClick={()=>setShowComment(!showComment)}>
               comment
             </div>
             <div className={cn(...optionCSS)} onClick={activeCompletedAction}>
@@ -225,6 +237,9 @@ export function IdeaItem({ data, orderBy="priority", selectedStatus="active", pa
       <div className="w-1/6 flex items-center">
         <div className="w-full text-center text-6xl justify-center"> {priority} </div>
       </div>
+    </div>
+      { showAddComment &&  <NewCommentItem id={data.id} page={'idea'} onSubmit={newCommentAction}/>}
+      { showComment && <Comment data={comments} /> }
     </div>
   
     <style jsx>{`
@@ -246,7 +261,6 @@ export function IdeaItem({ data, orderBy="priority", selectedStatus="active", pa
 }
 export function Ideas({ data, savedPassword, orderBy="priority", selectedStatus="active"}){
   const items = []
-  //console.log(router, "ideas router")
   const testAction = () => { console.log('here') }
   for (const item of data){
     items.push(<IdeaItem data={item} key={item.id} orderBy={orderBy}  selectedStatus={selectedStatus} onClick={testAction} password={savedPassword} />)
@@ -256,5 +270,4 @@ export function Ideas({ data, savedPassword, orderBy="priority", selectedStatus=
       {items} 
     </div>
   )
-  
 }
