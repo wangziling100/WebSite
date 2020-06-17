@@ -36,28 +36,6 @@ export default function Navigation({ page, password, actions, states}){
         (password===undefined || password==="")?loginAction():logoutAction()
     }
 
-
-    const toIndexOpt = {
-        pathname: '/index',
-        query: {password: password}
-    }
-    const toIdeaOpt = {
-        pathname: '/idea',
-        query: {password: password}
-    }
-    const toPlanOpt = {
-        pathname: '/plan',
-        query: {password: password}
-    }
-    const toServiceOpt = {
-        pathname: '/service',
-        query: {password: password}
-    }
-    const toAboutOpt = {
-        pathname: '/about',
-        query: {password: password}
-    }
-
     const nav = (
         <>
         <div className={cn("p-4 ", {"text-white": page=="index",}, 'flex', 'justify-between')}>

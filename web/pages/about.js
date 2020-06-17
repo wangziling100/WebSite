@@ -2,14 +2,31 @@ import Head from 'next/head'
 import Container from '../components/container'
 import Navigation from '../components/navigation'
 import Layout from '../components/layout'
-import { getImageByReference } from '../lib/api'
+import { getItem, getItemList, setItem, getImageByReference } from '../lib/api'
+import { useState } from 'react'
 
-export default function AboutPage(data) {
+export default function PlanPage(data) {
   const img = data.ideaBg
   const setting=[]
   const bgImgAndSetting={img, setting}
+  // States
+  const [ persistentStates, setPersistentStates ] = useState()
+  getItemList('/', setPersistentStates)
+  const [ showOverlay, setShowOverlay ] = useState(false)
+  const [ password, setPassword ] = useState(persistentStates?.password)
+  const downflowActions = {
+      setPassword: setPassword,
+      setShowOverlay: setShowOverlay,
+  }
+  // Persist data
+  const tmpData = {
+      password: password,
+  }
+  setItem('/', tmpData)
+  getItem(persistentStates, setPassword, 'password')
+
   const main = (
-    <Navigation page="about"/>
+    <Navigation page="about" password={password} actions={downflowActions}/>
   )
   return (
     <div>
