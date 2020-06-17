@@ -71,6 +71,7 @@ export async function getItemByReference( ref, preview=false ){
         _createdAt
         evaluation
         allowPriorityChange
+        version
       }
     }
   `

@@ -15,7 +15,7 @@ export function IdeaEditor({background, data, item, savedPassword, page}){
   const [ owner, setOwner ] = useState(item?.data.owner || 'Public')
   //console.log('idea-editor', title, savedPassword)
   
-  const isTest = true
+  const isTest = false
   const max_title_l = "100"
   const max_content_l = "800"
   const max_tags_l = "100"
@@ -53,36 +53,30 @@ export function IdeaEditor({background, data, item, savedPassword, page}){
     }
     
     setFormWarning(true)
-    if (item.data.id === undefined){
-        let form = {
-            "title": title,
-            "content": content,
-            "tag": tags,
-            "priority": parseInt(priority),
-            "completeness": 0,
-            "startTime": null,
-            "evaluation": null,
-            "allowPriorityChange": false,
-            "ref": "idea_new",
-            "refId": null,
-            "owner": owner,
-            "contributor": "",
-            "itemStatus": "active",
-            "password" : password
+    let form = {
+        "title": title,
+        "content": content,
+        "tag": tags,
+        "priority": parseInt(priority),
+        "completeness": 0,
+        "startTime": null,
+        "evaluation": null,
+        "allowPriorityChange": false,
+        "ref": "idea_new",
+        "refId": null,
+        "owner": owner,
+        "contributor": "",
+        "itemStatus": "active",
+        "version": 0,
+        "password" : password
 
-        }
-    }else{
-        let form = {
-            "id": item.data.id,
-            "option": "edit",
-            "password": password,
-            "title": title,
-            "content": content,
-            "tag": tags,
-            "priority": parseInt(priority),
-            "owner": owner,
-        }
     }
+    if (item.data.id !== undefined){
+        form['refId'] = item.data.id
+        form['option'] = 'edit'
+        form['version'] = item.data.version+1
+        
+    } 
     
     await sendData(form, isTest)
     Router.push(page)

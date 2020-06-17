@@ -27,11 +27,22 @@ exports.lambdaHandler = async (event, context) =>{
         //console.log('--------')
         //console.log(data)
         //console.log('---------')
-        if (data.option===undefined){
+        if (data.option===undefined || data.option==='edit'){
             let tmpRef = data.ref
             if (data.password===password){
                 switch (data.ref){
                     case 'idea_new': tmpRef='idea_item'; break;
+                }
+                if (data.option==='edit'){
+                    let historyRef
+                    switch (data.ref){
+                        case 'idea_new': historyRef='idea_history'; break;
+                    }
+                    await client.items.update(data.refId, {
+                        ref: historyRef,
+                    }).catch((err)=>{
+                        console.error(err)
+                    })
                 }
 
             }
@@ -49,7 +60,8 @@ exports.lambdaHandler = async (event, context) =>{
                 owner: data.owner,
                 contributor: data.contributor,
                 tag: data.tag,
-                itemStatus: data.itemStatus
+                itemStatus: data.itemStatus,
+                version: data.version
             })
         }else if(data.option==='delete' && data.password===password){
             await client.items.destroy(data.id)
@@ -69,8 +81,7 @@ exports.lambdaHandler = async (event, context) =>{
             }).catch((err) => {
                 console.error(err)
             })
-        }
-        
+        }        
 	// const ret = await axios(url);
         response = {
             'statusCode': 200,
