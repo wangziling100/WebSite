@@ -28,7 +28,6 @@ export default function IndexPage(data) {
   }
   setItem('/', tmpData)
   getItem(persistentStates, setPassword, 'password')
-  console.log(showOverlay)
 
 
   const main = (

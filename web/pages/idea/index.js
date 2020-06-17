@@ -39,7 +39,6 @@ export default function IdeaPage(props) {
       setOverlayData: setOverlayData,
       setItemData: setItemData,
   }
-  //console.log('2', persistentStates, password)
   // Persist data
   const tmpData = {
       password: password,
@@ -47,14 +46,7 @@ export default function IdeaPage(props) {
   }
   setItem('/', tmpData)
   getItem(persistentStates, setPassword, 'password')
-  console.log('idea', password)
   
-  // Actions
-  const newIdeaOpt = {
-      pathname: '/idea/new',
-      query: { password: password },
-  }
-
   const main = (
   
     <>
@@ -62,7 +54,7 @@ export default function IdeaPage(props) {
       <Notice title={noticeTitle} content={noticeContent} />
       <div className="mt-6">
         <div className="flex mx-12 mb-2 justify-end">
-            <button className="h-8 w-32 bg-red-400 rounded-lg text-white font-semibold hover:shadow-lg hover:bg-blue-400" onClick={()=>Router.push(newIdeaOpt)}> + New Idea </button>
+            <button className="h-8 w-32 bg-red-400 rounded-lg text-white font-semibold hover:shadow-lg hover:bg-blue-400" onClick={()=>Router.push('/idea/new')}> + New Idea </button>
         </div>
         <IdeaHeader actions={downflowActions}/>
         <Ideas data={props.data.ideaItem} orderBy={orderBy} selectedStatus={selectedStatus} savedPassword={password} actions={downflowActions}/>
@@ -98,9 +90,7 @@ export async function getStaticProps({ preview=false }){
               e.comments.push(c)
           }
       }
-      console.log(e.comments)
   }
-  //const orderBy = "priority-reverse"
   const data = {ideaBg, ideaItemTitle, ideaItem}
   ideaItemTitle[0].content = await markdownToHtml(ideaItemTitle[0].content || '')
   return{

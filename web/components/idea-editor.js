@@ -7,13 +7,11 @@ import Link from 'next/link'
 
 export function IdeaEditor({background, data, item, savedPassword, page}){
   // Variable
-  //console.log('idea-editor', item.data.title)
   const [ title, setTitle ] = useState(item?.data.title || "")
   const [ content, setContent ] = useState(item?.data.originContent || "")
   const [ tags, setTags ] = useState(item?.data.tag || "")
   const [ priority, setPriority ] = useState(item?.data.priority || 5)
   const [ owner, setOwner ] = useState(item?.data.owner || 'Public')
-  //console.log('idea-editor', title, savedPassword)
   
   const isTest = false
   const max_title_l = "100"
@@ -43,8 +41,8 @@ export function IdeaEditor({background, data, item, savedPassword, page}){
   // Actions
   const getTitle = e => {setTitle(e.target.value)}
   const getContent = e => {setContent(e.target.value)}
-  const getTags = e => {setTags(tags=e.target.value)}
-  const getPriority = e => {setPriority(priority=e.target.value)}
+  const getTags = e => {setTags(e.target.value)}
+  const getPriority = e => {setPriority(e.target.value)}
   const getOwner = e => {setOwner(e.target.value)}
   const getData = async () => { 
     if(title===undefined || content===undefined || tags==undefined || title==="" || content===""){
@@ -71,7 +69,7 @@ export function IdeaEditor({background, data, item, savedPassword, page}){
         "password" : password
 
     }
-    if (item.data.id !== undefined){
+    if (item && item.data.id !== undefined){
         form['refId'] = item.data.id
         form['option'] = 'edit'
         form['version'] = item.data.version+1

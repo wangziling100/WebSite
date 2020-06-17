@@ -63,6 +63,7 @@ export async function getItemByReference( ref, preview=false ){
         refId
         title
         content
+        tag
         owner
         contributor
         priority
@@ -80,7 +81,6 @@ export async function getItemByReference( ref, preview=false ){
     variables: {"ref": ref},
     preview: preview
   });
-  //console.log(data)
   return data.allItems
 }
 
@@ -239,24 +239,18 @@ export function getItemList(list, setFunction){
         if (result === "") result = {}
         else result = JSON.parse(result)
         setFunction(result)
-        console.log('getItemList1', result)
     }, [result])
 }
 
 export function setItem(list, obj){
     let result
-    console.log('setItem', obj)
     useEffect(() => {
         result = sessionStorage.getItem(list)
-        console.log('setItem1', result)
         result = JSON.parse(result) || {}
-        console.log('setItem2', result, obj)
         for (let key in obj){
             if (obj[key]===undefined) continue
             result[key] = obj[key]
         }
-        //Object.keys(obj).map((k)=>result[k]=obj[k])
-        console.log('setItem3', result)
         sessionStorage.setItem(list, JSON.stringify(result))
     }, [obj])
 }

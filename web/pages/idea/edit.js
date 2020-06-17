@@ -8,14 +8,6 @@ export default function EditPage(props){
     getItemList('/', setPersistentStates)
     const [ password, setPassword ] = useState()
     const [ itemData, setItemData ] = useState()
-    /*
-    const [ title, setTitle ] = useState()
-    const [ content, setContent ] = useState()
-    const [ tags, setTags ] = useState()
-    const [ priority, setPriority ] = useState()
-    const [ owner, setOwner ] = useState()
-    */
-
     const tmpData = {
         password: password,
     }
