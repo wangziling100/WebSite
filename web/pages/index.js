@@ -3,26 +3,42 @@ import Head from 'next/head'
 import Container from '../components/container'
 import Button from '../components/button'
 import Layout from '../components/layout'
-import { getAllPostsForHome, getImageByReference } from '../lib/api'
+import { getItemList, setItem, getItem, getAllPostsForHome, getImageByReference } from '../lib/api'
 import Navigation from '../components/navigation'
 import { LinearAppear, Appear, HelloAppear } from '../components/animation'
 import cn from 'classnames'
 import Hello from '../components/hello'
-import { useRouter } from 'next/router'
+import { useState } from 'react'
 
 export default function IndexPage(data) {
   const setting = ["fixed"]
   const img = data.indexBg
   const bgImgAndSetting={img, setting}
-  const router = useRouter()
-  const password = router.query.password
+  // Status
+  const [ persistentStates, setPersistentStates ] = useState()
+  getItemList('/', setPersistentStates)
+  const [ password, setPassword ] = useState()
+  const [ showOverlay, setShowOverlay ] = useState()
+  const downflowActions = {
+      setPassword: setPassword,
+      setShowOverlay: setShowOverlay,
+  }
+  const tmpData = {
+      password: password,
+  }
+  setItem('/', tmpData)
+  getItem(persistentStates, setPassword, 'password')
+  console.log(showOverlay)
+
 
   const main = (
     <>
       <Appear duration="14s">
-        <Navigation page="index" password={password}/>
+        <Navigation page="index" password={password} actions={downflowActions}/>
       </Appear>
-      <Hello/>
+        {!showOverlay && 
+          <Hello/>
+        }
     </>
   )
 

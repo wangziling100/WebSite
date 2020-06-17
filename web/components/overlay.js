@@ -23,17 +23,7 @@ export function Overlay({ page, option, overlayData, password, actions }){
         </>
     ) 
 }
-/*
-function resetAction(path, password){
-    const resetOpt = {
-        pathname: path,
-        query:{
-            password: password
-        }
-    }
-    Router.push(resetOpt)
-}
-*/
+
 
 function LoginWnd({ actions }){
     // Variable
@@ -46,10 +36,12 @@ function LoginWnd({ actions }){
     const setPasswordAction = ()=>{
         actions.setPassword(password)
         actions.setShowOverlay(false)
+        actions.setShowRootOverlay(false)
     }
     const returnAction = () => {
         actions.setShowOverlay(false)
-        actions.setOption("")
+        actions.setOption && actions.setOption("")
+        actions.setShowRootOverlay(false)
     }
     
     
@@ -101,7 +93,7 @@ function DeleteWnd({ page, data, savedPassword, actions }){
     const getPassword = e => { setPassword(e.target.value) }
     const returnAction = () => {
         actions.setShowOverlay(false)
-        actions.setOption("")
+        actions.setOption && actions.setOption("")
     }
 
     return(
@@ -132,7 +124,8 @@ function Style1({ child, page, actions}){
     // Actions
     const hideOverlay = ()=>{
         actions.setShowOverlay(false)
-        actions.setOption("")
+        actions.setShowRootOverlay(false)
+        actions.setOption && actions.setOption("") 
     }
     
     return(

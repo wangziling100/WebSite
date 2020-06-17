@@ -22,7 +22,6 @@ export default function IdeaPage(props) {
   // States
   const [ persistentStates, setPersistentStates ] = useState()
   getItemList('/', setPersistentStates)
-  console.log('1', persistentStates)
   const [ orderBy, setOrderBy ] = useState("priority")
   const [ selectedStatus, setSelectedStatus ] = useState("active")
   const [ option, setOption ] = useState("")
@@ -30,9 +29,7 @@ export default function IdeaPage(props) {
   const [ showOverlay, setShowOverlay ] = useState(false)
   const [ itemData, setItemData ] = useState()
 
-  console.log('2', persistentStates?.password)
   const [ password, setPassword ] = useState(persistentStates?.password)
-  console.log('3', password)
   const downflowActions = {
       setPassword: setPassword,
       setShowOverlay: setShowOverlay,
