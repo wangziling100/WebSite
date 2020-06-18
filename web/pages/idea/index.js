@@ -3,7 +3,7 @@ import Link from 'next/link'
 import Container from '../../components/container'
 import Navigation from '../../components/navigation'
 import Layout from '../../components/layout'
-import { getItem, getItemList, setItem, getItemByReference, getImageByReference } from '../../lib/api'
+import { getHostname, getItem, getItemList, setItem, getItemByReference, getImageByReference } from '../../lib/api'
 import { IdeaHeader, Ideas } from '../../components/ideas'
 import Notice from '../../components/notice'
 import Router, { useRouter } from 'next/router'
@@ -28,6 +28,7 @@ export default function IdeaPage(props) {
   const [ overlayData, setOverlayData] = useState()
   const [ showOverlay, setShowOverlay ] = useState(false)
   const [ itemData, setItemData ] = useState()
+  const [ hostname, setHostname ] = useState()
 
   const [ password, setPassword ] = useState(persistentStates?.password)
   const downflowActions = {
@@ -46,6 +47,8 @@ export default function IdeaPage(props) {
   }
   setItem('/', tmpData)
   getItem(persistentStates, setPassword, 'password')
+  getHostname(setHostname)
+  console.log('hostname', hostname)
   
   const main = (
   
@@ -69,7 +72,7 @@ export default function IdeaPage(props) {
         <title> no idea for this title </title>
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
       </Head>
-      <Layout index={false} bgImgAndSetting={bgImgAndSetting}>
+      <Layout index={false} bgImgAndSetting={bgImgAndSetting} hostname={hostname}>
         {main}
       </Layout>
     </div>

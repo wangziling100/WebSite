@@ -5,7 +5,7 @@ import Container from '../components/container'
 import Background from '../components/background'
 import cn from 'classnames'
 
-export default function Layout({ bgImgAndSetting, children , index=false }) {
+export default function Layout({ bgImgAndSetting, children , hostname, index=false }) {
   return (
     <>
       <Meta />
@@ -15,7 +15,7 @@ export default function Layout({ bgImgAndSetting, children , index=false }) {
               <main>{children}</main>
             </Container>
             { !index && 
-              <Footer />
+              <Footer hostname={hostname}/>
             }
           </div>
           

@@ -262,3 +262,11 @@ export function getItem(persistentData, setFunction, key){
         }
     }, [persistentData])
 }
+
+export function getHostname(setFunction){
+    let hostname 
+    useEffect(()=>{
+        hostname = window.location.hostname
+        setFunction(hostname)
+    },[hostname])
+}
