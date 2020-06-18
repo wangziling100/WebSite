@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react'
 export default function EditPage(props){
     const [ persistentStates, setPersistentStates ] = useState()
     getItemList('/', setPersistentStates)
-    const [ password, setPassword ] = useState()
+    const [ password, setPassword ] = useState("")
     const tmpData = {
         password: password,
     }
@@ -18,9 +18,10 @@ export default function EditPage(props){
         "titleNote": "The created ideas will be checked before they are published",
 
     }
+    console.log(password)
     const main = (
       <>
-         { password &&
+         { (password!==undefined) &&
            <IdeaEditor background={props.data.background} data={data} savedPassword={password} page={'/idea'} />
          }
       </>
