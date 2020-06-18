@@ -48,7 +48,6 @@ export default function IdeaPage(props) {
   setItem('/', tmpData)
   getItem(persistentStates, setPassword, 'password')
   getHostname(setHostname)
-  console.log('hostname', hostname)
   
   const main = (
   

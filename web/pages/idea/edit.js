@@ -1,20 +1,22 @@
 import { IdeaEditor } from '../../components/idea-editor'
-import { getItem, setItem, getItemList, getImageByReference } from '../../lib/api'
+import { getHostname, getItem, setItem, getItemList, getImageByReference } from '../../lib/api'
 import Router, {useRouter} from 'next/router'
 import { useState, useEffect } from 'react'
+import Footer from '../../components/footer'
 
 export default function EditPage(props){
     const [ persistentStates, setPersistentStates ] = useState()
     getItemList('/', setPersistentStates)
     const [ password, setPassword ] = useState()
     const [ itemData, setItemData ] = useState()
+    const [ hostname, setHostname ] = useState()
     const tmpData = {
         password: password,
     }
     setItem('/', tmpData)
     getItem(persistentStates, setPassword, 'password')
     getItem(persistentStates, setItemData, 'itemData')
-    console.log('idea/edit', password, itemData)
+    getHostname(setHostname)
 
     const data = {
         "title": "edit idea",
@@ -23,14 +25,13 @@ export default function EditPage(props){
     }
     const main = (
       <>
-         { itemData!==undefined &&
-           <IdeaEditor background={props.data.background} data={data} item={itemData} savedPassword={password} page={'/idea'} />
-         }
+         <IdeaEditor background={props.data.background} data={data} item={itemData} savedPassword={password} page={'/idea'} />
+         <Footer hostname={hostname}/>
       </>
     )
     return (
       <>
-        {main}
+        { itemData!==undefined && main}
       </>
     )
 

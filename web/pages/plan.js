@@ -2,7 +2,7 @@ import Head from 'next/head'
 import Container from '../components/container'
 import Navigation from '../components/navigation'
 import Layout from '../components/layout'
-import { getItem, getItemList, setItem, getImageByReference } from '../lib/api'
+import { getHostname, getItem, getItemList, setItem, getImageByReference } from '../lib/api'
 import { useState } from 'react'
 
 export default function PlanPage(data) {
@@ -14,6 +14,7 @@ export default function PlanPage(data) {
   getItemList('/', setPersistentStates)
   const [ showOverlay, setShowOverlay ] = useState(false)
   const [ password, setPassword ] = useState(persistentStates?.password)
+  const [ hostname, setHostname ] = useState()
   const downflowActions = {
       setPassword: setPassword,
       setShowOverlay: setShowOverlay,
@@ -24,6 +25,7 @@ export default function PlanPage(data) {
   }
   setItem('/', tmpData)
   getItem(persistentStates, setPassword, 'password')
+  getHostname(setHostname)
 
   const main = (
     <Navigation page="plan" password={password} actions={downflowActions}/>
@@ -34,7 +36,7 @@ export default function PlanPage(data) {
         <title> no idea for this title </title>
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
       </Head>
-      <Layout index={false} bgImgAndSetting={bgImgAndSetting}>
+      <Layout index={false} bgImgAndSetting={bgImgAndSetting} hostname={hostname}>
         {main}
       </Layout>
     </div>
