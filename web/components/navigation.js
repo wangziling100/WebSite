@@ -3,6 +3,7 @@ import cn from 'classnames'
 import Router, { useRouter } from 'next/router'
 import { useState } from 'react'
 import { Overlay } from '../components/overlay'
+import { Image } from 'react-datocms'
 
 export default function Navigation({ page, password, actions, states, logo}){
     // Variable
@@ -31,11 +32,14 @@ export default function Navigation({ page, password, actions, states, logo}){
     const logInOutAction = () => {
         (password===undefined || password==="")?loginAction():logoutAction()
     }
+    console.log(logo)
 
     const nav = (
         <>
         <div className={cn("p-4 ", {"text-white": page=="index",}, 'flex', 'justify-between')}>
           <div className="flex flex-raw items-center justify-start p-2 text-base font-serif-Georgia tracking-widest rounded-lg list-none ">
+            
+            { logo && <Image data={logo.image.responsiveImage}  className="w-24 h-10"/> }
             <div className={cn({"underline": page=="index"})}>
                 <a className="px-4 hover:underline cursor-pointer" onClick={()=>Router.push('/index')}>Home</a>
             </div >

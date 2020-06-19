@@ -18,6 +18,7 @@ export default function IdeaPage(props) {
   const noticeContent = props.data.ideaItemTitle[0].content
   const setting=["bg-repeat-y"]
   const bgImgAndSetting={img, setting}
+  const logo = props.data.logo
 
   // States
   const [ persistentStates, setPersistentStates ] = useState()
@@ -52,7 +53,7 @@ export default function IdeaPage(props) {
   const main = (
   
     <>
-      <Navigation page="idea" password={password} actions={downflowActions}/>
+      <Navigation page="idea" password={password} actions={downflowActions} logo={logo}/>
       <Notice title={noticeTitle} content={noticeContent} />
       <div className="mt-6">
         <div className="flex mx-12 mb-2 justify-end">
@@ -83,6 +84,7 @@ export async function getStaticProps({ preview=false }){
   let ideaItemTitle = (await getItemByReference("idea_item_title", preview))
   let ideaItem = (await getItemByReference("idea_item", preview))
   let comments = (await getItemByReference("idea_comment", preview))
+  let logo = await getImageByReference('logo', preview)
   for (let e of ideaItem){
       e.originContent = e.content
       e.content = await markdownToHtml(e.content || '')
@@ -93,7 +95,7 @@ export async function getStaticProps({ preview=false }){
           }
       }
   }
-  const data = {ideaBg, ideaItemTitle, ideaItem}
+  const data = {ideaBg, ideaItemTitle, ideaItem, logo}
   ideaItemTitle[0].content = await markdownToHtml(ideaItemTitle[0].content || '')
   return{
     props: {
