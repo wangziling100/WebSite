@@ -48,7 +48,7 @@ export default function IndexPage(data) {
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
       </Head>
         <LinearAppear duration="6s">
-          <Layout bgImgAndSetting={bgImgAndSetting} index={true}> 
+          <Layout bgImgAndSetting={bgImgAndSetting} page={'index'}> 
             {main} 
             
           </Layout> 

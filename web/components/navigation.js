@@ -4,12 +4,8 @@ import Router, { useRouter } from 'next/router'
 import { useState } from 'react'
 import { Overlay } from '../components/overlay'
 
-export default function Navigation({ page, password, actions, states}){
+export default function Navigation({ page, password, actions, states, logo}){
     // Variable
-    //const router = useRouter()
-    //const showOverlay = router.query.showOverlay || false
-    //const option = router.query.option || ""
-    //const showOverlay = false
     const [ showOverlay, setShowOverlay ] = useState(false)
     const [ option, setOption ] = useState("")
     const path = '/' + page

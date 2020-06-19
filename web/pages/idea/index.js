@@ -71,7 +71,7 @@ export default function IdeaPage(props) {
         <title> no idea for this title </title>
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
       </Head>
-      <Layout index={false} bgImgAndSetting={bgImgAndSetting} hostname={hostname}>
+      <Layout page={'idea'} bgImgAndSetting={bgImgAndSetting} hostname={hostname}>
         {main}
       </Layout>
     </div>
