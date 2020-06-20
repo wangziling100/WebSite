@@ -1,5 +1,4 @@
 import Router from 'next/router'
-import markdownToHtml from '../lib/markdownToHtml'
 import Markdown from '../components/markdown'
 import { useState } from 'react'
 import cn from 'classnames'

@@ -1,6 +1,6 @@
 import {useState, useRef} from 'react'
 import cn from 'classnames'
-export default function Input({value, setValue, placeholder, setState, css=[], type='text'}){
+export default function Input({value, setValue, setState, placeholder='write something...', css=[], type='text'}){
   const [ compose, setCompose ] = useState(false)
   const [ focus, setFocus ] = useState(false)
   const ref = useRef(null)
@@ -33,7 +33,6 @@ export default function Input({value, setValue, placeholder, setState, css=[], t
     <>
       <input className={cn(...defaultCSS, ...css, )} 
              placeholder={placeholder} 
-             css={css} 
              type={type}
              onChange={onChange}
              onCompositionStart={startCompose} 

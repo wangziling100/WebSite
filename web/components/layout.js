@@ -72,11 +72,11 @@ function SidebarLayout({top, left, right, hostname}){
           <Container>
             <main>{top}</main>
           </Container>
-          <div className="relative flex w-full h-screen overflow-hidden antialiased bg-gray-200 border-t">
+          <div className="relative flex w-full h-screen overflow-auto antialiased bg-gray-200 border-t">
             <div className="relative flex flex-col h-full bg-white border-r border-gray-300 shadow-xl md:block w-1/5" >
               {left}
             </div>
-            <div className="right-0 flex flex-col pb-2 bg-white border-l border-gray-300 xl:block w-5/6 overflow-hidden">
+            <div className="right-0 flex flex-col pb-2 bg-white border-l border-gray-300 xl:block w-5/6 overflow-auto">
               {right}
             </div>
           </div>
