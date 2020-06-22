@@ -61,7 +61,9 @@ exports.lambdaHandler = async (event, context) =>{
                 contributor: data.contributor,
                 tag: data.tag,
                 itemStatus: data.itemStatus,
-                version: data.version
+                version: data.version,
+                layer: data.layer,
+                parents: data.parents,
             })
         }else if(data.option==='delete' && data.password===password){
             await client.items.destroy(data.id)
