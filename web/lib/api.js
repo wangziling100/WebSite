@@ -73,6 +73,8 @@ export async function getItemByReference( ref, preview=false ){
         evaluation
         allowPriorityChange
         version
+        layer
+        parents
       }
     }
   `

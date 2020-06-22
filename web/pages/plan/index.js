@@ -2,14 +2,17 @@ import Head from 'next/head'
 import Container from '../../components/container'
 import Navigation from '../../components/navigation'
 import Layout from '../../components/layout'
-import { getHostname, getItem, getItemList, setItem, getImageByReference } from '../../lib/api'
+import { sendData, getHostname, getItem, getItemList, setItem, getImageByReference, getItemByReference } from '../../lib/api'
 import { useState } from 'react'
 import { PlanItem, PlanLayer } from '../../components/plans'
 import cn from 'classnames'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import { faArrowAltCircleRight, faArrowAltCircleDown } from '@fortawesome/free-regular-svg-icons'
+import {faPlus} from '@fortawesome/free-solid-svg-icons'
 
 export default function PlanPage(data) {
+  // Variables
+  const isTest = true
   const logo = data.logo
   const setting=[]
   let children = {}
@@ -29,6 +32,7 @@ export default function PlanPage(data) {
       setPassword: setPassword,
       setShowOverlay: setShowOverlay,
   }
+  const [ showNew, setShowNew ] = useState(false)
   // Persist data
   const tmpData = {
       password: password,
@@ -36,7 +40,21 @@ export default function PlanPage(data) {
   setItem('/', tmpData)
   getItem(persistentStates, setPassword, 'password')
   getHostname(setHostname)
-  // components
+  // Actions
+  const addNewAction = () => {
+      setShowNew(!showNew)
+  }
+  const deleteAction = (id, layer) => {
+      console.log(id, data.layers[layer])
+      postData = {
+          option: 'test',
+      }
+      sendData(postData, isTest)
+
+  }
+  //data
+  let layers = data.layers
+  // dummy data
   let testData = {}
   testData['title'] = 'test'
   testData['target'] =  'target target..............'
@@ -105,12 +123,16 @@ export default function PlanPage(data) {
   const layer1 = [testData, testData2]
   const layer2 = [testData3, testData4, testData5]
   const layer3 = [testData6, testData7, testData8, testData9]
-  const layers = [layer1, layer2, layer3]
+  //const layers = [layer1, layer2, layer3]
   const actions = {
       setSelectedId: setSelectedId,
+      deleteAction: deleteAction,
   }
+  const actionsNew = {
+      setShowNew: setShowNew,
+  }
+  // componets
   let allLayers = []
-  console.log('plan', parents, '#layer', allLayers.length)
   for (let index in layers){
       const layer = layers[index]
       const items = []
@@ -124,17 +146,24 @@ export default function PlanPage(data) {
           }
       }
       if (items[0] !== undefined){
-          console.log('items', items)
           parents = items[0].id
-          allLayers.push(<PlanLayer items={items} actions={actions} layer={index} key={items[0].layer}/>)
-          console.log('#layers2', allLayers.length)
+          allLayers.push(<PlanLayer items={items} actions={actions} layer={index} key={items[0].layer} password={password}/>)
+          allLayers.push(<FontAwesomeIcon icon={faArrowAltCircleDown} className="w-5 h-5 ml-5 cursor-pointer" key={index+'arrowdown'}/>) 
       }
       
   }
 
+  allLayers.splice(allLayers.length-1, 1)
+
   const right = (
     <>
       {allLayers}
+      {/*new a child plan*/}
+      <FontAwesomeIcon icon={faPlus} className="w-5 h-5 ml-5 cursor-pointer" title={'new a child plan'} onClick={addNewAction} />
+      { showNew &&
+
+        <PlanItem editStatus={true} parents={parents} layer={parseInt((allLayers.length+1)/2)} actions={actionsNew}/>
+      }
     </>
   )
 
@@ -150,8 +179,6 @@ export default function PlanPage(data) {
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
       </Head>
       <Layout page={'plan'}  hostname={hostname} children={children}/>
-        
-      
     </div>
   )
 }
@@ -159,7 +186,24 @@ export default function PlanPage(data) {
 export async function getStaticProps({ preview=false }){
   const ideaBg = (await getImageByReference("idea_bg", preview))
   const logo = await getImageByReference("logo", preview)
-  const data = {logo}
+  const allItems = await getItemByReference("plan_item", preview)
+  // seperate items in layer
+  let layers = {}
+  for (let i of allItems){
+      if (layers[i.layer]===undefined) {
+          layers[i.layer] = []
+      }
+      layers[i.layer].push(i)
+  }
+
+  let tmp = []
+  let n=0
+  while (n<Object.keys(layers).length){
+      tmp.push(layers[n.toString()])
+      n++
+  }
+  layers = tmp
+  const data = {logo, layers}
   return{
     props: data,
   }

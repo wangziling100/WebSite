@@ -1,14 +1,16 @@
 import cn from 'classnames'
 import { useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCrosshairs, faHiking, faStar, faExclamationCircle, faHourglassEnd, faClock, faHistory, faAngleLeft, faAngleDown, faAngleDoubleRight, faAngleDoubleLeft, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { faCrosshairs, faHiking, faStar, faExclamationCircle, faHourglassEnd, faClock, faHistory, faAngleLeft, faAngleDown, faAngleDoubleRight, faAngleDoubleLeft, faPlus, faArrowAltCircleDown } from '@fortawesome/free-solid-svg-icons'
 import Input from '../components/input'
 import Select from '../components/select'
 import Markdown from '../components/markdown'
 import TextArea from '../components/textarea'
+import { sendData } from '../lib/api'
 
-export function PlanItem({data, layer, editStatus, actions, father, brother, selected=false}){
+export function PlanItem({data, layer, editStatus, actions, parents, brother, password, selected=false}){
   // Variables
+  const isTest = true
   const diffcultySelect = [
     'Have all details',
     'Have idea and schedule but no details',
@@ -65,6 +67,30 @@ export function PlanItem({data, layer, editStatus, actions, father, brother, sel
   function getTitle(e){
       !compose && setTitle(e.target.value)
   } 
+
+  const submit = async () =>{
+      let form = {
+          "title": title,
+          "content": content,
+          "tag": null,
+          "priority": parseInt(priority)+1,
+          "completeness":0,
+          "startTime": null,
+          "evaluation": null,
+          "allowPriorityChange": false,
+          "ref": "plan_new",
+          "refId": null,
+          "owner": null,
+          "contributor": null,
+          "itemStatus": "active",
+          "version": 0,
+          "password": password,
+          "layer": layer,
+          "parents": parents,
+              
+      }
+      await sendData(form, isTest)
+  }
   if (tmpData!==undefined){
       tmpData.then(v=>setContent(v))
   }
@@ -78,10 +104,15 @@ export function PlanItem({data, layer, editStatus, actions, father, brother, sel
   const confirmAction = () =>{
       setEdit(false)
       actions?.setShowNew && actions.setShowNew(false)
+      submit()
   }
   const cancelAction = () =>{
       setEdit(false)
       actions?.setShowNew && actions.setShowNew(false)
+  }
+  const deleteAction = () =>{
+      console.log('here')
+      actions?.deleteAction && actions.deleteAction(data.id, data.layer)
   }
   if (data===undefined) selected=true
 
@@ -90,6 +121,9 @@ export function PlanItem({data, layer, editStatus, actions, father, brother, sel
       <div className="m-2 px-2 border-2 border-gray-800 max-w-lg">
         {/* head */}
         <div className="flex justify-end">
+          <div className={cn(...text3CSS, {'hidden':edit})} onClick={deleteAction}>
+            delete
+          </div>
           <div className={cn(...text3CSS, {'hidden':selected})} onClick={selectAction}>
             select
           </div>
@@ -105,7 +139,7 @@ export function PlanItem({data, layer, editStatus, actions, father, brother, sel
         </div>
         <div className="flex flex-none justify-between" >
           <div className={cn({'hidden': edit}, ...text1CSS, 'cursor-pointer', 'w-full')} onClick={()=>setShowBody(!showBody)}>
-            {title}
+            {title || 'you need a title'}
           </div>
           <div className={cn({'hidden':!edit}, ...flexCSS)}>
             <div> Title:</div>
@@ -121,7 +155,7 @@ export function PlanItem({data, layer, editStatus, actions, father, brother, sel
           {/*target*/}
           <div className={cn(...text2CSS, ...flexCSS)} >
             <FontAwesomeIcon icon={faCrosshairs} className={cn(...iconCSS)} title={'Target'} />
-            <div className={cn({'hidden':!showTarget})} onClick={()=>setShowTarget(false)}> {target} </div>
+            <div className={cn({'hidden':!showTarget})} onClick={()=>setShowTarget(false)}> {target || "what's your target?"} </div>
             <Input value={target} setValue={setTarget} css={[{'hidden':showTarget}]} setState={()=>setShowTarget(true)}/>
           </div>
           {/*difficutly*/}
@@ -170,8 +204,9 @@ export function PlanItem({data, layer, editStatus, actions, father, brother, sel
           {
             showContent &&
             <div>
-              <div className={cn({'hidden':!showDetails})} onClick={()=>setShowDetails(false)}>
+              <div className={cn({'hidden':!showDetails}, )} onClick={()=>setShowDetails(false)}>
                 <Markdown content={content} />
+                {content.length<=1 && 'Enter something'}
               </div>
               <TextArea value={originalContent} setValue={setOriginalContent} setHtml={setTmpData} css={[{'hidden':showDetails}]} setState={()=>setShowDetails(true)} />
               <div className={cn({'hidden':showDetails}, 'flex')}>
@@ -191,7 +226,7 @@ export function PlanItem({data, layer, editStatus, actions, father, brother, sel
 }
 
 
-export function PlanLayer({items, layer, actions}){
+export function PlanLayer({items, layer, actions, password}){
     // CSS
     const flexCSS = ['flex', 'items-center', 'content-center' ]
     const iconCSS = ['mr-2', 'h-10', 'w-10']
@@ -203,21 +238,15 @@ export function PlanLayer({items, layer, actions}){
     let firstPlan
     const newKey = Math.random()
     // Actions
-    const actionsNew = {
-        setShowNew: setShowNew,
-    }
-    const actionsRest = {
-        setItem: setSelectedItem,
-        setSelectedId: actions.setSelectedId,
-        setSelectedLayer: actions.setSelectedLayer
-    }
+    
     const actionsNext = {
         setSelectedId: actions.setSelectedId,
         setShowNew: setShowNew,
+        deleteAction: actions.deleteAction,
     }
     // all children items
     for (let i of items){
-        plans.push(<PlanItem data={i} key={i.id} actions={actionsNext} layer={layer}/>)
+        plans.push(<PlanItem data={i} key={i.id} actions={actionsNext} layer={layer} password={password}/>)
     }
     firstPlan = plans[0]
     plans.splice(0, 1)
@@ -233,14 +262,13 @@ export function PlanLayer({items, layer, actions}){
             </div>
             {/*new brother*/}
             <div className={cn({'hidden':!showNew})}> 
-              <PlanItem actions={actionsNext} layer={layer} editStatus={true} key={newKey} father={items[0].parents}/>
+              <PlanItem actions={actionsNext} layer={layer} editStatus={true} key={newKey} parents={items[0].parents} password={password}/>
             </div>
           </div>
           <div className={cn(...flexCSS, 'bg-red-500', 'overflow-auto')}>
             {showBrother && plans}
           </div>
         </div>
-
     )
     return (
         <>

@@ -66,7 +66,9 @@ export function IdeaEditor({background, data, item, savedPassword, page}){
         "contributor": "",
         "itemStatus": "active",
         "version": 0,
-        "password" : password
+        "password" : password,
+        "layer": null,
+        "parents": null,
 
     }
     if (item && item.data.id !== undefined){

@@ -24,14 +24,13 @@ exports.lambdaHandler = async (event, context) =>{
         if(!isBase64){
             data = JSON.parse(event.body)
         }
-        //console.log('--------')
-        //console.log(data)
-        //console.log('---------')
+        console.log(typeof(data))
         if (data.option===undefined || data.option==='edit'){
             let tmpRef = data.ref
             if (data.password===password){
                 switch (data.ref){
                     case 'idea_new': tmpRef='idea_item'; break;
+                    case 'plan_new': tmpRef='plan_item'; break;
                 }
                 if (data.option==='edit'){
                     let historyRef
