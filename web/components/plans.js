@@ -1,13 +1,13 @@
 import cn from 'classnames'
 import { useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCrosshairs, faHiking, faStar, faExclamationCircle, faHourglassEnd, faClock, faHistory, faAngleLeft, faAngleDown } from '@fortawesome/free-solid-svg-icons'
+import { faCrosshairs, faHiking, faStar, faExclamationCircle, faHourglassEnd, faClock, faHistory, faAngleLeft, faAngleDown, faAngleDoubleRight, faAngleDoubleLeft, faPlus } from '@fortawesome/free-solid-svg-icons'
 import Input from '../components/input'
 import Select from '../components/select'
 import Markdown from '../components/markdown'
 import TextArea from '../components/textarea'
 
-export function PlanItem({data}){
+export function PlanItem({data, layer, editStatus, actions, father, brother, selected=false}){
   // Variables
   const diffcultySelect = [
     'Have all details',
@@ -33,21 +33,21 @@ export function PlanItem({data}){
   const month = (date.getMonth()+1).toString().padStart(2,'0')
   const day = date.getDate().toString().padStart(2,'0')
   const dateString = year+'-'+month+'-'+day
-  const [ title, setTitle ] = useState(data.title)
-  const [ target, setTarget ] = useState(data.target)
-  const [ edit, setEdit ] = useState(false)
+  const [ title, setTitle ] = useState(data?.title || "")
+  const [ target, setTarget ] = useState(data?.target || "")
+  const [ edit, setEdit ] = useState(editStatus || false)
   const [ compose, setCompose ] = useState(false)
-  const [ showBody, setShowBody ] = useState(false)
+  const [ showBody, setShowBody ] = useState(edit?false:true)
   const [ showTarget, setShowTarget ] = useState(true)
-  const [ difficulty, setDifficulty ] = useState(data.difficulty || diffcultySelect.length-1)
+  const [ difficulty, setDifficulty ] = useState(data?.difficulty || diffcultySelect.length-1)
   const [ priority, setPriority ] = useState(0)
   const [ urgency, setUrgency ] = useState(0)
-  const [ endDate, setEndDate ] = useState(data.endDate || dateString)
-  const [ duration, setDuration ] = useState(data.duration || 0)
-  const [ period, setPeriod ] = useState(data.period || 0)
-  const [ content, setContent ] = useState(data.content || 'Enter something')
+  const [ endDate, setEndDate ] = useState(data?.endDate || dateString)
+  const [ duration, setDuration ] = useState(data?.duration || 0)
+  const [ period, setPeriod ] = useState(data?.period || 0)
+  const [ content, setContent ] = useState(data?.content || 'Enter something')
   const [ tmpData, setTmpData ] = useState()
-  const [ originalContent, setOriginalContent ] = useState(data.originalContent || '')
+  const [ originalContent, setOriginalContent ] = useState(data?.originalContent || '')
   const [ showDetails, setShowDetails ] = useState(true)
   const [ showPeriod, setShowPeriod ] = useState(true)
   const [ showContent, setShowContent ] = useState(false)
@@ -57,6 +57,7 @@ export function PlanItem({data}){
   const flexCSS = ['flex', 'items-center', 'content-center' ]
   const text1CSS = ['text-lg', 'font-medium', 'break-all', 'my-1']
   const text2CSS = ['text-sm', 'break-all', 'my-1']
+  const text3CSS = ['ml-1', 'text-gray-400', 'text-sm', 'hover:text-blue-400', 'cursor-pointer']
   const iconCSS = ['mr-2', 'h-5', 'w-5']
   // Actions
   const startCompose = () => setCompose(true)
@@ -67,13 +68,38 @@ export function PlanItem({data}){
   if (tmpData!==undefined){
       tmpData.then(v=>setContent(v))
   }
+  const editAction = () =>{
+      setEdit(true)
+      setShowBody(false)
+  }
+  const selectAction = () =>{
+      actions?.setSelectedId && actions.setSelectedId(data.id)
+  }
+  const confirmAction = () =>{
+      setEdit(false)
+      actions?.setShowNew && actions.setShowNew(false)
+  }
+  const cancelAction = () =>{
+      setEdit(false)
+      actions?.setShowNew && actions.setShowNew(false)
+  }
+  if (data===undefined) selected=true
 
   const main = (
     <>
       <div className="m-2 px-2 border-2 border-gray-800 max-w-lg">
         {/* head */}
         <div className="flex justify-end">
-          <div className="text-gray-400 text-sm hover:text-blue-400 cursor-pointer" onClick={()=>setEdit(!edit)}>
+          <div className={cn(...text3CSS, {'hidden':selected})} onClick={selectAction}>
+            select
+          </div>
+          <div className={cn(...text3CSS, {'hidden':!edit})} onClick={cancelAction}>
+            cancel
+          </div>
+          <div className={cn(...text3CSS, {'hidden':!edit})} onClick={confirmAction}>
+            confirm
+          </div>
+          <div className={cn(...text3CSS, {'hidden':edit}, )} onClick={editAction}>
             edit
           </div>
         </div>
@@ -162,4 +188,63 @@ export function PlanItem({data}){
       {main}
     </>
   )
+}
+
+
+export function PlanLayer({items, layer, actions}){
+    // CSS
+    const flexCSS = ['flex', 'items-center', 'content-center' ]
+    const iconCSS = ['mr-2', 'h-10', 'w-10']
+    // Variables
+    const [ selectedItem, setSelectedItem ] = useState('')
+    let plans = []
+    const [showBrother, setShowBrother] = useState(false)
+    const [showNew, setShowNew] = useState(false)
+    let firstPlan
+    const newKey = Math.random()
+    // Actions
+    const actionsNew = {
+        setShowNew: setShowNew,
+    }
+    const actionsRest = {
+        setItem: setSelectedItem,
+        setSelectedId: actions.setSelectedId,
+        setSelectedLayer: actions.setSelectedLayer
+    }
+    const actionsNext = {
+        setSelectedId: actions.setSelectedId,
+        setShowNew: setShowNew,
+    }
+    // all children items
+    for (let i of items){
+        plans.push(<PlanItem data={i} key={i.id} actions={actionsNext} layer={layer}/>)
+    }
+    firstPlan = plans[0]
+    plans.splice(0, 1)
+
+    const main = (
+        <div className={cn(...flexCSS)}>
+          <div className={cn(...flexCSS, "bg-blue-500")}>
+            {firstPlan}
+            <div>
+              <FontAwesomeIcon icon={faPlus} className={cn('cursor-pointer', 'w-5', 'h-5', 'ml-2')} title={'add new plan'} onClick={()=>setShowNew(true)}/>
+              <FontAwesomeIcon icon={faAngleDoubleRight} className={cn(...iconCSS, 'cursor-pointer', {'hidden':showBrother})} title={'more'} onClick={()=>setShowBrother(true)}/>
+              <FontAwesomeIcon icon={faAngleDoubleLeft} className={cn(...iconCSS, 'cursor-pointer', {'hidden':!showBrother})} title={'less'} onClick={()=>setShowBrother(false)}/>
+            </div>
+            {/*new brother*/}
+            <div className={cn({'hidden':!showNew})}> 
+              <PlanItem actions={actionsNext} layer={layer} editStatus={true} key={newKey} father={items[0].parents}/>
+            </div>
+          </div>
+          <div className={cn(...flexCSS, 'bg-red-500', 'overflow-auto')}>
+            {showBrother && plans}
+          </div>
+        </div>
+
+    )
+    return (
+        <>
+          {main}
+        </>
+    )
 }
