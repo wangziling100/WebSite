@@ -29,7 +29,7 @@ sam local start-api > out 2>&1 &
 sleep 5
 context=$(bash push/tests/local/post_data.sh)
 response=$(echo "$context" | grep message)
-response=$(echo "$response" | sed 's/{"message":"\(.*\)".*}/\1/g')
+response=$(echo "$response" | sed 's/{"message":"\([^"]*\).*/\1/g')
 if [[ "$response" == "succeed" ]]; then
     echo "succeed"
 else

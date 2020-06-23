@@ -75,6 +75,12 @@ export async function getItemByReference( ref, preview=false ){
         version
         layer
         parents
+        target
+        difficulty
+        endDate
+        urgency
+        duration
+        period
       }
     }
   `
@@ -194,7 +200,11 @@ export async function getPostAndMorePosts(loc, preview) {
   )
   return data
 }
-export async function sendData(data, isTest){
+export async function sendData(data, isTest, refreshAction, refresh=false){
+    if (data instanceof Array){
+        data = {data: data}
+        console.log(data, 'data')
+    }
     const postData = JSON.stringify(data)
     let host
     let port
@@ -225,8 +235,12 @@ export async function sendData(data, isTest){
         res.setEncoding('utf8')
         res.on('data', (chunk) => {
             console.log('Response: '+chunk)
+            if (refresh) {
+                //window.location.reload()
+                refreshAction && refreshAction(JSON.parse(chunk))
+            }
         })
-    }).on('err',(e) => {
+    }).on('error',(e) => {
         console.log('Got error: ', e)
     })
     await req.write(postData)
@@ -271,4 +285,33 @@ export function getHostname(setFunction){
         hostname = window.location.hostname
         setFunction(hostname)
     },[hostname])
+}
+
+export function toItemFormat(data){
+    const tmp = {
+        id: data.id,
+        ref: data.ref,
+        refId: data.refId,
+        title: data.title,
+        content: data.content,
+        tag: data.tag,
+        owner: data.owner,
+        contributor: data.contributor,
+        priority: data.priority,
+        completeness: data.completeness,
+        itemStatus: data.itemStatus,
+        _createdAt: data._createdAt,
+        evaluation: data.evaluation,
+        allowPriorityChange: data.allowPriorityChange,
+        version: data.version,
+        layer: data.layer,
+        parents: data.parents,
+        target: data.target,
+        difficulty: data.difficulty,
+        urgency: data.urgency,
+        endDate: data.endDate,
+        duration: data.duration,
+        period: data.period,
+    }
+    return tmp
 }

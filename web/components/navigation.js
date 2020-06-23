@@ -32,7 +32,6 @@ export default function Navigation({ page, password, actions, states, logo}){
     const logInOutAction = () => {
         (password===undefined || password==="")?loginAction():logoutAction()
     }
-    console.log(logo)
 
     const nav = (
         <>
@@ -68,7 +67,7 @@ export default function Navigation({ page, password, actions, states, logo}){
         </div>
         {
           showOverlay && (option==='login') &&
-          <Overlay page={page} option='login' className='' password={password} actions={downflowActions}/>
+          <Overlay page={page} option='login' className='' password={password} actions={downflowActions} />
         }  
         </>
     )

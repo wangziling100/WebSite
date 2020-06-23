@@ -1,16 +1,22 @@
 import cn from 'classnames'
 import { useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCrosshairs, faHiking, faStar, faExclamationCircle, faHourglassEnd, faClock, faHistory, faAngleLeft, faAngleDown, faAngleDoubleRight, faAngleDoubleLeft, faPlus, faArrowAltCircleDown } from '@fortawesome/free-solid-svg-icons'
+import { faCrosshairs, faHiking, faStar, faExclamationCircle, faHourglassEnd, faClock, faHistory, faAngleLeft, faAngleDown, faAngleDoubleRight, faAngleDoubleLeft, faPlus, faArrowAltCircleDown, faTags } from '@fortawesome/free-solid-svg-icons'
 import Input from '../components/input'
 import Select from '../components/select'
 import Markdown from '../components/markdown'
 import TextArea from '../components/textarea'
 import { sendData } from '../lib/api'
+import { useDrag, useDrop } from 'react-dnd'
+import { Overlay } from '../components/overlay'
 
-export function PlanItem({data, layer, editStatus, actions, parents, brother, password, selected=false}){
+const ItemTypes = {
+    PLAN: 'plan'
+}
+
+export function PlanItem({data, layer, editStatus, actions, parents, brother, password, fold, selected=false}){
   // Variables
-  const isTest = true
+  const isTest = false
   const diffcultySelect = [
     'Have all details',
     'Have idea and schedule but no details',
@@ -41,18 +47,21 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
   const [ compose, setCompose ] = useState(false)
   const [ showBody, setShowBody ] = useState(edit?false:true)
   const [ showTarget, setShowTarget ] = useState(true)
-  const [ difficulty, setDifficulty ] = useState(data?.difficulty || diffcultySelect.length-1)
-  const [ priority, setPriority ] = useState(0)
-  const [ urgency, setUrgency ] = useState(0)
+  const [ itemStatus, setItemStatus ] = useState(data?.itemStatus || 'active')
+  const [ difficulty, setDifficulty ] = useState((data?.difficulty===undefined || data?.difficulty===null)? (diffcultySelect.length-1):data.difficulty)
+  const [ priority, setPriority ] = useState((data?.priority===undefined || data?.priority===null)? 0: data.priority)
+  const [ urgency, setUrgency ] = useState((data?.urgency===undefined || data?.urgency===null)? 0: data.urgency)
   const [ endDate, setEndDate ] = useState(data?.endDate || dateString)
-  const [ duration, setDuration ] = useState(data?.duration || 0)
-  const [ period, setPeriod ] = useState(data?.period || 0)
+  const [ duration, setDuration ] = useState((data?.duration==undefined || data?.duration===null)? 0: data.duration)
+  const [ period, setPeriod ] = useState((data?.period===undefined || data?.period===null)? 0: data.period)
+  const [ tags, setTags ] = useState(data?.tags || '')
   const [ content, setContent ] = useState(data?.content || 'Enter something')
   const [ tmpData, setTmpData ] = useState()
   const [ originalContent, setOriginalContent ] = useState(data?.originalContent || '')
-  const [ showDetails, setShowDetails ] = useState(true)
+  const [ showDetails, setShowDetails ] = useState(fold?.details===undefined? true: fold.details)
   const [ showPeriod, setShowPeriod ] = useState(true)
   const [ showContent, setShowContent ] = useState(false)
+  const [ showTags, setShowTags ] = useState(true)
 
   // CSS
   const inputCSS = ['ml-2', 'p-1', 'w-full', 'shadow', 'appearance-none', 'border', 'rounded', 'text-gray-700', 'leading-tight', 'focus:outline-none', 'focus:shadow-outline', 'focus:border-red-500']
@@ -69,27 +78,56 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
   } 
 
   const submit = async () =>{
-      let form = {
-          "title": title,
-          "content": content,
-          "tag": null,
-          "priority": parseInt(priority)+1,
-          "completeness":0,
-          "startTime": null,
-          "evaluation": null,
-          "allowPriorityChange": false,
-          "ref": "plan_new",
-          "refId": null,
-          "owner": null,
-          "contributor": null,
-          "itemStatus": "active",
-          "version": 0,
-          "password": password,
-          "layer": layer,
-          "parents": parents,
-              
+      if (data?.id===undefined){
+          const form = {
+              "title": title,
+              "content": content,
+              "tag": tags,
+              "priority": parseInt(priority),
+              "completeness":0,
+              "startTime": null,
+              "evaluation": null,
+              "allowPriorityChange": false,
+              "ref": "plan_new",
+              "refId": null,
+              "owner": null,
+              "contributor": null,
+              "itemStatus": "active",
+              "version": 0,
+              "password": password,
+              "layer": layer,
+              "parents": parents,
+              "target": target,
+              "difficulty": difficulty,
+              "urgency": urgency,
+              "endDate": endDate,
+              "duration": duration,
+              "period": period,
+                  
+          }
+          await sendData(form, isTest, actions.afterAddAction, true)
+          return
       }
-      await sendData(form, isTest)
+      if (data.id!==undefined){
+          const form = {
+              "title": title,
+              "content": content,
+              "tag": tags,
+              "priority": parseInt(priority),
+              "itemStatus": "active",
+              "password": password,
+              "target": target,
+              "difficulty": difficulty,
+              "urgency": urgency,
+              "endDate": endDate,
+              "duration": duration,
+              "period": period,
+              "id": data.id,
+              "option": "update",
+                  
+          }
+          await sendData(form, isTest)
+      }
   }
   if (tmpData!==undefined){
       tmpData.then(v=>setContent(v))
@@ -100,6 +138,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
   }
   const selectAction = () =>{
       actions?.setSelectedId && actions.setSelectedId(data.id)
+      actions?.setSelectedLayer && actions.setSelectedLayer(data.layer)
   }
   const confirmAction = () =>{
       setEdit(false)
@@ -110,17 +149,55 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
       setEdit(false)
       actions?.setShowNew && actions.setShowNew(false)
   }
-  const deleteAction = () =>{
-      console.log('here')
-      actions?.deleteAction && actions.deleteAction(data.id, data.layer)
+  const completeAction = () =>{
+      setItemStatus('completed')
   }
+  const activeAction = () =>{
+      setItemStatus('active')
+  }
+  const deleteAction = () =>{
+      actions.setSelectedItem(data)
+      actions.setShowOverlay(true)
+      actions.setOption('delete')
+  }
+  function attachRef(el){
+      drop(el)
+      end(el)
+  }
+  const [{isDragging}, end] = useDrag({
+      item: {type: ItemTypes.PLAN},
+      end: (el) => { 
+          actions.setDragSource({id:data.id, layer:data.layer})
+          return
+      },
+      collect: monitor => ({
+          isDragging: !!monitor.isDragging(),
+      }),
+  })
+  const [{ isOver }, drop] = useDrop({
+      accept: ItemTypes.PLAN,
+      drop: (el) => {
+          actions.setDropTarget({id:data.id, layer:data.layer})
+          return
+      },
+      collect: monitor => ({
+          isOver: !!monitor.isOver(),
+      }),
+  })
   if (data===undefined) selected=true
 
   const main = (
     <>
-      <div className="m-2 px-2 border-2 border-gray-800 max-w-lg">
+      <div className={cn("m-2", "px-2", "border-2", "border-gray-800", "max-w-lg", {'bg-black': itemStatus==='completed'}, {'bg-opacity-50': itemStatus==='completed'})} ref={attachRef} style={{
+          opacity: isDragging?0.5:1,
+          cursor: 'move',
+          background: isOver?'lightblue':'',
+      }}>
         {/* head */}
         <div className="flex justify-end">
+          <div className={cn(...text3CSS, {'hidden':edit}, )} onClick={itemStatus==="completed"?activeAction:completeAction}>
+            {itemStatus==="completed"?"active":"complete"}
+          </div>
           <div className={cn(...text3CSS, {'hidden':edit})} onClick={deleteAction}>
             delete
           </div>
@@ -193,9 +270,18 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
 
               <Input value={period} setValue={setPeriod} css={[{'hidden':showPeriod}]} setState={()=>setShowPeriod(true)}/>
 
-
             </div>
-            <div>
+            
+          </div>
+          {/*tags*/}
+          <div className={cn(...text2CSS, ...flexCSS, 'justify-between',)}>
+            <div className={cn('flex', 'w-9/10')}>
+              <FontAwesomeIcon icon={faTags} className={cn(...iconCSS,)} title={'Tags'} />
+              <div className={cn({'hidden':!showTags})} onClick={()=>setShowTags(false)}> {tags || 'your tags'} </div>
+              <Input value={tags} setValue={setTags} css={[{'hidden':showTags}]} setState={()=>setShowTags(true)}/>
+            </div>
+            {/*details symbol*/}
+            <div className="w-1/10">
               <FontAwesomeIcon icon={showContent?faAngleDown:faAngleLeft} className={cn(...iconCSS, 'cursor-pointer')} title={showContent?'Hide content':'Show content'} onClick={()=>setShowContent(!showContent)}/> 
             </div>
           </div>
@@ -231,7 +317,6 @@ export function PlanLayer({items, layer, actions, password}){
     const flexCSS = ['flex', 'items-center', 'content-center' ]
     const iconCSS = ['mr-2', 'h-10', 'w-10']
     // Variables
-    const [ selectedItem, setSelectedItem ] = useState('')
     let plans = []
     const [showBrother, setShowBrother] = useState(false)
     const [showNew, setShowNew] = useState(false)
@@ -242,7 +327,13 @@ export function PlanLayer({items, layer, actions, password}){
     const actionsNext = {
         setSelectedId: actions.setSelectedId,
         setShowNew: setShowNew,
-        deleteAction: actions.deleteAction,
+        setSelectedLayer: actions.setSelectedLayer,
+        afterAddAction: actions.afterAddAction,
+        setDragSource: actions.setDragSource,
+        setDropTarget: actions.setDropTarget,
+        setShowOverlay: actions.setShowOverlay,
+        setSelectedItem: actions.setSelectedItem,
+        setOption: actions.setOption,
     }
     // all children items
     for (let i of items){
@@ -253,7 +344,7 @@ export function PlanLayer({items, layer, actions, password}){
 
     const main = (
         <div className={cn(...flexCSS)}>
-          <div className={cn(...flexCSS, "bg-blue-500")}>
+          <div className={cn(...flexCSS, )}>
             {firstPlan}
             <div>
               <FontAwesomeIcon icon={faPlus} className={cn('cursor-pointer', 'w-5', 'h-5', 'ml-2')} title={'add new plan'} onClick={()=>setShowNew(true)}/>
@@ -265,7 +356,7 @@ export function PlanLayer({items, layer, actions, password}){
               <PlanItem actions={actionsNext} layer={layer} editStatus={true} key={newKey} parents={items[0].parents} password={password}/>
             </div>
           </div>
-          <div className={cn(...flexCSS, 'bg-red-500', 'overflow-auto')}>
+          <div className={cn(...flexCSS, 'overflow-auto')}>
             {showBrother && plans}
           </div>
         </div>

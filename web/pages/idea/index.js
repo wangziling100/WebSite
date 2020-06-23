@@ -3,7 +3,7 @@ import Link from 'next/link'
 import Container from '../../components/container'
 import Navigation from '../../components/navigation'
 import Layout from '../../components/layout'
-import { getHostname, getItem, getItemList, setItem, getItemByReference, getImageByReference } from '../../lib/api'
+import { sendData, getHostname, getItem, getItemList, setItem, getItemByReference, getImageByReference } from '../../lib/api'
 import { IdeaHeader, Ideas } from '../../components/ideas'
 import Notice from '../../components/notice'
 import Router, { useRouter } from 'next/router'
@@ -19,6 +19,7 @@ export default function IdeaPage(props) {
   const setting=["bg-repeat-y"]
   const bgImgAndSetting={img, setting}
   const logo = props.data.logo
+  const isTest = false
 
   // States
   const [ persistentStates, setPersistentStates ] = useState()
@@ -30,8 +31,19 @@ export default function IdeaPage(props) {
   const [ showOverlay, setShowOverlay ] = useState(false)
   const [ itemData, setItemData ] = useState()
   const [ hostname, setHostname ] = useState()
-
   const [ password, setPassword ] = useState(persistentStates?.password)
+  const [ id, setId ] = useState()
+  // Actions
+  const deleteAction = async (savedPassword) => {
+      const tmpPassword = password?password:savedPassword
+      let tmpData = {
+          "id": id,
+          "option": "delete",
+          "password": tmpPassword,
+      }
+      await sendData(tmpData, isTest)
+      setShowOverlay(false)
+  }
   const downflowActions = {
       setPassword: setPassword,
       setShowOverlay: setShowOverlay,
@@ -40,6 +52,8 @@ export default function IdeaPage(props) {
       setOption: setOption,
       setOverlayData: setOverlayData,
       setItemData: setItemData,
+      deleteAction: deleteAction,
+      setId: setId,
   }
   // Persist data
   const tmpData = {

@@ -80,7 +80,7 @@ export function IdeaItem({ data, password, actions, orderBy="priority", selected
   const [ deleted, setDeleted ] = useState(false)
   const isTest = false
   const path = '/idea'
-  
+
   // Actions
   const switchContentState = () => {
       setHideContent(!hideContent)
@@ -90,6 +90,7 @@ export function IdeaItem({ data, password, actions, orderBy="priority", selected
       actions.setOption("delete")
       actions.setShowOverlay(true)
       actions.setOverlayData({id: data.id, setDeleted: setDeleted})
+      actions.setId(data.id)
       
   }
 

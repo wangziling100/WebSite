@@ -2,17 +2,18 @@ import Head from 'next/head'
 import Container from '../../components/container'
 import Navigation from '../../components/navigation'
 import Layout from '../../components/layout'
-import { sendData, getHostname, getItem, getItemList, setItem, getImageByReference, getItemByReference } from '../../lib/api'
-import { useState } from 'react'
+import { toItemFormat, sendData, getHostname, getItem, getItemList, setItem, getImageByReference, getItemByReference } from '../../lib/api'
+import { useState, useEffect } from 'react'
 import { PlanItem, PlanLayer } from '../../components/plans'
 import cn from 'classnames'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import { faArrowAltCircleRight, faArrowAltCircleDown } from '@fortawesome/free-regular-svg-icons'
 import {faPlus} from '@fortawesome/free-solid-svg-icons'
+import { Overlay } from '../../components/overlay'
 
 export default function PlanPage(data) {
   // Variables
-  const isTest = true
+  const isTest = false
   const logo = data.logo
   const setting=[]
   let children = {}
@@ -20,6 +21,7 @@ export default function PlanPage(data) {
   // CSS
   const flexCSS = ['flex', 'items-center', 'content-center']
   const iconCSS = ['h-10', 'w-10']
+  const textCSS = [ 'm-5', 'text-xl', 'hover:text-blue-500', 'text-gray-800', 'cursor-pointer' ]
   // States
   const [ persistentStates, setPersistentStates ] = useState()
   getItemList('/', setPersistentStates)
@@ -28,10 +30,14 @@ export default function PlanPage(data) {
   const [ selectedId, setSelectedId ] = useState('')
   const [ selectedLayer, setSelectedLayer ] = useState()
   const [ hostname, setHostname ] = useState()
-  const downflowActions = {
-      setPassword: setPassword,
-      setShowOverlay: setShowOverlay,
-  }
+  const [ refresh, setRefresh ] = useState(false)
+  const [ dragSource, setDragSource ] = useState(null)
+  const [ dropTarget, setDropTarget ] = useState(null)
+  const [ selectedItem, setSelectedItem ] = useState(null)
+  const [ overlayOption, setOverlayOption ] = useState()
+  const [ sidebar, setSidebar ] = useState('PlanRoute')
+
+  
   const [ showNew, setShowNew ] = useState(false)
   // Persist data
   const tmpData = {
@@ -44,101 +50,201 @@ export default function PlanPage(data) {
   const addNewAction = () => {
       setShowNew(!showNew)
   }
-  const deleteAction = (id, layer) => {
-      console.log(id, data.layers[layer])
-      postData = {
-          option: 'test',
-      }
-      sendData(postData, isTest)
+  const findChildren = (id, layer) => {
+      const allInLayer = data.layers[layer+1]
+      let result = []
+      if (allInLayer===undefined) return []
+      for (let i of allInLayer){
+          if (i.parents===id){
+              const childrenResult = findChildren(i.id, i.layer)
+              const tmp = {
+                  id: i.id,
+                  layer: i.layer
+              }
+              result.push(tmp)
+              result = result.concat(childrenResult)
 
+          }
+      }
+      return result
   }
+  const findAncestors = (id, layer) => {
+      let ancestors = []
+      const searchArea = data.layers.slice(0, layer+1)
+      let i = searchArea.length - 1
+      let pointer = id
+      while (i>=0){
+          for (let item of searchArea[i]){
+              if (item.id === pointer){
+                  ancestors.splice(0, 0, pointer)
+                  pointer = item.parents
+              }
+          }
+
+          i = i-1
+      }
+      return ancestors
+  }
+
+  const deleteItemInLayer = (id, layer) => {
+      let tmp = data.layers[layer]
+      for (let i in tmp){
+          if (tmp[i].id===id){
+              tmp.splice(i,1)
+              break
+          } 
+      }
+  }
+
+  const updateItemInLayer = (id, layer, newData, layerDiff=1) => {
+      // layer is privious layer
+      let tmp = data.layers[layer]
+      for (let i in tmp){
+          if (tmp[i].id===id){
+              // deleted from provious layer
+              tmp.splice(i,1)
+              // add into new layer
+              data.layers[layer-layerDiff].push(newData)
+              break
+          }
+      }
+  }
+  const addItemInLayer = (layer, newData) => {
+      if (data.layers[layer] === undefined){
+          data.layers[layer] = []
+      }
+      data.layers[layer].push(newData)
+  }
+
+  const afterDeleteAction = (newData) => {
+      newData= newData.data
+      if (newData instanceof Array){
+          for (let i of newData){
+              if (i.option==='delete'){
+                  deleteItemInLayer(i.id, i.layer)
+                  continue
+              }
+              if (i.option==='update'){
+                  updateItemInLayer(i.id, i.layer+1, toItemFormat(i))
+                  continue
+              }
+          }
+      }
+      setRefresh(!refresh)
+  }
+  const afterAddAction = (newData) => {
+      newData = newData.data
+      addItemInLayer(newData.layer, newData)
+      setRefresh(!refresh)
+  }
+
+  const afterDragAction = (newData, layerDiff) =>{
+      newData = newData.data
+      if (newData instanceof Array){
+          for (let i of newData){
+              if (i.option==='update'){
+                  updateItemInLayer(i.id, i.layer+layerDiff, toItemFormat(i), layerDiff)
+                  continue
+
+              }
+          }
+      }
+      setRefresh(!refresh)
+  }
+
+  const deleteAction = (id, layer, parents) => {
+      let children = findChildren(id, layer)
+      let allOpt
+      const deleteOpt = {
+          id: id,
+          option: 'delete',
+          password: password,
+      }
+      for (let child of children){
+          if (parseInt(child.layer) === layer+1){
+              child.parents = parents
+          }
+          child.option = 'update'
+          child.layer = parseInt(child.layer) - 1
+          child.password = password
+      }
+      allOpt = children.concat([deleteOpt])
+      sendData(allOpt, isTest, afterDeleteAction, true)
+  }
+  const dragAction = (source, target) => {
+      let children = findChildren(source.id, source.layer)
+      const layerDiff = source.layer - (target.layer+1)
+      let allOpt = []
+      const targetOpt = {
+          id: source.id,
+          option: 'update',
+          password: password,
+          layer: source.layer - layerDiff,
+          parents: target.id,
+      }
+      allOpt.push(targetOpt) 
+      for (let child of children){
+          if (child.id===target.id) return
+          const tmpOpt = {
+              id: child.id,
+              option: 'update',
+              password: password,
+              layer: child.layer - layerDiff,
+          }
+          allOpt.push(tmpOpt)
+      }
+      const afterDragActionWrapper = (newData) => afterDragAction(newData, layerDiff)
+      sendData(allOpt, isTest, afterDragActionWrapper, true)
+  }
+
+  useEffect(()=>{
+      // drag item 
+      if (dragSource!==null && dropTarget!==null){
+          if (dragSource.id!==dropTarget.id){
+              dragAction(dragSource, dropTarget)
+          }
+          setDragSource(null)
+          setDropTarget(null)
+      }
+  }, [dragSource, dropTarget])
+
   //data
   let layers = data.layers
-  // dummy data
-  let testData = {}
-  testData['title'] = 'test'
-  testData['target'] =  'target target..............'
-  testData['id'] = 'test1'
-  testData['parents'] = 'root'
-  testData['layer'] = 0
+  let ancestors
   
-  let testData2 = {}
-  testData2['title'] = 'test2'
-  testData2['target'] = 'target'
-  testData2['id'] = 'test2'
-  testData2['parents'] = 'root'
-  testData2['layer'] = 0
-
-  let testData3 = {}
-  testData3['title'] = 'test3'
-  testData3['target'] = 'target'
-  testData3['id'] = 'test3'
-  testData3['parents'] = 'test1'
-  testData3['layer'] = 1
-
-  let testData4 = {}
-  testData4['title'] = 'test4'
-  testData4['target'] = 'target'
-  testData4['id'] = 'test4'
-  testData4['parents'] = 'test1'
-  testData4['layer'] = 1
-
-  let testData5 = {}
-  testData5['title'] = 'test5'
-  testData5['target'] = 'target'
-  testData5['id'] = 'test5'
-  testData5['parents'] = 'test2'
-  testData5['layer'] = 1
-
-  let testData6 = {}
-  testData6['title'] = 'test6'
-  testData6['target'] = 'target'
-  testData6['id'] = 'test6'
-  testData6['parents'] = 'test3'
-  testData6['layer'] = 2
-
-
-  let testData7 = {}
-  testData7['title'] = 'test7'
-  testData7['target'] = 'target'
-  testData7['id'] = 'test7'
-  testData7['parents'] = 'test3'
-  testData7['layer'] = 2
-
-  let testData8 = {}
-  testData8['title'] = 'test8'
-  testData8['target'] = 'target'
-  testData8['id'] = 'test8'
-  testData8['parents'] = 'test5'
-  testData8['layer'] = 2
-
-  let testData9 = {}
-  testData9['title'] = 'test9'
-  testData9['target'] = 'target'
-  testData9['id'] = 'test9'
-  testData9['parents'] = 'test5'
-  testData9['layer'] = 2
-
-
-  const layer1 = [testData, testData2]
-  const layer2 = [testData3, testData4, testData5]
-  const layer3 = [testData6, testData7, testData8, testData9]
-  //const layers = [layer1, layer2, layer3]
   const actions = {
       setSelectedId: setSelectedId,
-      deleteAction: deleteAction,
+      setSelectedLayer: setSelectedLayer,
+      afterAddAction: afterAddAction,
+      setDragSource: setDragSource,
+      setDropTarget: setDropTarget,
+      setShowOverlay: setShowOverlay,
+      setSelectedItem: setSelectedItem,
+      setOption: setOverlayOption,
   }
   const actionsNew = {
       setShowNew: setShowNew,
+      afterAddAction: afterAddAction,
+  }
+  const downflowActions = {
+      setPassword: setPassword,
+      setShowOverlay: setShowOverlay,
+      deleteAction: ()=>deleteAction(selectedItem.id, selectedItem.layer, selectedItem.parents),
+      setOption: setOverlayOption,
   }
   // componets
+  if (selectedId!==undefined){
+      ancestors = findAncestors(selectedId, selectedLayer)
+  }
+
   let allLayers = []
+  // construct each layer
   for (let index in layers){
       const layer = layers[index]
       const items = []
-      for (let i of layer ){
+      for (let i of layer){
           if (i.parents===parents){
-              if (i.id===selectedId){
+              if (ancestors[index]!==undefined && i.id===ancestors[index]){
                   items.splice(0, 0, i)
               }else{
                   items.push(i)
@@ -155,23 +261,55 @@ export default function PlanPage(data) {
 
   allLayers.splice(allLayers.length-1, 1)
 
-  const right = (
+  const planRoute = (
     <>
       {allLayers}
       {/*new a child plan*/}
       <FontAwesomeIcon icon={faPlus} className="w-5 h-5 ml-5 cursor-pointer" title={'new a child plan'} onClick={addNewAction} />
       { showNew &&
 
-        <PlanItem editStatus={true} parents={parents} layer={parseInt((allLayers.length+1)/2)} actions={actionsNew}/>
+        <PlanItem editStatus={true} parents={parents} layer={parseInt((allLayers.length+1)/2)} actions={actionsNew} password={password}/>
       }
     </>
   )
+  const topPlan = (
+    <>
+      <div>
+        <PlanItem editStatus={true} />
+      </div>
+    </>
+  )
+  const dailySummary= (
+    <>
+    </>
+  )
+  const left = (
+    <>
+      <div className={cn(...textCSS)} onClick={()=>setSidebar('PlanRoute')}>
+        Plan Road
+      </div>
+      <div className={cn(...textCSS)} onClick={()=>setSidebar('TopPlan')}>
+        Top Plan
+      </div>
+      <div className={cn(...textCSS)} onClick={()=>setSidebar('DailySummary')}>
+        Daily Summary
+      </div>
+    </>
+  )
+  let right
+  switch (sidebar){
+      case 'PlanRoute': right=planRoute; break;
+      case 'TopPlan': right=topPlan; break;
+      case 'dailySummary': right=dailySummary; break;
+  }
 
   const main = (
     <Navigation page="plan" password={password} actions={downflowActions} logo={logo}/>
   )
+
   children['top'] = main
   children['right'] = right
+  children['left'] = left
   return (
     <div>
       <Head>
@@ -179,6 +317,10 @@ export default function PlanPage(data) {
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
       </Head>
       <Layout page={'plan'}  hostname={hostname} children={children}/>
+      { 
+          showOverlay && 
+          <Overlay page='plan' option={overlayOption} actions={downflowActions}/>
+      }
     </div>
   )
 }

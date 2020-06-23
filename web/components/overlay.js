@@ -14,11 +14,11 @@ export function Overlay({ page, option, overlayData, password, actions }){
     }
     return(
         <>
-            { (page==='idea')  && (option==='delete') &&
+            { (option==='delete') &&
                 <Style1 child={child} page={page} password={password} actions={actions}/> 
             }
             { (option=='login') &&
-                <Style1 child={child} page={page} password={password} actions={actions}/>
+                <Style1 child={child} page={page} password={password} actions={actions} />
             }
             { (option=='disclaimer') &&
                 <Style2 child={child} actions={actions}/> 
@@ -70,8 +70,13 @@ function LoginWnd({ actions }){
 
 function DeleteWnd({ page, data, savedPassword, actions }){
     // Variable
+    let text
+    switch (page){
+        case 'idea': text='idea'; break;
+        case 'plan': text='plan'; break;
+    }
     const [ password, setPassword ] = useState("")
-    let id = data.id
+    //let id = data.id
     let isTest = false
     const path = '/' + page
     // CSS
@@ -80,17 +85,9 @@ function DeleteWnd({ page, data, savedPassword, actions }){
     // Actions
     
     const confirmOpt = async () => {
-        const tmpPassword = password?password:savedPassword
-        let tmpData = {
-          "id": id,
-          "option": "delete",
-          "password": tmpPassword,
-        }
-
-        await sendData(tmpData, isTest)
-        returnAction()
-        data.setDeleted(true)
-        
+        actions.deleteAction(savedPassword)
+        actions.setShowOverlay && actions.setShowOverlay(false)
+        actions.setOption && actions.setOption("")
     }
 
     const getPassword = e => { setPassword(e.target.value) }
@@ -101,7 +98,7 @@ function DeleteWnd({ page, data, savedPassword, actions }){
 
     return(
       <div className="text-center flex flex-wrap">
-        <div className="w-full mt-2 font-semibold text-red-600 text-xl">Do you want to delete the idea?</div>
+        <div className="w-full mt-2 font-semibold text-red-600 text-xl">Do you want to delete the {text}?</div>
         <div className="flex mt-5 w-full">
           <div className={cn('mt-2', 'p-2', 'ml-4')}> Password: </div>
           <input className={cn(...inputCSS, 'mr-10')} id='password' type='password' placeholder='your password' onChange={(e)=>getPassword(e)}/>
@@ -120,7 +117,6 @@ function DeleteWnd({ page, data, savedPassword, actions }){
 }
 
 function DisclaimerWnd({hostname}){
-    console.log('overlay', hostname)
     const text1CSS = ['text-center', 'text-xl', 'font-semibold']
     const text2CSS = ['py-1']
     const text3CSS = ['py-2', 'text-center', 'font-medium']
@@ -166,7 +162,7 @@ function Style1({ child, page, actions}){
     return(
       <>
         {/* overlay */}
-        <div className={cn('fixed', 'top-0', 'left-0', 'flex', 'flex-wrap', 'w-screen', 'h-screen')}>
+        <div className={cn('fixed', 'top-0', 'left-0', 'flex', 'flex-wrap', 'w-screen', 'h-screen', 'z-40')}>
           <div className={cn(...overlayCSS, 'w-full', 'h-2/7')} onClick={hideOverlay}>
           </div>
 
@@ -180,6 +176,7 @@ function Style1({ child, page, actions}){
           </div>
           <div className={cn(...overlayCSS, 'w-full', 'h-3/5')} onClick={hideOverlay} ></div>
         </div>
+        
       </>
     )
 

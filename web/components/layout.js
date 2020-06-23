@@ -4,9 +4,10 @@ import Header from '../components/header'
 import Container from '../components/container'
 import Background from '../components/background'
 import cn from 'classnames'
+import { DndProvider } from 'react-dnd'
+import { HTML5Backend } from 'react-dnd-html5-backend'
 
 export default function Layout({ bgImgAndSetting, children , hostname, page }) {
-  console.log(page)
   let main
   switch (page){
       case 'index': main = <IndexLayout bg={bgImgAndSetting} children={children} />; break;
@@ -77,7 +78,9 @@ function SidebarLayout({top, left, right, hostname}){
               {left}
             </div>
             <div className="right-0 flex flex-col pb-2 bg-white border-l border-gray-300 xl:block w-5/6 overflow-auto">
-              {right}
+              <DndProvider backend={HTML5Backend}>
+                {right}
+              </DndProvider>
             </div>
           </div>
           <Footer hostname={hostname} />

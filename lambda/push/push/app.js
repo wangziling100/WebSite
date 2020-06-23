@@ -6,8 +6,10 @@ let response
 let atob = require('atob')
 
 const processData = async (data) => {
+    let res 
     if (data.option===undefined || data.option==='edit'){
         let tmpRef = data.ref
+
         if (data.password===password){
             switch (data.ref){
                 case 'idea_new': tmpRef='idea_item'; break;
@@ -17,6 +19,7 @@ const processData = async (data) => {
                 let historyRef
                 switch (data.ref){
                     case 'idea_new': historyRef='idea_history'; break;
+                    case 'plan_new': historyRef='plan_history'; break
                 }
                 await client.items.update(data.refId, {
                     ref: historyRef,
@@ -26,7 +29,7 @@ const processData = async (data) => {
             }
 
         }
-        await client.items.create({
+        res = await client.items.create({
             itemType: "238671",
             title: data.title,
             content: data.content,
@@ -44,33 +47,63 @@ const processData = async (data) => {
             version: data.version,
             layer: data.layer,
             parents: data.parents,
+            target: data.target,
+            difficulty: data.difficulty,
+            urgency: data.urgency,
+            endDate: data.endDate,
+            duration: data.duration,
+            period: data.period,
         })
-    }else if(data.option==='delete' && data.password===password){
-        await client.items.destroy(data.id)
+        res.option = 'create'
+        return res
+    }
+
+    if(data.option==='delete' && data.password===password){
+        res = await client.items.destroy(data.id)
             .catch((error) => {
                 console.error(error);
             })
+        return {id: res.id, layer: res.layer, option: 'delete'}
+    }
 
-    }else if(data.option==='completed' && data.password===password){
-        await client.items.update(data.id, {
+    if(data.option==='completed' && data.password===password){
+        res = await client.items.update(data.id, {
             itemStatus: "completed",
         }).catch((err) => {
             console.error(err)
         })
-    }else if(data.option==='active' && data.password===password){
-        await client.items.update(data.id, {
+        res.option = 'completed'
+        return res
+    }
+
+    if(data.option==='active' && data.password===password){
+        res = await client.items.update(data.id, {
             itemStatus: "active",
         }).catch((err) => {
             console.error(err)
         })
-    }else{
-        console.log('unknown option')
+        res.option = 'active'
+        return res
+    }
+    
+    if(data.option==='update' && data.password===password){
+        let tmp = Object.assign({}, data)
+        delete tmp.option
+        delete tmp.id
+        delete tmp.password
+        res = await client.items.update(data.id, tmp)
+        .catch((err) =>{
+            console.error(err)
+        })
+        res.option = 'update'
+        return res
     }
 }
 exports.lambdaHandler = async (event, context) =>{
     
     try{
         let isBase64 = false
+        let res
         try{
             let tmp = atob(event.body)
             data = JSON.parse(tmp)
@@ -89,20 +122,22 @@ exports.lambdaHandler = async (event, context) =>{
         }
 
         if (data.data === undefined){
-            await processData(data)
+            res = await processData(data)
         }else{
             // array
+            res = []
             for (element of data.data){
-                await processData(element)
+                const tmp = await processData(element)
+                res.push(tmp)
             }
         }
                 
-	// const ret = await axios(url);
         response = {
             'statusCode': 200,
             'headers': {"Access-Control-Allow-Origin":"*", "Access-Control-Allow-Headers": "Content-Type",},
             'body': JSON.stringify({
                 message: 'succeed',
+                data: res,
                 // location: ret.data.trim()
             })
         }
