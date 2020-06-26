@@ -39,5 +39,5 @@ jobs:
           ${{ runner.os }}-build-${{ env.cache-name }}-
           ${{ runner.os }}-build-
           ${{ runner.os }}-
-    - run: npm install && npm run build
+    - run: yarn && npm run build
       working-directory: ./web

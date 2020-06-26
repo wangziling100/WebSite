@@ -13,7 +13,8 @@ sam build
 # unit test
 echo '---------- unit test ---------'
 cd push 
-npm install --no-optional > /dev/null
+#npm install --no-optional > /dev/null
+yarn
 context=$(npm test) 
 #echo "$result"
 result=$(echo "$context" | egrep "passing|failing|pending")
