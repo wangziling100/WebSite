@@ -10,6 +10,8 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import { faArrowAltCircleRight, faArrowAltCircleDown } from '@fortawesome/free-regular-svg-icons'
 import {faPlus} from '@fortawesome/free-solid-svg-icons'
 import { Overlay } from '../../components/overlay'
+import { TopPlan } from '../../components/top-plan'
+import { compare, getDateDiff, s2Time } from '../../lib/tools'
 
 export default function PlanPage(data) {
   // Variables
@@ -117,6 +119,7 @@ export default function PlanPage(data) {
   }
 
   const afterDeleteAction = (newData) => {
+      if (newData === undefined || newData === null) return
       newData= newData.data
       if (newData instanceof Array){
           for (let i of newData){
@@ -211,7 +214,6 @@ export default function PlanPage(data) {
   //data
   let layers = data.layers
   let ancestors
-  
   const actions = {
       setSelectedId: setSelectedId,
       setSelectedLayer: setSelectedLayer,
@@ -272,13 +274,7 @@ export default function PlanPage(data) {
       }
     </>
   )
-  const topPlan = (
-    <>
-      <div>
-        <PlanItem editStatus={true} />
-      </div>
-    </>
-  )
+  
   const dailySummary= (
     <>
     </>
@@ -294,12 +290,15 @@ export default function PlanPage(data) {
       <div className={cn(...textCSS)} onClick={()=>setSidebar('DailySummary')}>
         Daily Summary
       </div>
+      <div className={cn(...textCSS)} onClick={()=>setSidebar('Setting')}>
+        Setting
+      </div>
     </>
   )
   let right
   switch (sidebar){
       case 'PlanRoute': right=planRoute; break;
-      case 'TopPlan': right=topPlan; break;
+      case 'TopPlan': right=<TopPlan businessPlan={data.businessPlan} privatePlan={data.privatePlan} password={password}/>; break;
       case 'dailySummary': right=dailySummary; break;
   }
 
@@ -345,7 +344,38 @@ export async function getStaticProps({ preview=false }){
       n++
   }
   layers = tmp
-  const data = {logo, layers}
+  // set order
+  let ordered = []
+  const coeff = 0.8
+  for (let i of allItems){
+      const stdPriority = i.priority/4
+      const endDate = i.endDate
+      const diffDate = getDateDiff(endDate)
+      const layer = i.layer/20
+      let timePriority = (24-(diffDate/1000/3600 - i.duration))/24
+      i['order'] = timePriority*coeff+stdPriority*(1-coeff) + layer
+  }
+  // business and private plan
+  let businessPlan = []
+  let privatePlan = []
+
+  for (let i of allItems){
+      if (i.itemStatus==='completed'){
+          continue
+      }
+      if (i.planType === 'business'){
+          businessPlan.push(i)
+          continue
+      }
+      if (i.planType === 'private'){
+          privatePlan.push(i)
+          continue
+      }
+  }
+  businessPlan = businessPlan.sort(compare('order'))
+  privatePlan = privatePlan.sort(compare('order'))
+
+  const data = {logo, layers, businessPlan, privatePlan}
   return{
     props: data,
   }

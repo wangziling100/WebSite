@@ -1,7 +1,7 @@
 import { GraphQLClient } from "graphql-request"; 
 const API_URL = 'https://graphql.datocms.com'
 const API_TOKEN = process.env.NEXT_EXAMPLE_CMS_DATOCMS_API_TOKEN
-import React, { useState, useEffect } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 
 // See: https://www.datocms.com/blog/offer-responsive-progressive-lqip-images-in-2020
 const responsiveImageFragment = `
@@ -81,6 +81,7 @@ export async function getItemByReference( ref, preview=false ){
         urgency
         duration
         period
+        planType
       }
     }
   `
@@ -234,7 +235,7 @@ export async function sendData(data, isTest, refreshAction, refresh=false){
     let req = https.request(options, (res) => {
         res.setEncoding('utf8')
         res.on('data', (chunk) => {
-            console.log('Response: '+chunk)
+            //console.log('Response: '+chunk)
             if (refresh) {
                 //window.location.reload()
                 refreshAction && refreshAction(JSON.parse(chunk))
@@ -312,6 +313,24 @@ export function toItemFormat(data){
         endDate: data.endDate,
         duration: data.duration,
         period: data.period,
+        planType: data.planType,
     }
     return tmp
+}
+
+export function useInterval(callback, delay ){
+    const savedCallback = useRef()
+    useEffect(() => {
+        savedCallback.current = callback
+    }, [callback])
+
+    useEffect(() => {
+        function tick(){
+            savedCallback.current()
+        }
+        if (delay !== null){
+            let id = setInterval(tick, delay)
+            return () => clearInterval(id)
+        }
+    }, [delay])
 }

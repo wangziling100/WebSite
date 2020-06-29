@@ -13,7 +13,7 @@ export function IdeaEditor({background, data, item, savedPassword, page}){
   const [ priority, setPriority ] = useState(item?.data.priority || 5)
   const [ owner, setOwner ] = useState(item?.data.owner || 'Public')
   
-  const isTest = false
+  const isTest = true
   const max_title_l = "100"
   const max_content_l = "800"
   const max_tags_l = "100"

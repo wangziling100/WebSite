@@ -53,6 +53,7 @@ const processData = async (data) => {
             endDate: data.endDate,
             duration: data.duration,
             period: data.period,
+            planType: data.planType || 'business',
         })
         res.option = 'create'
         return res

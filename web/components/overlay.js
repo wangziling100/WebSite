@@ -71,9 +71,11 @@ function LoginWnd({ actions }){
 function DeleteWnd({ page, data, savedPassword, actions }){
     // Variable
     let text
+    let verb = 'delete'
     switch (page){
         case 'idea': text='idea'; break;
         case 'plan': text='plan'; break;
+        case 'top_plan': text='item'; verb='complete'; break;
     }
     const [ password, setPassword ] = useState("")
     //let id = data.id
@@ -85,9 +87,12 @@ function DeleteWnd({ page, data, savedPassword, actions }){
     // Actions
     
     const confirmOpt = async () => {
-        actions.deleteAction(savedPassword)
+        actions?.deleteAction && actions.deleteAction(savedPassword)
         actions.setShowOverlay && actions.setShowOverlay(false)
         actions.setOption && actions.setOption("")
+        actions.topPlanCompleteAction()
+        actions?.topPlanCompleteAction && actions.topPlanCompleteAction()
+        
     }
 
     const getPassword = e => { setPassword(e.target.value) }
@@ -98,7 +103,7 @@ function DeleteWnd({ page, data, savedPassword, actions }){
 
     return(
       <div className="text-center flex flex-wrap">
-        <div className="w-full mt-2 font-semibold text-red-600 text-xl">Do you want to delete the {text}?</div>
+        <div className="w-full mt-2 font-semibold text-red-600 text-xl">Do you want to {verb} the {text}?</div>
         <div className="flex mt-5 w-full">
           <div className={cn('mt-2', 'p-2', 'ml-4')}> Password: </div>
           <input className={cn(...inputCSS, 'mr-10')} id='password' type='password' placeholder='your password' onChange={(e)=>getPassword(e)}/>
