@@ -2,14 +2,25 @@ const https = require('https')
 const password = process.env.PASSWORD
 
 exports.lambdaHandler = async (event, context) =>{
+    console.log(event)
     let data
+    let error
+    let response
+    let scheduled = false
+
+    if (event.data===undefined && event['detail-type']==='Scheduled Event'){
+        scheduled =true
+    }
+
     if (typeof(event.body)==='object'){
         data = event.body
     }
+
     if (typeof(event.body)==='string'){
         data = JSON.parse(event.body)
     }
-    if (data.password === password){
+
+    if (scheduled || data.password === password){
         const netlifyOptions = {
             hostname: 'api.netlify.com',
             port: 443,
@@ -33,12 +44,41 @@ exports.lambdaHandler = async (event, context) =>{
             console.log('netlify response: ', data)
         }).catch((err) => {
             console.log('netlify error: ', err)
+            error = err
         })
         await httpsrequest(vercelOptions).then((data) => {
             console.log('vercel response: ', data)
         }).catch((err) => {
             console.log('vercel response: ', err)
+            error = err
         })
+        if (error !== undefined){
+            response = {
+                'statusCode': 500,
+                'body': JSON.stringify({
+                    message: 'failed',
+                    error: error.message,
+                })
+            }
+            return response
+        }
+        response = {
+            'statusCode': 200,
+            'body': JSON.stringify({
+                message: 'succeed',
+            })
+        }
+        return response
+    }
+    if (data.password !== password){
+        response = {
+            'statusCode': 500,
+            'body': JSON.stringify({
+                message: 'failed',
+                error: 'wrong password',
+            })
+        }
+        return response
     }
 }
 

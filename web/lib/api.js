@@ -93,6 +93,25 @@ export async function getItemByReference( ref, preview=false ){
   return data.allItems
 }
 
+export async function getVersion(preview=false){
+    const VERSION_QUERY = `
+        query Version{
+            version{
+                idea
+                plan
+                id
+            }
+        }
+
+    `
+    const data = await request({
+        query: VERSION_QUERY,
+        variables: {},
+        preview: preview
+    })
+    return data.version
+}
+/*
 async function fetchAPI(query, { variables, preview } = {}) {
   const res = await fetch(API_URL + (preview ? '/preview' : ''), {
     method: 'POST',
@@ -113,7 +132,7 @@ async function fetchAPI(query, { variables, preview } = {}) {
   }
   return json.data
 }
-
+/*
 export async function getPreviewPostByLocation(loc) {
   const data = await fetchAPI(
     `
@@ -131,7 +150,7 @@ export async function getPreviewPostByLocation(loc) {
   )
   return data?.post
 }
-
+/*
 export async function getAllPostsWithLocation() {
   const data = fetchAPI(`
     {
@@ -164,7 +183,7 @@ export async function getAllPostsForHome(preview) {
   )
   return data?.demo
 }
-
+/*
 export async function getPostAndMorePosts(loc, preview) {
   const data = await fetchAPI(
     `
@@ -201,6 +220,7 @@ export async function getPostAndMorePosts(loc, preview) {
   )
   return data
 }
+*/
 export async function sendData(data, isTest, refreshAction, refresh=false){
     if (data instanceof Array){
         data = {data: data}
@@ -247,7 +267,47 @@ export async function sendData(data, isTest, refreshAction, refresh=false){
     await req.write(postData)
     await req.end()
 
- }
+}
+
+export async function rebuild( password, isTest ){
+    const data = {password: password}
+    const postData = JSON.stringify(data)
+    let host
+    let port
+    let route
+    let https
+    if (isTest){
+        host = 'localhost'
+        port = 4000
+        route = '/build'
+        https = require('http')
+    }else{
+        host = 'kjpx86xbu1.execute-api.eu-central-1.amazonaws.com'
+        route = '/Prod/build'
+        port = 443
+        https = require('https')
+    }
+    const options = {
+        hostname: host,
+        port: port,
+        path: route,
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            accept: 'application/json',
+        }
+    }
+    let req = https.request(options, (res) => {
+        res.setEncoding('utf8')
+        res.on('data', (chunk) => {
+            // do something 
+        })
+    }).on('error', (e) => {
+        console.log('Got error: ', e)
+    })
+    await req.write(postData)
+    await req.end()
+}
 
 export function getItemList(list, setFunction){
     let result
@@ -333,4 +393,8 @@ export function useInterval(callback, delay ){
             return () => clearInterval(id)
         }
     }, [delay])
+}
+
+export function useLocal(version, list){
+
 }

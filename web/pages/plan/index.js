@@ -2,7 +2,7 @@ import Head from 'next/head'
 import Container from '../../components/container'
 import Navigation from '../../components/navigation'
 import Layout from '../../components/layout'
-import { toItemFormat, sendData, getHostname, getItem, getItemList, setItem, getImageByReference, getItemByReference } from '../../lib/api'
+import { getVersion, toItemFormat, sendData, getHostname, getItem, getItemList, setItem, getImageByReference, getItemByReference } from '../../lib/api'
 import { useState, useEffect } from 'react'
 import { PlanItem, PlanLayer } from '../../components/plans'
 import cn from 'classnames'
@@ -12,6 +12,7 @@ import {faPlus} from '@fortawesome/free-solid-svg-icons'
 import { Overlay } from '../../components/overlay'
 import { TopPlan } from '../../components/top-plan'
 import { compare, getDateDiff, s2Time } from '../../lib/tools'
+import { PlanSetting } from '../../components/plan-setting'
 
 export default function PlanPage(data) {
   // Variables
@@ -38,6 +39,8 @@ export default function PlanPage(data) {
   const [ selectedItem, setSelectedItem ] = useState(null)
   const [ overlayOption, setOverlayOption ] = useState()
   const [ sidebar, setSidebar ] = useState('PlanRoute')
+  const [ version, setVersion ] = useState(data.version)
+  console.log(version)
 
   
   const [ showNew, setShowNew ] = useState(false)
@@ -300,6 +303,7 @@ export default function PlanPage(data) {
       case 'PlanRoute': right=planRoute; break;
       case 'TopPlan': right=<TopPlan businessPlan={data.businessPlan} privatePlan={data.privatePlan} password={password}/>; break;
       case 'dailySummary': right=dailySummary; break;
+      case 'Setting': right=<PlanSetting password={password}/>; break;
   }
 
   const main = (
@@ -328,6 +332,9 @@ export async function getStaticProps({ preview=false }){
   const ideaBg = (await getImageByReference("idea_bg", preview))
   const logo = await getImageByReference("logo", preview)
   const allItems = await getItemByReference("plan_item", preview)
+  let versionData = await getVersion()
+  const versionId = versionData.id
+  const version = versionData.plan
   // seperate items in layer
   let layers = {}
   for (let i of allItems){
@@ -375,7 +382,7 @@ export async function getStaticProps({ preview=false }){
   businessPlan = businessPlan.sort(compare('order'))
   privatePlan = privatePlan.sort(compare('order'))
 
-  const data = {logo, layers, businessPlan, privatePlan}
+  const data = {logo, layers, businessPlan, privatePlan, version, versionId}
   return{
     props: data,
   }
