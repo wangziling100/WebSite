@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  build website
+  
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 30
+
+Resources:
+  BuildFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: build/
+      Layers:
+        - !Ref BuildLayer
+      Handler: app.lambdaHandler
+      Runtime: nodejs12.x
+      Events:
+        CWSchedule:
+          Type: Schedule
+          Properties:
+            Schedule: "cron(0 0 * * ? *)"
+            Name: TestSchedule
+            Description: test schedule
+        Gateway:
+          Type: Api
+          Properties:
+            Path: /build
+            Method: post
+      Environment:
+        Variables:
+          CMS_TOKEN: "your token"
+          PASSWORD: "your password"
+  BuildLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: build-dependencies
+      Description: Dependency layer for build function
+      ContentUri: build/node_modules/
+      RetentionPolicy: Retain
+
+Outputs:
+  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+  # Find out more about other implicit resources you can reference within SAM
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  BuildApi:
+    Description: "API Gateway endpoint URL for Prod stage for Build function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/build/"
+  BuildFunction:
+    Description: "Build Lambda Function ARN"
+    Value: !GetAtt BuildFunction.Arn
