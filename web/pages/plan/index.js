@@ -2,7 +2,7 @@ import Head from 'next/head'
 import Container from '../../components/container'
 import Navigation from '../../components/navigation'
 import Layout from '../../components/layout'
-import { getVersion, toItemFormat, sendData, getHostname, getItem, getItemList, setItem, getImageByReference, getItemByReference } from '../../lib/api'
+import { useLoadData, useUpdateData, useAdminPassword, useUserPassword, getVersion, toItemFormat, sendData, getHostname, getImageByReference, getItemByReference } from '../../lib/api'
 import { useState, useEffect } from 'react'
 import { PlanItem, PlanLayer } from '../../components/plans'
 import cn from 'classnames'
@@ -21,15 +21,14 @@ export default function PlanPage(data) {
   const setting=[]
   let children = {}
   let parents = 'root'
+  let ancestors
   // CSS
   const flexCSS = ['flex', 'items-center', 'content-center']
   const iconCSS = ['h-10', 'w-10']
   const textCSS = [ 'm-5', 'text-xl', 'hover:text-blue-500', 'text-gray-800', 'cursor-pointer' ]
   // States
-  const [ persistentStates, setPersistentStates ] = useState()
-  getItemList('/', setPersistentStates)
+  const [ localData, setLocalData ] = useState()
   const [ showOverlay, setShowOverlay ] = useState(false)
-  const [ password, setPassword ] = useState(persistentStates?.password)
   const [ selectedId, setSelectedId ] = useState('')
   const [ selectedLayer, setSelectedLayer ] = useState()
   const [ hostname, setHostname ] = useState()
@@ -40,47 +39,63 @@ export default function PlanPage(data) {
   const [ overlayOption, setOverlayOption ] = useState()
   const [ sidebar, setSidebar ] = useState('PlanRoute')
   const [ version, setVersion ] = useState(data.version)
-  console.log(version)
-
-  
+  const [ userPassword, setUserPassword ] = useState()
+  const [ adminPassword, setAdminPassword ] = useState()
   const [ showNew, setShowNew ] = useState(false)
-  // Persist data
-  const tmpData = {
-      password: password,
-  }
-  setItem('/', tmpData)
-  getItem(persistentStates, setPassword, 'password')
+  const [ updateCount, setUpdateCount ] = useState(0)
+  const [ adminData, setAdminData ] = useState(data)
+  const layers = localData?.layers || data.layers
+
   getHostname(setHostname)
+  useUserPassword(userPassword, setUserPassword)
+  useAdminPassword(adminPassword, setAdminPassword)
   // Actions
   const addNewAction = () => {
       setShowNew(!showNew)
   }
   const findChildren = (id, layer) => {
-      const allInLayer = data.layers[layer+1]
+      //const allInLayer = localData.layers[layer+1]
+      const allInLayer = layers[layer+1]
       let result = []
       if (allInLayer===undefined) return []
       for (let i of allInLayer){
           if (i.parents===id){
-              const childrenResult = findChildren(i.id, i.layer)
-              const tmp = {
-                  id: i.id,
-                  layer: i.layer
+              let tmpId
+              let tmp
+              if (userPassword!=='') {
+                  tmpId = i.itemId
+                  tmp = i
+              }
+              if (userPassword==='') {
+                  tmpId = i.id
+                  tmp = {
+                      id: i.id,
+                      layer: i.layer
+                  }
               }
               result.push(tmp)
+              const childrenResult = findChildren(tmpId, i.layer)
               result = result.concat(childrenResult)
-
           }
       }
       return result
   }
   const findAncestors = (id, layer) => {
       let ancestors = []
-      const searchArea = data.layers.slice(0, layer+1)
+      //const searchArea = localData.layers.slice(0, layer+1)
+      const searchArea = layers.slice(0, layer+1)
       let i = searchArea.length - 1
       let pointer = id
       while (i>=0){
           for (let item of searchArea[i]){
-              if (item.id === pointer){
+              let tmpId
+              if (userPassword!==''){
+                  tmpId = item.itemId
+              }
+              if (userPassword===''){
+                  tmpId = item.id
+              }
+              if (tmpId === pointer){
                   ancestors.splice(0, 0, pointer)
                   pointer = item.parents
               }
@@ -92,9 +107,24 @@ export default function PlanPage(data) {
   }
 
   const deleteItemInLayer = (id, layer) => {
-      let tmp = data.layers[layer]
+      let tmp
+      if (userPassword!==''){
+          tmp = localData.layers[layer]
+      }
+      if (userPassword==='' && adminPassword!==''){
+          tmp = layers[layer]
+      }
+
+      
       for (let i in tmp){
-          if (tmp[i].id===id){
+          let tmpId
+          if (userPassword!==''){
+              tmpId = tmp[i].itemId
+          }
+          if (userPassword==='' && adminPassword!==''){
+              tmpId = tmp[i].id
+          }
+          if (tmpId===id){
               tmp.splice(i,1)
               break
           } 
@@ -103,53 +133,114 @@ export default function PlanPage(data) {
 
   const updateItemInLayer = (id, layer, newData, layerDiff=1) => {
       // layer is privious layer
-      let tmp = data.layers[layer]
+      let tmp
+      if (userPassword!==''){
+          tmp = localData.layers[layer]
+      }
+      if (userPassword==='' && adminPassword!==''){
+          tmp = layers[layer]
+      }
       for (let i in tmp){
-          if (tmp[i].id===id){
+          let tmpId
+          if (userPassword!==''){
+              tmpId = tmp[i].itemId
+          }
+          if (userPassword==='' && adminPassword!==''){
+              tmpId = tmp[i].id
+          }
+          if (tmpId===id){
               // deleted from provious layer
               tmp.splice(i,1)
               // add into new layer
-              data.layers[layer-layerDiff].push(newData)
+              if (userPassword!==''){
+                  localData.layers[layer-layerDiff].push(newData)
+              }
+              if (userPassword==='' && adminPassword!==''){
+                  layers[layer-layerDiff].push(newData)
+              }
               break
           }
       }
   }
   const addItemInLayer = (layer, newData) => {
-      if (data.layers[layer] === undefined){
-          data.layers[layer] = []
+      if (userPassword!==''){
+          if (localData.layers[layer]===undefined){
+              localData.layers[layer] = []
+          }
+          localData.layers[layer].push(newData)
+          return
       }
-      data.layers[layer].push(newData)
+      if (userPassword==='' && adminPassword!==''){
+          if (layers[layer]===undefined){
+              layers[layer] = []
+          }
+          layers[layer].push(newData)
+          return
+      }
+      
   }
 
   const afterDeleteAction = (newData) => {
       if (newData === undefined || newData === null) return
-      newData= newData.data
+      if (newData.data !== undefined) newData = newData.data
       if (newData instanceof Array){
           for (let i of newData){
+              if (i===null) return
+              let tmpId
+
+              if (userPassword!==''){
+                  tmpId = i.itemId
+              }
+              if (userPassword==='' && adminPassword!==''){
+                  tmpId = i.id
+              }
+
               if (i.option==='delete'){
-                  deleteItemInLayer(i.id, i.layer)
+                  deleteItemInLayer(tmpId, i.layer)
                   continue
               }
+
               if (i.option==='update'){
-                  updateItemInLayer(i.id, i.layer+1, toItemFormat(i))
+                  updateItemInLayer(tmpId, i.layer+1, i)
                   continue
               }
           }
       }
-      setRefresh(!refresh)
+      setUpdateCount(updateCount+1)
   }
-  const afterAddAction = (newData) => {
-      newData = newData.data
+  const afterCreateAction = (newData) => {
+      //newData = newData.data
+      if (userPassword==='' && adminPassword!==''){
+          newData = newData.data
+      }
       addItemInLayer(newData.layer, newData)
-      setRefresh(!refresh)
+      setUpdateCount(updateCount+1)
+  }
+  const afterEditAction = (newData) => {
+      if (userPassword!==''){
+          updateItemInLayer(newData.itemId, newData.layer, newData,0)
+      }
+      if (userPassword==='' && adminPassword!==''){
+          updateItemInLayer(newData.id, newData.layer, newData, 0)
+      }
+      setUpdateCount(updateCount+1)
+
   }
 
   const afterDragAction = (newData, layerDiff) =>{
-      newData = newData.data
+      if (newData.data!==undefined) newData = newData.data
       if (newData instanceof Array){
           for (let i of newData){
+              if (i===null) return
               if (i.option==='update'){
-                  updateItemInLayer(i.id, i.layer+layerDiff, toItemFormat(i), layerDiff)
+                  let tmpId
+                  if (userPassword!==''){
+                      tmpId = i.itemId
+                  }
+                  if (userPassword==='' && adminPassword!==''){
+                      tmpId = i.id
+                  }
+                  updateItemInLayer(tmpId, i.layer+layerDiff, i, layerDiff)
                   continue
 
               }
@@ -157,89 +248,224 @@ export default function PlanPage(data) {
       }
       setRefresh(!refresh)
   }
+  const createAction = async (form) => {
+      if (userPassword!==''){
+          form['itemId'] = Math.random().toString()
+          afterCreateAction(form)
+      }
+      if (userPassword==='' && adminPassword!==''){
+          await sendData(form, isTest, afterCreateAction, true)
+      }
+  }
+  const editAction = async (form, data) => {
+      for (let key in form){
+          data[key] = form[key]
+      }
+      if (userPassword!=='') afterEditAction(data)
 
-  const deleteAction = (id, layer, parents) => {
-      let children = findChildren(id, layer)
+      if (userPassword==='' && adminPassword!==''){
+          await sendData(form, isTest)
+          afterEditAction(data)
+      }
+  }
+  
+  const completeAction = async (form, newData) => {
+      for (let key in form){
+          newData[key] = form[key]
+      }
+      if (userPassword!=='') afterEditAction(newData)
+      if (userPassword==='' && adminPassword!==''){
+          form['password'] = adminPassword
+          await sendData(form, isTest)
+          afterEditAction(newData)
+      }
+
+  }
+  const activeAction = async (form, newData) => {
+      for (let key in form){
+          newData[key] = form[key]
+      }
+      if (userPassword!=='') afterEditAction(newData)
+      if (userPassword==='' && adminPassword!==''){
+          form['password'] = adminPassword
+          await sendData(form, isTest)
+          afterEditAction(newData)
+      }
+
+  }
+
+  const deleteAction = async (data, password) => {
+      let id
+      let pwd
+      const layer = data.layer
+      const parents = data.parents
       let allOpt
-      const deleteOpt = {
-          id: id,
-          option: 'delete',
-          password: password,
-      }
-      for (let child of children){
-          if (parseInt(child.layer) === layer+1){
-              child.parents = parents
+
+      if (userPassword!==''){
+          id = data.itemId
+          let children = findChildren(id, layer)
+          data.option = 'delete'
+          for (let child of children){
+              if (parseInt(child.layer) === layer+1){
+                  child.parents = parents
+              }
+              child.option = 'update'
+              child.layer = parseInt(child.layer) - 1
+              child.password = pwd
           }
-          child.option = 'update'
-          child.layer = parseInt(child.layer) - 1
-          child.password = password
+          allOpt = children.concat([data])
+          afterDeleteAction(allOpt)
+          return
       }
-      allOpt = children.concat([deleteOpt])
-      sendData(allOpt, isTest, afterDeleteAction, true)
+
+      if (userPassword==='' && adminPassword!==''){
+          id = data.id
+          let children = findChildren(id, layer)
+          if (password===''){
+              pwd = adminPassword
+          }
+          if (password!==''){
+              pwd = password
+          }
+          const deleteOpt = {
+              id: id,
+              option: 'delete',
+              password: pwd,
+          }
+          for (let child of children){
+              if (parseInt(child.layer) === layer+1){
+                  child.parents = parents
+              }
+              child.option = 'update'
+              child.layer = parseInt(child.layer) - 1
+              child.password = pwd
+          }
+          allOpt = children.concat([deleteOpt])
+          await sendData(allOpt, isTest, afterDeleteAction, true)
+          ancestors = undefined
+          setSelectedItem()
+          return
+      }
   }
   const dragAction = (source, target) => {
-      let children = findChildren(source.id, source.layer)
+      let sourceId
+      let targetId
+      if (userPassword!==''){
+          sourceId = source.itemId
+          targetId = target.itemId
+      }
+      if (userPassword==='' && adminPassword!==''){
+          sourceId = source.id
+          targetId = target.id
+      }
+      let children = findChildren(sourceId, source.layer)
       const layerDiff = source.layer - (target.layer+1)
       let allOpt = []
-      const targetOpt = {
-          id: source.id,
-          option: 'update',
-          password: password,
-          layer: source.layer - layerDiff,
-          parents: target.id,
-      }
-      allOpt.push(targetOpt) 
-      for (let child of children){
-          if (child.id===target.id) return
-          const tmpOpt = {
-              id: child.id,
-              option: 'update',
-              password: password,
-              layer: child.layer - layerDiff,
+      if (userPassword!==''){
+          source.option = 'update'
+          source.layer = source.layer - layerDiff
+          source.parents = target.itemId
+          allOpt.push(source)
+          for (let child of children){
+              child.option = 'update'
+              child.layer = child.layer - layerDiff
+              allOpt.push(child)
           }
-          allOpt.push(tmpOpt)
+          afterDragAction(allOpt, layerDiff)
+          setRefresh(!refresh)
+          setUpdateCount(updateCount+1)
+          return
       }
-      const afterDragActionWrapper = (newData) => afterDragAction(newData, layerDiff)
-      sendData(allOpt, isTest, afterDragActionWrapper, true)
+      if (userPassword==='' && adminPassword!==''){
+          const targetOpt = {
+              id: source.id,
+              option: 'update',
+              password: adminPassword,
+              layer: source.layer - layerDiff,
+              parents: target.id,
+          }
+          allOpt.push(targetOpt) 
+          for (let child of children){
+              if (child.id===target.id) return
+              const tmpOpt = {
+                  id: child.id,
+                  option: 'update',
+                  password: adminPassword,
+                  layer: child.layer - layerDiff,
+              }
+              allOpt.push(tmpOpt)
+          }
+          const afterDragActionWrapper = (newData) => afterDragAction(newData, layerDiff)
+          sendData(allOpt, isTest, afterDragActionWrapper, true)
+          return
+      }
+      
   }
 
   useEffect(()=>{
       // drag item 
       if (dragSource!==null && dropTarget!==null){
-          if (dragSource.id!==dropTarget.id){
+          let sourceId
+          let targetId
+          if (userPassword!==''){
+              sourceId = dragSource.itemId
+              targetId = dropTarget.itemId
+          }
+          if (userPassword==='' && adminPassword!==''){
+              sourceId = dragSource.id
+              targetId = dropTarget.id
+          }
+          if (sourceId!==targetId){
               dragAction(dragSource, dropTarget)
           }
           setDragSource(null)
           setDropTarget(null)
       }
   }, [dragSource, dropTarget])
+  useLoadData('plan', userPassword, setLocalData)
+  useUpdateData('plan', userPassword, localData, [localData?.layers.length, updateCount])
 
   //data
-  let layers = data.layers
-  let ancestors
   const actions = {
       setSelectedId: setSelectedId,
       setSelectedLayer: setSelectedLayer,
-      afterAddAction: afterAddAction,
+      afterAddAction: afterCreateAction,
       setDragSource: setDragSource,
       setDropTarget: setDropTarget,
       setShowOverlay: setShowOverlay,
       setSelectedItem: setSelectedItem,
       setOption: setOverlayOption,
+      createAction: createAction,
+      editAction: editAction,
+      completeAction: completeAction,
+      activeAction: activeAction,
   }
   const actionsNew = {
       setShowNew: setShowNew,
-      afterAddAction: afterAddAction,
+      createAction: createAction,
   }
   const downflowActions = {
-      setPassword: setPassword,
+      setPassword: setUserPassword,
       setShowOverlay: setShowOverlay,
-      deleteAction: ()=>deleteAction(selectedItem.id, selectedItem.layer, selectedItem.parents),
+      deleteAction: (password)=>deleteAction(selectedItem, password),
       setOption: setOverlayOption,
   }
+
+  const settingActions = {
+      setAdminPassword: setAdminPassword,
+      setUserPassword: setUserPassword,
+  }
+  const topActions = {
+      completeAction: completeAction,
+  }
   // componets
-  if (selectedId!==undefined){
-      ancestors = findAncestors(selectedId, selectedLayer)
+  if (selectedItem!==undefined && selectedItem!==null){
+      if (userPassword!==''){
+          ancestors = findAncestors(selectedItem.itemId, selectedItem.layer)
+      }
+      if (userPassword===''){
+          ancestors = findAncestors(selectedItem.id, selectedItem.layer)
+      }
   }
 
   let allLayers = []
@@ -249,7 +475,14 @@ export default function PlanPage(data) {
       const items = []
       for (let i of layer){
           if (i.parents===parents){
-              if (ancestors[index]!==undefined && i.id===ancestors[index]){
+              let tmpId
+              if (userPassword!==''){
+                  tmpId = i.itemId
+              }
+              if (userPassword===''){
+                  tmpId = i.id
+              }
+              if (ancestors!==undefined && ancestors[index]!==undefined && tmpId===ancestors[index]){
                   items.splice(0, 0, i)
               }else{
                   items.push(i)
@@ -257,8 +490,13 @@ export default function PlanPage(data) {
           }
       }
       if (items[0] !== undefined){
-          parents = items[0].id
-          allLayers.push(<PlanLayer items={items} actions={actions} layer={index} key={items[0].layer} password={password}/>)
+          if (userPassword!==''){
+              parents = items[0].itemId
+          }
+          if (userPassword===''){
+              parents = items[0].id
+          }
+          allLayers.push(<PlanLayer items={items} actions={actions} layer={index} key={index} password={adminPassword} update={index+'_'+items.length}/>)
           allLayers.push(<FontAwesomeIcon icon={faArrowAltCircleDown} className="w-5 h-5 ml-5 cursor-pointer" key={index+'arrowdown'}/>) 
       }
       
@@ -266,6 +504,34 @@ export default function PlanPage(data) {
 
   allLayers.splice(allLayers.length-1, 1)
 
+  // construct top plan
+  const coeff = 0.8
+  let allItems = layers.flat()
+  for (let i of allItems){
+      const stdPriority = i.priority/4
+      const endDate = i.endDate
+      const diffDate = getDateDiff(endDate)
+      const layer = i.layer/20
+      let timePriority = (24-(diffDate/3600 - i.duration))/24
+      i['order'] = timePriority*coeff+stdPriority*(1-coeff)+layer
+  }
+  let businessPlan = []
+  let privatePlan = []
+  for (let i of allItems){
+      if (i.itemStatus === 'completed') continue
+      if (i.planType === 0 || i.planType==='business'){
+          businessPlan.push(i)
+          continue
+      }
+      if (i.planType === 1 || i.planType==='private') {
+          privatePlan.push(i)
+          continue
+      }
+  }
+  businessPlan = businessPlan.sort(compare('order'))
+  privatePlan = privatePlan.sort(compare('order'))
+
+  //components
   const planRoute = (
     <>
       {allLayers}
@@ -273,7 +539,7 @@ export default function PlanPage(data) {
       <FontAwesomeIcon icon={faPlus} className="w-5 h-5 ml-5 cursor-pointer" title={'new a child plan'} onClick={addNewAction} />
       { showNew &&
 
-        <PlanItem editStatus={true} parents={parents} layer={parseInt((allLayers.length+1)/2)} actions={actionsNew} password={password}/>
+        <PlanItem editStatus={true} parents={parents} layer={parseInt((allLayers.length+1)/2)} actions={actionsNew} password={adminPassword}/>
       }
     </>
   )
@@ -301,13 +567,13 @@ export default function PlanPage(data) {
   let right
   switch (sidebar){
       case 'PlanRoute': right=planRoute; break;
-      case 'TopPlan': right=<TopPlan businessPlan={data.businessPlan} privatePlan={data.privatePlan} password={password}/>; break;
+      case 'TopPlan': right=<TopPlan businessPlan={businessPlan} privatePlan={privatePlan} password={adminPassword} actions={topActions}/>; break;
       case 'dailySummary': right=dailySummary; break;
-      case 'Setting': right=<PlanSetting password={password}/>; break;
+      case 'Setting': right=<PlanSetting password={adminPassword} actions={settingActions}/>; break;
   }
 
   const main = (
-    <Navigation page="plan" password={password} actions={downflowActions} logo={logo}/>
+    <Navigation page="plan" password={userPassword} actions={downflowActions} logo={logo}/>
   )
 
   children['top'] = main
@@ -316,7 +582,9 @@ export default function PlanPage(data) {
   return (
     <div>
       <Head>
-        <title> no idea for this title </title>
+        <title> 
+          By failing to prepare, you are preparing to fail.
+        </title>
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
       </Head>
       <Layout page={'plan'}  hostname={hostname} children={children}/>
@@ -352,7 +620,6 @@ export async function getStaticProps({ preview=false }){
   }
   layers = tmp
   // set order
-  let ordered = []
   const coeff = 0.8
   for (let i of allItems){
       const stdPriority = i.priority/4

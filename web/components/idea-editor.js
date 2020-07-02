@@ -5,15 +5,15 @@ import Router, { useRouter } from 'next/router'
 import cn from 'classnames'
 import Link from 'next/link'
 
-export function IdeaEditor({background, data, item, savedPassword, page}){
+export function IdeaEditor({background, data, item, savedPassword, page, actions, userPassword}){
   // Variable
-  const [ title, setTitle ] = useState(item?.data.title || "")
-  const [ content, setContent ] = useState(item?.data.originContent || "")
-  const [ tags, setTags ] = useState(item?.data.tag || "")
-  const [ priority, setPriority ] = useState(item?.data.priority || 5)
-  const [ owner, setOwner ] = useState(item?.data.owner || 'Public')
+  const [ title, setTitle ] = useState(item?.title || "")
+  const [ content, setContent ] = useState(item?.originContent || "")
+  const [ tags, setTags ] = useState(item?.tag || "")
+  const [ priority, setPriority ] = useState(item?.priority || 5)
+  const [ owner, setOwner ] = useState(item?.owner || 'Public')
   
-  const isTest = true
+  const isTest = false
   const max_title_l = "100"
   const max_content_l = "800"
   const max_tags_l = "100"
@@ -75,17 +75,31 @@ export function IdeaEditor({background, data, item, savedPassword, page}){
         "endDate": null,
         "duration": null,
         "period": null,
-
+        "itemId": item?.itemId || Math.random().toString(),
+        "_createdAt": item?._createdAt,
+        "originContent": item?.originContent,
+        "comments": item?.comments
     }
-    if (item && item.data.id !== undefined){
-        form['refId'] = item.data.id
+    if (item && item.id !== undefined){
+        form['refId'] = item.id
         form['option'] = 'edit'
-        form['version'] = item.data.version+1
+        form['version'] = item.version+1
         
     } 
-    
-    await sendData(form, isTest)
-    Router.push(page)
+    if (userPassword!==''){
+        actions.afterAction(form)
+        Router.push(page)
+        return
+    }
+    if (userPassword==='' && savedPassword!==''){
+        await sendData(form, isTest, actions.afterAction, true)
+        //Router.push(page)
+        return
+    }
+    if (userPassword==='' && savedPassword===''){
+        Router.push(page)
+    }
+
   }
   // Variables
   const img = background

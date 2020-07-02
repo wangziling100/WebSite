@@ -44,7 +44,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
   const date = new Date()
   const year = date.getFullYear()
   const month = (date.getMonth()+1).toString().padStart(2,'0')
-  const day = date.getDate().toString().padStart(2,'0')
+  const day = (date.getDate()+1).toString().padStart(2,'0')
   const dateString = year+'-'+month+'-'+day
   const [ title, setTitle ] = useState(data?.title || "")
   const [ target, setTarget ] = useState(data?.target || "")
@@ -58,7 +58,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
   const [ urgency, setUrgency ] = useState((data?.urgency===undefined || data?.urgency===null)? 0: data.urgency)
   const [ endDate, setEndDate ] = useState(data?.endDate || dateString)
   const [ duration, setDuration ] = useState((data?.duration==undefined || data?.duration===null)? 0: data.duration)
-  const [ type, setType ] = useState((data?.type===undefined || data?.planType===null)? 0: data.planType)
+  const [ type, setType ] = useState((data?.planType===undefined || data?.planType===null)? 0: data.planType)
   const [ period, setPeriod ] = useState((data?.period===undefined || data?.period===null)? 0: data.period)
   const [ tags, setTags ] = useState(data?.tags || '')
   const [ content, setContent ] = useState(data?.content || 'Enter something')
@@ -69,7 +69,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
   const [ showContent, setShowContent ] = useState(init?.showContent===undefined?false:init.showContent)
   const [ showTags, setShowTags ] = useState(true)
   const [ showEditbar, setShowEditbar ] = useState(init?.showEditbar===undefined?true:init.showEditbar)
-  const [ dateDiff, setDateDiff ] = useState(getDateDiff('2020-06-29'))
+  const [ dateDiff, setDateDiff ] = useState(getDateDiff(data?.endDate))
   const [ diffDate, setDiffDate ] = useState(s2Time(dateDiff))
   const [ stopConduct, setStopConduct ] = useState(true)
   const [ left, setLeft ] = useState((data?.duration+1)*3600 || null)
@@ -89,8 +89,9 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
   } 
 
   const submit = async () =>{
-      if (data?.id===undefined){
-          const form = {
+      let form
+      if (data?.id===undefined && data?.itemId===undefined){
+          form = {
               "title": title,
               "content": content,
               "tag": tags,
@@ -106,7 +107,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
               "itemStatus": "active",
               "version": 0,
               "password": password,
-              "layer": layer,
+              "layer": parseInt(layer),
               "parents": parents,
               "target": target,
               "difficulty": difficulty,
@@ -114,14 +115,15 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
               "endDate": endDate,
               "duration": duration,
               "period": period,
-              "planType": type,
+              "planType": parseInt(type),
+              "itemId": Math.random().toString()
                   
           }
-          await sendData(form, isTest, actions.afterAddAction, true)
+          actions.createAction(form)
           return
       }
-      if (data.id!==undefined){
-          const form = {
+      if (data?.id!==undefined || data?.itemId!==undefined){
+          form = {
               "title": title,
               "content": content,
               "tag": tags,
@@ -136,10 +138,11 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
               "period": period,
               "id": data.id,
               "option": "update",
-              "planType": type,
+              "planType": parseInt(type),
                   
           }
-          await sendData(form, isTest)
+          actions.editAction(form, data)
+          return
       }
   }
   if (tmpData!==undefined){
@@ -150,8 +153,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
       setShowBody(false)
   }
   const selectAction = () =>{
-      actions?.setSelectedId && actions.setSelectedId(data.id)
-      actions?.setSelectedLayer && actions.setSelectedLayer(data.layer)
+      actions.setSelectedItem(data)
   }
   const confirmAction = () =>{
       setEdit(false)
@@ -166,22 +168,22 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
       setItemStatus('completed')
       const form = {
           "id": data.id,
-          "itemStatus": itemStatus,
+          "itemStatus": 'completed',
           "option": "update",
-          "password": password,
+          //"password": password,
       }
-      await sendData(form, isTest)
+      actions.completeAction(form, data)
 
   }
   const activeAction =  async () =>{
       setItemStatus('active')
       const form = {
           "id": data.id,
-          "itemStatus": itemStatus,
+          "itemStatus": 'active',
           "option": "update",
-          "password": password,
+          //"password": password,
       }
-      await sendData(form, isTest)
+      actions.activeAction(form, data)
   }
   const deleteAction = () =>{
       actions.setSelectedItem(data)
@@ -200,7 +202,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
   const [{isDragging}, end] = useDrag({
       item: {type: ItemTypes.PLAN},
       end: (el) => { 
-          actions?.setDragSource && actions.setDragSource({id:data.id, layer:data.layer})
+          actions?.setDragSource && actions.setDragSource(data)
           return
       },
       collect: monitor => ({
@@ -210,7 +212,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
   const [{ isOver }, drop] = useDrop({
       accept: ItemTypes.PLAN,
       drop: (el) => {
-          actions.setDropTarget({id:data.id, layer:data.layer})
+          actions?.setDropTarget && actions.setDropTarget(data)
           return
       },
       collect: monitor => ({
@@ -392,7 +394,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
 }
 
 
-export function PlanLayer({items, layer, actions, password}){
+export function PlanLayer({items, layer, actions, password, update}){
     // CSS
     const flexCSS = ['flex', 'items-center', 'content-center' ]
     const iconCSS = ['mr-2', 'h-10', 'w-10']
@@ -414,10 +416,14 @@ export function PlanLayer({items, layer, actions, password}){
         setShowOverlay: actions.setShowOverlay,
         setSelectedItem: actions.setSelectedItem,
         setOption: actions.setOption,
+        createAction: actions.createAction,
+        editAction: actions.editAction,
+        completeAction: actions.completeAction,
+        activeAction: actions.activeAction,
     }
     // all children items
     for (let i of items){
-        plans.push(<PlanItem data={i} key={i.id} actions={actionsNext} layer={layer} password={password}/>)
+        plans.push(<PlanItem data={i} key={i.id||i.itemId} actions={actionsNext} layer={layer} password={password}/>)
     }
     firstPlan = plans[0]
     plans.splice(0, 1)

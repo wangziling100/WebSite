@@ -1,15 +1,17 @@
 import cn from 'classnames'
 import Router from 'next/router'
 import { useState } from 'react'
-import { sendData } from '../lib/api'
+import { checkUser, createNewUser, sendData } from '../lib/api'
 import { withRouter } from 'next/router'
 
 export function Overlay({ page, option, overlayData, password, actions }){
     let child
     switch (option){
-        case "delete": child = (<> <DeleteWnd page={page} data={overlayData} savedPassword={password} actions={actions}/></>);break;
-        case "login": child = (<> <LoginWnd actions={actions}/></>);break;
+        case "delete": child = (<> <DeleteWnd page={page} actions={actions}/></>);break;
+        case "login": child = (<> <LoginWnd actions={actions} option="login" /></>); break;
         case "disclaimer": child = (<> <DisclaimerWnd hostname={overlayData.hostname}/></>); break;
+        case "signUp": child = (<> <LoginWnd option="signUp" actions={actions}/></>); break;
+        case "adminLogin": child = (<> <LoginWnd actions={actions} option="adminLogin" /></>); break;
         default: child=""; break;
     }
     return(
@@ -17,42 +19,83 @@ export function Overlay({ page, option, overlayData, password, actions }){
             { (option==='delete') &&
                 <Style1 child={child} page={page} password={password} actions={actions}/> 
             }
-            { (option=='login') &&
+            { (option==='login') &&
                 <Style1 child={child} page={page} password={password} actions={actions} />
             }
-            { (option=='disclaimer') &&
+            { (option==='disclaimer') &&
                 <Style2 child={child} actions={actions}/> 
+            }
+            { option==='signUp' &&
+                <Style1 child={child} page={page} password={password} actions={actions} />
+            }
+            { option==='adminLogin' &&
+                <Style1 child={child} page={page} password={password} actions={actions} />
             }
         </>
     ) 
 }
 
 
-function LoginWnd({ actions }){
+function LoginWnd({ option, actions }){
     // Variable
+    let title
     const [ password, setPassword ] = useState("")
+    const [ showWarning, setShowWarning ] = useState(false)
+    switch (option){
+        case 'login': title='Login'; break;
+        case 'signUp': title='New Password'; break;
+        case 'adminLogin': title = 'Admin Login'; break;
+    }
     // CSS
     const inputCSS = ['mt-2', 'p-2', 'w-full', 'shadow', 'appearance-none', 'border', 'rounded', 'text-gray-700', 'leading-tight', 'focus:outline-none', 'focus:shadow-outline', 'focus:border-red-500']
     const buttonCSS = ['uppercase', 'bg-blue-400', 'w-32', 'h-8', 'rounded-md', 'hover:bg-blue-600', 'hover:shadow-outline']
     // Actions
     const getPassword = e => { setPassword(e.target.value) }
     const setPasswordAction = ()=>{
-        actions.setPassword(password)
-        actions.setShowOverlay(false)
-        actions.setShowRootOverlay(false)
+
+        if (option==='signUp'){
+            createNewUser(password)
+            actions.setPassword(password)
+            actions.setShowOverlay(false)
+            actions?.setShowRootOverlay && actions.setShowRootOverlay(false)
+            return
+        }
+        if (option==='login'){
+            const exist = checkUser(password)
+            if (exist || !password) {
+                actions.setPassword(password)
+                actions.setShowOverlay(false)
+                actions?.setShowRootOverlay && actions.setShowRootOverlay(false)
+                return
+            }
+            if (!exist) {
+                setShowWarning(true)
+                return
+            }
+        }
+        if (option==='adminLogin'){
+            actions.setPassword(password)
+            actions.setUserPassword('')
+            actions.setShowOverlay(false)
+            window.location.reload()
+            return
+        }
     }
     const returnAction = () => {
         actions.setShowOverlay(false)
         actions.setOption && actions.setOption("")
-        actions.setShowRootOverlay(false)
+        actions?.setShowRootOverlay && actions.setShowRootOverlay(false)
     }
     
     
     // Return
     return(
       <div className="text-center flex flex-wrap">
-        <div className="w-full mt-2 font-semibold text-red-600 text-xl">Login</div>
-        <div className="flex mt-5 w-full">
+        <div className="w-full mt-2 font-semibold text-red-600 text-xl">{title}</div>
+        <div className={cn({'opacity-0':!showWarning},'flex', 'text-sm', 'w-full', 'mt-3', 'justify-center', 'text-red-800')}>
+          wrong password !
+        </div>
+        <div className="flex  w-full">
           <div className={cn('mt-2', 'p-2', 'ml-4')}> Password: </div>
           <input className={cn(...inputCSS, 'mr-10')} id='password' type='password' placeholder='your password' onChange={(e)=>getPassword(e)}/>
         </div>
@@ -68,7 +111,7 @@ function LoginWnd({ actions }){
     )
 }
 
-function DeleteWnd({ page, data, savedPassword, actions }){
+function DeleteWnd({ page, actions }){
     // Variable
     let text
     let verb = 'delete'
@@ -78,7 +121,6 @@ function DeleteWnd({ page, data, savedPassword, actions }){
         case 'top_plan': text='item'; verb='complete'; break;
     }
     const [ password, setPassword ] = useState("")
-    //let id = data.id
     let isTest = false
     const path = '/' + page
     // CSS
@@ -87,10 +129,9 @@ function DeleteWnd({ page, data, savedPassword, actions }){
     // Actions
     
     const confirmOpt = async () => {
-        actions?.deleteAction && actions.deleteAction(savedPassword)
+        actions?.deleteAction && actions.deleteAction(password)
         actions.setShowOverlay && actions.setShowOverlay(false)
         actions.setOption && actions.setOption("")
-        actions.topPlanCompleteAction()
         actions?.topPlanCompleteAction && actions.topPlanCompleteAction()
         
     }

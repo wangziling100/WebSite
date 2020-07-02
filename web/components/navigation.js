@@ -28,9 +28,15 @@ export default function Navigation({ page, password, actions, states, logo}){
         actions.setShowOverlay(false)
         setOption("")
         actions.setPassword("")
+        window.location.reload()
     }
     const logInOutAction = () => {
         (password===undefined || password==="")?loginAction():logoutAction()
+    }
+    const signUpAction = () => {
+        setShowOverlay(true)
+        actions.setShowOverlay(true)
+        setOption('signUp')
     }
 
     const nav = (
@@ -61,13 +67,18 @@ export default function Navigation({ page, password, actions, states, logo}){
                 </a>
             </div>
           </div>
-          <div className="px-4 cursor-pointer items-center justify-start p-2 text-base font-serif-Georgia tracking-widest rounded-lg" onClick={logInOutAction}>
-            { password?"Log out":"Sign in" }
+          <div className='flex'>
+            <div className="px-4 cursor-pointer items-center justify-start p-2 text-base font-serif-Georgia tracking-widest rounded-lg" onClick={logInOutAction}>
+              { password?"Logout":"Login" }
+            </div>
+            <div className="px-4 cursor-pointer items-center justify-start p-2 text-base font-serif-Georgia tracking-widest rounded-lg" onClick={signUpAction}>
+              Sign up
+            </div>
           </div>
         </div>
         {
-          showOverlay && (option==='login') &&
-          <Overlay page={page} option='login' className='' password={password} actions={downflowActions} />
+          showOverlay &&
+          <Overlay page={page} option={option} className='' password={password} actions={downflowActions} />
         }  
         </>
     )

@@ -3,7 +3,7 @@ import Head from 'next/head'
 import Container from '../components/container'
 import Button from '../components/button'
 import Layout from '../components/layout'
-import { getItemList, setItem, getItem, getAllPostsForHome, getImageByReference } from '../lib/api'
+import { useAdminPassword, useUserPassword, getItemList, setItem, getItem, getAllPostsForHome, getImageByReference } from '../lib/api'
 import Navigation from '../components/navigation'
 import { LinearAppear, Appear, HelloAppear } from '../components/animation'
 import cn from 'classnames'
@@ -17,23 +17,29 @@ export default function IndexPage(data) {
   // Status
   const [ persistentStates, setPersistentStates ] = useState()
   getItemList('/', setPersistentStates)
-  const [ password, setPassword ] = useState()
+  //const [ password, setPassword ] = useState()
   const [ showOverlay, setShowOverlay ] = useState()
+  const [ userPassword, setUserPassword ] = useState()
+  const [ adminPassword, setAdminPassword ] = useState()
   const downflowActions = {
-      setPassword: setPassword,
+      setPassword: setUserPassword,
       setShowOverlay: setShowOverlay,
   }
+  /*
   const tmpData = {
       password: password,
   }
   setItem('/', tmpData)
   getItem(persistentStates, setPassword, 'password')
+  */
+  useUserPassword(userPassword, setUserPassword)
+  useAdminPassword(adminPassword, setAdminPassword)
 
 
   const main = (
     <>
       <Appear duration="14s">
-        <Navigation page="index" password={password} actions={downflowActions}/>
+        <Navigation page="index" password={userPassword} actions={downflowActions}/>
       </Appear>
         {!showOverlay && 
           <Hello/>

@@ -2,7 +2,7 @@ import Head from 'next/head'
 import Container from '../components/container'
 import Navigation from '../components/navigation'
 import Layout from '../components/layout'
-import { getHostname, getItem, getItemList, setItem, getImageByReference } from '../lib/api'
+import { useUserPassword, useAdminPassword, getHostname, getItem, getItemList, setItem, getImageByReference } from '../lib/api'
 import { useState } from 'react'
 
 export default function PlanPage(data) {
@@ -13,22 +13,28 @@ export default function PlanPage(data) {
   const [ persistentStates, setPersistentStates ] = useState()
   getItemList('/', setPersistentStates)
   const [ showOverlay, setShowOverlay ] = useState(false)
-  const [ password, setPassword ] = useState(persistentStates?.password)
+  //const [ password, setPassword ] = useState(persistentStates?.password)
   const [ hostname, setHostname ] = useState()
+  const [ userPassword, setUserPassword ] = useState()
+  const [ adminPassword, setAdminPassword ] = useState()
   const downflowActions = {
-      setPassword: setPassword,
+      setPassword: setAdminPassword,
       setShowOverlay: setShowOverlay,
   }
   // Persist data
+  /*
   const tmpData = {
       password: password,
   }
   setItem('/', tmpData)
   getItem(persistentStates, setPassword, 'password')
+  */
   getHostname(setHostname)
+  useUserPassword(userPassword, setUserPassword)
+  useAdminPassword(adminPassword, setAdminPassword)
 
   const main = (
-    <Navigation page="service" password={password} actions={downflowActions}/>
+    <Navigation page="service" password={userPassword} actions={downflowActions}/>
   )
   return (
     <div>

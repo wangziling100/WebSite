@@ -29,6 +29,7 @@ export function TopPlan({businessPlan=[], privatePlan=[], password, actions}){
         setShowOverlay: setShowOverlay,
         setSelectedItem: setSelectedItem,
         setItemData: setItemData,
+        completeAction: actions.completeAction,
     }
     
     const overlayActions = {
@@ -42,11 +43,18 @@ export function TopPlan({businessPlan=[], privatePlan=[], password, actions}){
     
     // all children items
     for (let i of businessPlan){
-        businessPlans.push(<PlanItem data={i} key={i.id+"_top"} password={password} editStatus={false} init={init} css={['mr-auto', 'ml-auto']} actions={itemActions}/>)
+        let tmpId 
+        if (i.id===undefined) tmpId=i.itemId
+        if (i.id!==undefined) tmpId=i.id
+
+        businessPlans.push(<PlanItem data={i} key={tmpId+"_top"} password={password} editStatus={false} init={init} css={['mr-auto', 'ml-auto']} actions={itemActions}/>)
     }
 
     for (let i of privatePlan){
-        privatePlans.push(<PlanItem data={i} key={i.id+"_top"} password={password} editStatus={false} init={init} css={['mr-auto', 'ml-auto']} actions={itemActions}/>)
+        let tmpId 
+        if (i.id===undefined) tmpId=i.itemId
+        if (i.id!==undefined) tmpId=i.id
+        privatePlans.push(<PlanItem data={i} key={tmpId+"_top"} password={password} editStatus={false} init={init} css={['mr-auto', 'ml-auto']} actions={itemActions}/>)
     }
     const main = (
         <>

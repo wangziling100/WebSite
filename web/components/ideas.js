@@ -3,7 +3,7 @@ import Markdown from '../components/markdown'
 import { useState } from 'react'
 import cn from 'classnames'
 import { Overlay } from '../components/overlay'
-import { setItem, getItemList, sendData } from '../lib/api'
+import { writeData, setItem, getItemList, sendData } from '../lib/api'
 import { NewCommentItem, Comment } from '../components/comment'
 
 export function IdeaHeader({ actions }){
@@ -77,7 +77,6 @@ export function IdeaItem({ data, password, actions, orderBy="priority", selected
   let [ showAddComment, setShowAddComment ] = useState(false)
   const [ hideContent, setHideContent ] = useState(true)
   const [ showComment, setShowComment ] = useState(false)
-  const [ deleted, setDeleted ] = useState(false)
   const isTest = false
   const path = '/idea'
 
@@ -85,42 +84,43 @@ export function IdeaItem({ data, password, actions, orderBy="priority", selected
   const switchContentState = () => {
       setHideContent(!hideContent)
   }
-  let overlayData
   const deleteAction = () =>{
       actions.setOption("delete")
       actions.setShowOverlay(true)
-      actions.setOverlayData({id: data.id, setDeleted: setDeleted})
       actions.setId(data.id)
-      
+      actions.setItemData(data)
   }
 
-  const completedRequest = async () => {
+  const completedRequest = () => {
       const postData = {
           "id": data.id,
           "option": "completed",
           "password": password,
       }
-      await sendData(postData, isTest)
+      actions.completeAction(postData, data)
+      setItemStatus('completed')
   }
-  const activeRequest = async () => {
+  const activeRequest = () => {
+      actions.setItemData(data)
       const postData = {
           "id": data.id,
           "option": "active",
           "password": password,
       }
-      await sendData(postData, isTest)
+      actions.activeAction(postData, data)
+      setItemStatus('active')
   }
   
   const activeCompletedAction = (selectedStatus==='active')?
-      () => { completedRequest(); setItemStatus('completed')}
-  :
-      () => { activeRequest(); setItemStatus('active')}
+      completedRequest: activeRequest
 
   const newCommentAction = () => {
+      actions.setItemData(data)
       setShowAddComment(!showAddComment)
   }
   const editAction = () => {
-      actions.setItemData({data: data})
+      //actions.setItemData({data: data})
+      writeData({editIdea: data})
       Router.push('/idea/edit')
   }
 
@@ -201,7 +201,7 @@ export function IdeaItem({ data, password, actions, orderBy="priority", selected
         <div className="w-full text-center text-6xl justify-center"> {priority} </div>
       </div>
     </div>
-      { showAddComment &&  <NewCommentItem id={data.id} page={'idea'} onSubmit={newCommentAction}/>}
+      { showAddComment &&  <NewCommentItem itemData={data} page={'idea'} onSubmit={newCommentAction} actions={actions}/>}
       { showComment && <Comment data={comments} /> }
     </div>
   
@@ -218,15 +218,15 @@ export function IdeaItem({ data, password, actions, orderBy="priority", selected
 
   return( 
     <>
-      { (selectedStatus==itemStatus) && !deleted && item}
+      { (selectedStatus==itemStatus) && item}
     </>
   )
 }
 export function Ideas({ data, savedPassword, actions, orderBy="priority", selectedStatus="active"}){
   const items = []
   const testAction = () => { console.log('here') }
-  for (const item of data){
-    items.push(<IdeaItem data={item} key={item.id} orderBy={orderBy}  selectedStatus={selectedStatus} onClick={testAction} password={savedPassword} actions={actions}/>)
+  for (let item of data){
+    items.push(<IdeaItem data={item} key={item.id||item.itemId} orderBy={orderBy}  selectedStatus={selectedStatus} onClick={testAction} password={savedPassword} actions={actions}/>)
   }
   return (
     <div className="flex flex-wrap">

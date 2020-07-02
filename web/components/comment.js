@@ -2,7 +2,7 @@ import Router, { useRouter } from 'next/router'
 import { sendData } from '../lib/api'
 import { useState } from 'react'
 
-export function NewCommentItem({id, page, onSubmit}){
+export function NewCommentItem({page, onSubmit, actions}){
     const isTest = false
     const max_comment_l = 600
     let [ comment, setComment ] = useState("")
@@ -14,15 +14,17 @@ export function NewCommentItem({id, page, onSubmit}){
         setName(e.target.value)
     }
     const submitRequest = async () => {
+        // TODO add userpassword
         if (comment!==""){
             const postData = {
                 "title": "comment",
                 "content": comment,
                 "ref": "idea_comment",
-                "refId": id,
+                //"refId": id,
                 "owner": name,
             }
-            await sendData(postData, isTest)
+            actions.newCommentAction(postData)
+            //await sendData(postData, isTest)
         }
         onSubmit()
     }
@@ -59,7 +61,8 @@ function CommentItem({ data }){
   // Attributes
   const startTime = new Date(data._createdAt).toGMTString()
   const content = data.content
-  const time = new Date(data._createdAt).toGMTString()
+  console.log(data.createdAt, 'date')
+  const time = new Date(data?._createdAt||data.createdAt).toGMTString()
   const owner = data.owner || "unknown"
   const item = (
     <>
@@ -87,7 +90,7 @@ function CommentItem({ data }){
 export function Comment({ data }){
   const comments = []
   for (const comment of data){
-    comments.push(<CommentItem data={comment} key={comment.id}/>)
+    comments.push(<CommentItem data={comment} key={comment.id || comment.commentId}/>)
   }
   return (
     <>
