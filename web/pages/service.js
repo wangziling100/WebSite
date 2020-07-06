@@ -5,15 +5,14 @@ import Layout from '../components/layout'
 import { useUserPassword, useAdminPassword, getHostname, getItem, getItemList, setItem, getImageByReference } from '../lib/api'
 import { useState } from 'react'
 
-export default function PlanPage(data) {
-  const img = data.ideaBg
-  const setting=[]
+export default function ServicePage(data) {
+  const img = data.serviceBg
+  console.log(img)
+  const setting=[ 'h-full', 'w-full']
   const bgImgAndSetting={img, setting}
+  const logo = data.logo
   // States
-  const [ persistentStates, setPersistentStates ] = useState()
-  getItemList('/', setPersistentStates)
   const [ showOverlay, setShowOverlay ] = useState(false)
-  //const [ password, setPassword ] = useState(persistentStates?.password)
   const [ hostname, setHostname ] = useState()
   const [ userPassword, setUserPassword ] = useState()
   const [ adminPassword, setAdminPassword ] = useState()
@@ -21,28 +20,26 @@ export default function PlanPage(data) {
       setPassword: setAdminPassword,
       setShowOverlay: setShowOverlay,
   }
-  // Persist data
-  /*
-  const tmpData = {
-      password: password,
-  }
-  setItem('/', tmpData)
-  getItem(persistentStates, setPassword, 'password')
-  */
+
   getHostname(setHostname)
   useUserPassword(userPassword, setUserPassword)
   useAdminPassword(adminPassword, setAdminPassword)
+  console.log(data)
 
   const main = (
-    <Navigation page="service" password={userPassword} actions={downflowActions}/>
+    <>
+      <Navigation page="service" password={userPassword} actions={downflowActions} logo={logo}/>
+    </>
   )
   return (
     <div>
       <Head>
-        <title> no idea for this title </title>
+        <title> 
+          The best way to find yourself is to lose yourself in the service of others.
+        </title>
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
       </Head>
-      <Layout index={false} bgImgAndSetting={bgImgAndSetting} hostname={hostname}>
+      <Layout page={'service'} hostname={hostname} bgImgAndSetting={bgImgAndSetting}>
         {main}
       </Layout>
     </div>
@@ -50,8 +47,9 @@ export default function PlanPage(data) {
 }
 
 export async function getStaticProps({ preview=false }){
-  const ideaBg = (await getImageByReference("idea_bg", preview))
-  const data = {ideaBg}
+  const logo = await getImageByReference('logo', preview)
+  const serviceBg = await getImageByReference('service_bg', preview)
+  const data = {logo, serviceBg}
   return{
     props: data,
   }

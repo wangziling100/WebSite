@@ -10,6 +10,7 @@ import Router, { useRouter } from 'next/router'
 import markdownToHtml from '../../lib/markdownToHtml'
 import { Overlay } from '../../components/overlay'
 import { useState, useEffect } from 'react'
+import { Image } from 'react-datocms'
 
 export default function IdeaPage(props) {
   // Variables
@@ -22,6 +23,7 @@ export default function IdeaPage(props) {
   const logo = props.data.logo
   const isTest = false
   const ideaItem = localData?.ideaItem || props.data.ideaItem
+  const noContentImg = props.data.noContentImg
 
   // States
   const [ orderBy, setOrderBy ] = useState("priority")
@@ -191,6 +193,15 @@ export default function IdeaPage(props) {
         <Ideas data={ideaItem} orderBy={orderBy} selectedStatus={selectedStatus} savedPassword={adminPassword} actions={downflowActions}/>
         { showOverlay && (option!='login') &&
             <Overlay page={'idea'} option={option} password={userPassword} actions={downflowActions}/>}
+        { ideaItem.length===0 && 
+          <div className='bg-white mx-10 my-4 py-4 flex justify-center'>
+            <div className='text-6xl tracking-widest text-green-400 italic '>
+              No Idea
+            </div>
+            <Image className='w-20 h-20' data={noContentImg.image.responsiveImage} /> 
+          </div>
+
+        }
       </div>
     </>
   )
@@ -209,6 +220,7 @@ export default function IdeaPage(props) {
 
 export async function getStaticProps({ preview=false }){
   const ideaBg = (await getImageByReference("idea_bg", preview))
+  const noContentImg = await getImageByReference('no_content', preview)
   let ideaItemTitle = (await getItemByReference("idea_item_title", preview))
   let ideaItem = (await getItemByReference("idea_item", preview))
   let comments = (await getItemByReference("idea_comment", preview))
@@ -223,7 +235,7 @@ export async function getStaticProps({ preview=false }){
           }
       }
   }
-  const data = {ideaBg, ideaItemTitle, ideaItem, logo}
+  const data = {ideaBg, ideaItemTitle, ideaItem, logo, noContentImg}
   ideaItemTitle[0].content = await markdownToHtml(ideaItemTitle[0].content || '')
   return{
     props: {

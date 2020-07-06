@@ -5,6 +5,7 @@ import cn from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEnvelope } from '@fortawesome/free-solid-svg-icons'
 import { faGithub, faLinkedin, faXing } from '@fortawesome/free-brands-svg-icons'
+import Link from 'next/link'
 
 export default function Footer({hostname}) {
   // CSS
@@ -23,7 +24,9 @@ export default function Footer({hostname}) {
       <Container>
         <div className="flex justify-around m-4">
           <div className={cn(...text1CSS)} > 
-            Services
+            <Link href='/service'>
+              <a>Services</a>
+            </Link>
           </div>
           <div className={cn('cursor-pointer', ...text1CSS)} onClick={()=>setShowOverlay(true)}>
             Disclaimer
