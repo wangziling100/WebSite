@@ -61,7 +61,6 @@ function CommentItem({ data }){
   // Attributes
   const startTime = new Date(data._createdAt).toGMTString()
   const content = data.content
-  console.log(data.createdAt, 'date')
   const time = new Date(data?._createdAt||data.createdAt).toGMTString()
   const owner = data.owner || "unknown"
   const item = (

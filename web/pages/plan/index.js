@@ -11,7 +11,7 @@ import { faArrowAltCircleRight, faArrowAltCircleDown } from '@fortawesome/free-r
 import {faPlus} from '@fortawesome/free-solid-svg-icons'
 import { Overlay } from '../../components/overlay'
 import { TopPlan } from '../../components/top-plan'
-import { compare, getDateDiff, s2Time } from '../../lib/tools'
+import { flat, compare, getDateDiff, s2Time } from '../../lib/tools'
 import { PlanSetting } from '../../components/plan-setting'
 
 export default function PlanPage(data) {
@@ -506,7 +506,8 @@ export default function PlanPage(data) {
 
   // construct top plan
   const coeff = 0.8
-  let allItems = layers.flat()
+  //let allItems = layers.flat()
+  let allItems = flat(layers)
   for (let i of allItems){
       const stdPriority = i.priority/4
       const endDate = i.endDate

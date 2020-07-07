@@ -8,13 +8,14 @@ import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { Image } from 'react-datocms'
 
-export default function Layout({ bgImgAndSetting, children , hostname, page }) {
+export default function Layout({ bgImgAndSetting, children , hostname, page, curtain}) {
   let main
   switch (page){
       case 'index': main = <IndexLayout bg={bgImgAndSetting} children={children} />; break;
       case 'idea' : main = <NormalLayout bg={bgImgAndSetting} children={children} hostname={hostname}/>; break;
       case 'plan': main = <SidebarLayout top={children.top} left={children.left} right={children.right} hostname={hostname} />; break;
-      case 'service': main = <CurtainLayout curtain={children} hostname={hostname} background={bgImgAndSetting}/>;break;
+      case 'service': main = <CurtainLayout curtain={curtain} hostname={hostname} background={bgImgAndSetting} children={children}/>;break;
+      case 'about': main = <CurtainLayout curtain={curtain} hostname={hostname} children={children}/>;break; 
   }
   return (
     <>
@@ -96,26 +97,23 @@ function SidebarLayout({top, left, right, hostname}){
   )
 }
 
-function CurtainLayout({curtain, hostname, background}){
-    const image = background.img.image
-    const setting = background.setting
+function CurtainLayout({curtain, hostname, background, children}){
+    let image
+    let setting
+    if (background!==undefined){
+        image = background.img.image
+        setting = background.setting
 
-    console.log(image)
+    }
     const main = (
         <>
           <Meta />
           <div>
             <div className=''>
-            <Container>
-              <main>{curtain}</main>
-            </Container>
-            
-            <Image data={image.responsiveImage} className={cn(...setting)}/>
-            </div>
-            <div className='flex justify-end'>
-              <a href="http://www.freepik.com" target='_blank'>
-                Designed by brgfx / Freepik & Xingbo Wang
-              </a>
+              <Container>
+                {curtain}
+              </Container>
+              <main>{children}</main>
             </div>
             <Footer hostname={hostname} />
           </div>

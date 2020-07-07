@@ -66,7 +66,6 @@ export default function IndexPage(data) {
 export async function getStaticProps({ preview = false }){
   const indexBg = (await getImageByReference("index_bg", preview))
   const data = {indexBg}
-  //console.log(indexBg.image.responsiveImage)
   return{
     props: data,
   }

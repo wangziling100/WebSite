@@ -4,10 +4,11 @@ import Navigation from '../components/navigation'
 import Layout from '../components/layout'
 import { useUserPassword, useAdminPassword, getHostname, getItem, getItemList, setItem, getImageByReference } from '../lib/api'
 import { useState } from 'react'
+import { Image } from 'react-datocms'
+import cn from 'classnames'
 
 export default function ServicePage(data) {
   const img = data.serviceBg
-  console.log(img)
   const setting=[ 'h-full', 'w-full']
   const bgImgAndSetting={img, setting}
   const logo = data.logo
@@ -24,11 +25,20 @@ export default function ServicePage(data) {
   getHostname(setHostname)
   useUserPassword(userPassword, setUserPassword)
   useAdminPassword(adminPassword, setAdminPassword)
-  console.log(data)
 
-  const main = (
+  const header = (
     <>
       <Navigation page="service" password={userPassword} actions={downflowActions} logo={logo}/>
+    </>
+  )
+  const body = (
+    <>
+      <Image data={img.image.responsiveImage} className={cn(...setting)} />
+      <div className='flex justify-end'>
+        <a href='http://www.freepik.com' target='_blank'>
+          Designed by brgfx / Freepik & Xingbo Wang
+        </a>
+      </div>
     </>
   )
   return (
@@ -39,8 +49,8 @@ export default function ServicePage(data) {
         </title>
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
       </Head>
-      <Layout page={'service'} hostname={hostname} bgImgAndSetting={bgImgAndSetting}>
-        {main}
+      <Layout page={'service'} hostname={hostname} bgImgAndSetting={bgImgAndSetting} curtain={header}>
+        {body}
       </Layout>
     </div>
   )

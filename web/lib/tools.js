@@ -23,3 +23,16 @@ export function compare(prop){
         return value2-value1
     }
 }
+export function flat(array){
+    let result = []
+    for (let el of array){
+        let tmp
+        if (Array.isArray(el)){
+            tmp = flat(el)
+            result = result.concat(tmp)
+        }else{
+            result.push(el)
+        }
+    }
+    return result
+}

@@ -2,18 +2,14 @@ import Head from 'next/head'
 import Container from '../components/container'
 import Navigation from '../components/navigation'
 import Layout from '../components/layout'
-import { useUserPassword, useAdminPassword, getHostname, getItem, getItemList, setItem, getImageByReference } from '../lib/api'
+import { getBlogByReference, useUserPassword, useAdminPassword, getHostname, getItem, getItemList, setItem, getImageByReference } from '../lib/api'
 import { useState } from 'react'
+import markdownToHtml from '../lib/markdownToHtml'
+import Markdown from '../components/markdown'
 
 export default function PlanPage(data) {
-  const img = data.ideaBg
-  const setting=[]
-  const bgImgAndSetting={img, setting}
-  // States
-  const [ persistentStates, setPersistentStates ] = useState()
-  getItemList('/', setPersistentStates)
+  const logo = data.logo
   const [ showOverlay, setShowOverlay ] = useState(false)
-  //const [ password, setPassword ] = useState(persistentStates?.password)
   const [ hostname, setHostname ] = useState()
   const [ userPassword, setUserPassword ] = useState()
   const [ adminPassword, setAdminPassword ] = useState()
@@ -21,20 +17,20 @@ export default function PlanPage(data) {
       setPassword: setUserPassword,
       setShowOverlay: setShowOverlay,
   }
-  // Persist data
-  /*
-  const tmpData = {
-      password: password,
-  }
-  setItem('/', tmpData)
-  getItem(persistentStates, setPassword, 'password')
-  */
+  
   getHostname(setHostname)
   useUserPassword(userPassword, setUserPassword)
   useAdminPassword(adminPassword, setAdminPassword)
 
-  const main = (
-    <Navigation page="about" password={userPassword} actions={downflowActions}/>
+  const header = (
+    <Navigation page="about" password={userPassword} actions={downflowActions} logo={logo}/>
+  )
+  const body = (
+    <>
+      <div className='mx-16 mt-5'>
+        <Markdown content={data.blog.content} />
+      </div>
+    </>
   )
   return (
     <div>
@@ -44,16 +40,18 @@ export default function PlanPage(data) {
         </title>
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
       </Head>
-      <Layout index={false} bgImgAndSetting={bgImgAndSetting} hostname={hostname}>
-        {main}
+      <Layout page='about' hostname={hostname} curtain={header}>
+        {body}
       </Layout>
     </div>
   )
 }
 
 export async function getStaticProps({ preview=false }){
-  const ideaBg = (await getImageByReference("idea_bg", preview))
-  const data = {ideaBg}
+  let blog = await getBlogByReference('about', preview )
+  blog.content = await markdownToHtml(blog.content)
+  const logo = await getImageByReference('logo', preview)
+  const data = {blog, logo}
   return{
     props: data,
   }

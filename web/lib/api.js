@@ -94,6 +94,24 @@ export async function getItemByReference( ref, preview=false ){
   return data.allItems
 }
 
+export async function getBlogByReference( ref, preview=false ){
+  const BLOG_QUERY = `
+    query Blog($ref:String){
+      blog(filter: {ref: {eq: $ref}}){
+        ref
+        title
+        content
+      }
+    }
+  `
+  const data = await request({
+    query: BLOG_QUERY, 
+    variables: {"ref": ref},
+    preview: preview
+  });
+  return data.blog
+}
+
 export async function getVersion(preview=false){
     const VERSION_QUERY = `
         query Version{
@@ -115,9 +133,8 @@ export async function getVersion(preview=false){
 
 export async function sendData(data, isTest, refreshAction, refresh=false){
     if (data instanceof Array){
-        console.log(data[0].password)
         data = {data: data}
-    }else console.log(data.password)
+    }
 
     const postData = JSON.stringify(data)
     let host
