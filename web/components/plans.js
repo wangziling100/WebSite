@@ -60,7 +60,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
   const [ duration, setDuration ] = useState((data?.duration==undefined || data?.duration===null)? 0: data.duration)
   const [ type, setType ] = useState((data?.planType===undefined || data?.planType===null)? 0: data.planType)
   const [ period, setPeriod ] = useState((data?.period===undefined || data?.period===null)? 0: data.period)
-  const [ tags, setTags ] = useState(data?.tags || '')
+  const [ tags, setTags ] = useState(data?.tag || '')
   const [ content, setContent ] = useState(data?.content || 'Enter something')
   const [ tmpData, setTmpData ] = useState()
   const [ originalContent, setOriginalContent ] = useState(data?.originalContent || '')
