@@ -72,7 +72,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
   const [ dateDiff, setDateDiff ] = useState(getDateDiff(data?.endDate))
   const [ diffDate, setDiffDate ] = useState(s2Time(dateDiff))
   const [ stopConduct, setStopConduct ] = useState(true)
-  const [ left, setLeft ] = useState((data?.duration+1)*3600 || null)
+  const [ left, setLeft ] = useState(data?.duration*3600+3600 || null)
   const [ leftTime, setLeftTime ] = useState(s2Time(left) || null)
   // CSS
   const inputCSS = ['ml-2', 'p-1', 'w-full', 'shadow', 'appearance-none', 'border', 'rounded', 'text-gray-700', 'leading-tight', 'focus:outline-none', 'focus:shadow-outline', 'focus:border-red-500']
