@@ -80,6 +80,7 @@ export default function PlanPage(data) {
       }
       return result
   }
+  console.log(layers)
   const findAncestors = (id, layer) => {
       let ancestors = []
       //const searchArea = localData.layers.slice(0, layer+1)
@@ -223,8 +224,7 @@ export default function PlanPage(data) {
       if (userPassword==='' && adminPassword!==''){
           updateItemInLayer(newData.id, newData.layer, newData, 0)
       }
-      setUpdateCount(updateCount+1)
-
+      //setUpdateCount(updateCount+1)
   }
 
   const afterDragAction = (newData, layerDiff) =>{
@@ -261,7 +261,10 @@ export default function PlanPage(data) {
       for (let key in form){
           data[key] = form[key]
       }
-      if (userPassword!=='') afterEditAction(data)
+      if (userPassword!=='') {
+          afterEditAction(data)
+          setUpdateCount(updateCount+1)
+      }
 
       if (userPassword==='' && adminPassword!==''){
           await sendData(form, isTest)
@@ -273,7 +276,10 @@ export default function PlanPage(data) {
       for (let key in form){
           newData[key] = form[key]
       }
-      if (userPassword!=='') afterEditAction(newData)
+      if (userPassword!=='') {
+          afterEditAction(newData)
+          setUpdateCount(updateCount+1)
+      }
       if (userPassword==='' && adminPassword!==''){
           form['password'] = adminPassword
           await sendData(form, isTest)
@@ -285,13 +291,26 @@ export default function PlanPage(data) {
       for (let key in form){
           newData[key] = form[key]
       }
-      if (userPassword!=='') afterEditAction(newData)
+      if (userPassword!=='') {
+          afterEditAction(newData)
+          setUpdateCount(updateCount+1)
+      }
       if (userPassword==='' && adminPassword!==''){
           form['password'] = adminPassword
           await sendData(form, isTest)
           afterEditAction(newData)
       }
 
+  }
+  const updateOneAction = (form, newData) => {
+      for (let key in form){
+          newData[key] = form[key]
+      }
+      // it works only under local mode
+      if (userPassword!=='') {
+          afterEditAction(newData)
+          setUpdateCount(updateCount+1)
+      }
   }
 
   const deleteAction = async (data, password) => {
@@ -457,6 +476,7 @@ export default function PlanPage(data) {
   }
   const topActions = {
       completeAction: completeAction,
+      updateOneAction: updateOneAction,
   }
   // componets
   if (selectedItem!==undefined && selectedItem!==null){

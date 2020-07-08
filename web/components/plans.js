@@ -1,5 +1,5 @@
 import cn from 'classnames'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faList, faCrosshairs, faHiking, faStar, faExclamationCircle, faHourglassEnd, faClock, faHistory, faAngleLeft, faAngleDown, faAngleDoubleRight, faAngleDoubleLeft, faPlus, faArrowAltCircleDown, faTags } from '@fortawesome/free-solid-svg-icons'
 import Input from '../components/input'
@@ -72,8 +72,16 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
   const [ showEditbar, setShowEditbar ] = useState(init?.showEditbar===undefined?true:init.showEditbar)
   const [ dateDiff, setDateDiff ] = useState(getDateDiff(data?.endDate))
   const [ diffDate, setDiffDate ] = useState(s2Time(dateDiff))
-  const [ stopConduct, setStopConduct ] = useState(true)
-  const [ left, setLeft ] = useState(data?.duration*3600+3600 || null)
+  const [ stopCount, setStopCount] = useState(data?.stopCount || true)
+  const [ startTime, setStartTime ] = useState(data?.startTime || null)
+  const [ counter, setCounter ] = useState(0)
+  if (counter===0){
+      setCounter(counter+1)
+  }
+  const condition = (data!==undefined && data.startTime!==null) ? (new Date()-new Date(data.startTime))/1000 : 0
+  const [ usedTime, setUsedTime ] = useState(condition)
+  const [ totalUsedTime, setTotalUsedTime ] = useState(data?.totalUsedTime || 0)
+  const [ left, setLeft ] = useState((data?.duration*3600+3600)-(totalUsedTime+usedTime) || null)
   const [ leftTime, setLeftTime ] = useState(s2Time(left) || null)
   // CSS
   const inputCSS = ['ml-2', 'p-1', 'w-full', 'shadow', 'appearance-none', 'border', 'rounded', 'text-gray-700', 'leading-tight', 'focus:outline-none', 'focus:shadow-outline', 'focus:border-red-500']
@@ -196,6 +204,27 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
       actions.setShowOverlay(true)
       actions.setItemData({completeAction: completeAction,  setItemStatus: setItemStatus})
   }
+  const topPlanStopAction = () => {
+      const form = {
+          totalUsedTime: totalUsedTime+usedTime,
+          stopCount: !stopCount, //the state can't change immediately
+          startTime: null,
+      }
+      setStopCount(true)
+      setStartTime(null)
+      setTotalUsedTime(totalUsedTime+usedTime)
+      setUsedTime(0)
+      actions.updateOneAction(form, data)
+
+  }
+  const topPlanStartAction = () => {
+      const form = {
+          stopCount: !stopCount,
+          startTime: new Date(), //stamptime
+      }
+      setStopCount(false)
+      actions.updateOneAction(form, data)
+  }
   const clickTitleAction = () => {
       if (edit){
           setShowTitle(false)
@@ -229,6 +258,12 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
       }),
   })
   if (data===undefined) selected=true
+  const updateTopState = () => {
+      const form = {
+          left: left
+      }
+      actions?.updateOneAction && actions.updateOneAction(form, data)
+  }
 
   // Effect
   useInterval(() => {
@@ -237,12 +272,18 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
   }, 1000)
   
   useInterval(()=>{
-      if (!stopConduct){
+      if (!stopCount){
         setLeft(left-1)
         setLeftTime(s2Time(left))
+        setUsedTime(usedTime+1)
       }
      
   }, 1000)
+  useEffect(() => {
+      if (data?.stopCount!==undefined){
+        setStopCount(data.stopCount)
+      }
+  }, [(data?.stopCount===stopCount)])
 
   const main = (
     <>
@@ -283,10 +324,10 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
                 </div>
               </div>
               <div className={cn(...flexCSS,)}>
-                <button className={cn({'hidden': edit}, 'uppercase', 'mx-1', {'hidden':!stopConduct})} onClick={()=>setStopConduct(false)}>
+                <button className={cn({'hidden': edit}, 'uppercase', 'mx-1', {'hidden':!stopCount})} onClick={topPlanStartAction}>
                   start
                 </button>
-                <div className={cn({'hidden': edit}, 'uppercase', 'mx-1', {'hidden':stopConduct}, 'cursor-pointer')} onClick={()=>setStopConduct(true)}>
+                <div className={cn({'hidden': edit}, 'uppercase', 'mx-1', {'hidden':stopCount}, 'cursor-pointer')} onClick={topPlanStopAction}>
                   stop
                 </div>
                 <div className={cn({'hidden': edit}, 'uppercase', 'mx-1', 'cursor-pointer')} onClick={itemStatus==='completed'?activeAction:topPlanCompleteAction}>

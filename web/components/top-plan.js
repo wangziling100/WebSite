@@ -30,6 +30,7 @@ export function TopPlan({businessPlan=[], privatePlan=[], password, actions}){
         setSelectedItem: setSelectedItem,
         setItemData: setItemData,
         completeAction: actions.completeAction,
+        updateOneAction: actions.updateOneAction,
     }
     
     const overlayActions = {
