@@ -47,6 +47,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
   const day = (date.getDate()+1).toString().padStart(2,'0')
   const dateString = year+'-'+month+'-'+day
   const [ title, setTitle ] = useState(data?.title || "")
+  const [ showTitle, setShowTitle ] = useState(true)
   const [ target, setTarget ] = useState(data?.target || "")
   const [ edit, setEdit ] = useState(editStatus===undefined?false:editStatus)
   const [ compose, setCompose ] = useState(false)
@@ -195,6 +196,14 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
       actions.setShowOverlay(true)
       actions.setItemData({completeAction: completeAction,  setItemStatus: setItemStatus})
   }
+  const clickTitleAction = () => {
+      if (edit){
+          setShowTitle(false)
+      }
+      if (!edit) {
+          setShowBody(!showBody)
+      }
+  }
   function attachRef(el){
       drop(el)
       end(el)
@@ -287,12 +296,12 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
             </div>
         }
         <div className="flex flex-none justify-between" >
-          <div className={cn({'hidden': edit}, ...text1CSS, 'cursor-pointer', 'w-full')} onClick={()=>setShowBody(!showBody)}>
+          <div className={cn({'hidden': !showTitle}, ...text1CSS, 'cursor-pointer', 'w-full')} onClick={clickTitleAction}>
             {title || 'you need a title'}
           </div>
-          <div className={cn({'hidden':!edit}, ...flexCSS)}>
+          <div className={cn({'hidden':showTitle}, ...flexCSS)}>
             <div> Title:</div>
-            <input  className={cn(...inputCSS,)} id='title' type='text' placeholder={title} onCompositionStart={startCompose} onCompositionEnd={e=>{stopCompose(); setTitle(e.target.value)}} onChange={getTitle}/>
+            <Input value={title} setValue={setTitle} css={[{'hidden':!edit}]} setState={()=>{setShowTitle(true)}}/> 
           </div>
 
         </div>
