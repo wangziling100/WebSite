@@ -18,7 +18,7 @@ const ItemTypes = {
 export function PlanItem({data, layer, editStatus, actions, parents, brother, password, init, css=[], selected=false}){
   // Variables
   const isTest = false
-  const diffcultySelect = [
+  const difficultySelect = [
     'Have all details',
     'Have idea and schedule but no details',
     'Have only idea', 
@@ -54,7 +54,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
   const [ showBody, setShowBody ] = useState(init?.showBody===undefined?(edit?false:true):init.showBody)
   const [ showTarget, setShowTarget ] = useState(true)
   const [ itemStatus, setItemStatus ] = useState(data?.itemStatus || 'active')
-  const [ difficulty, setDifficulty ] = useState((data?.difficulty===undefined || data?.difficulty===null)? (diffcultySelect.length-1):data.difficulty)
+  const [ difficulty, setDifficulty ] = useState((data?.difficulty===undefined || data?.difficulty===null)? (difficultySelect.length-1):data.difficulty)
   const [ priority, setPriority ] = useState((data?.priority===undefined || data?.priority===null)? 0: data.priority)
   const [ urgency, setUrgency ] = useState((data?.urgency===undefined || data?.urgency===null)? 0: data.urgency)
   const [ endDate, setEndDate ] = useState(data?.endDate || dateString)
@@ -172,6 +172,19 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
   const cancelAction = () =>{
       setEdit(false)
       actions?.setShowNew && actions.setShowNew(false)
+      setTitle(data?.title || '')
+      setTarget(data?.target || '')
+      setDifficulty((data?.difficulty===undefined || data?.difficulty===null)? (difficultySelect.length-1):data.difficulty)
+      setPriority((data?.priority===undefined || data?.priority===null)? 0: data.priority)
+      setUrgency((data?.urgency===undefined || data?.urgency===null)? 0: data.urgency)
+      setEndDate(data?.endDate || dateString)
+      setDuration((data?.duration==undefined || data?.duration===null)? 0: data.duration)
+      setType((data?.planType===undefined || data?.planType===null)? 0: data.planType)
+      setPeriod((data?.period===undefined || data?.period===null)? 0: data.period)
+      setTags(data?.tag || '')
+      setContent(data?.content || 'Enter something')
+
+      actions.cancelAction
   }
   const completeAction = async () =>{
       setItemStatus('completed')
@@ -352,36 +365,51 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
           {/*target*/}
           <div className={cn(...text2CSS, ...flexCSS)} >
             <FontAwesomeIcon icon={faCrosshairs} className={cn(...iconCSS)} title={'Target'} />
-            <div className={cn({'hidden':!showTarget})} onClick={()=>setShowTarget(false)}> {target || "what's your target?"} </div>
-            <Input value={target} setValue={setTarget} css={[{'hidden':showTarget}]} setState={()=>setShowTarget(true)}/>
+            <div className={cn({'hidden':!showTarget&&edit})} onClick={()=>setShowTarget(false)}> {target || "what's your target?"} </div>
+            <Input value={target} setValue={setTarget} css={[{'hidden':showTarget||!edit}]} setState={()=>setShowTarget(true)}/>
           </div>
           {/*difficutly*/}
           <div className={cn(...text2CSS, ...flexCSS)}>
               <FontAwesomeIcon icon={faHiking} className={cn(...iconCSS)} title={'Difficulty'}/>
-              <Select items={diffcultySelect} setValue={setDifficulty} defaultValue={difficulty} />
+              <div className={cn({'hidden':edit})} > 
+                {difficultySelect[difficulty]}
+              </div>
+              <Select items={difficultySelect} setValue={setDifficulty} defaultValue={difficulty} css={[{'hidden':!edit}]}/>
           </div>
           {/*priority and urgency*/}
-          <div className={cn(...text2CSS, ...flexCSS)}>
-            <div className="w-1/2 flex">
+          <div className={cn(...text2CSS, ...flexCSS, 'w-full')}>
+            <div className="w-2/3 flex">
               <FontAwesomeIcon icon={faStar} className={cn(...iconCSS)} title={'Priority'} />
-              <Select items={prioritySelect} setValue={setPriority} defaultValue={priority} />
+              <div className={cn({'hidden':edit})} > 
+                {prioritySelect[priority]}
+              </div>
+              <Select items={prioritySelect} setValue={setPriority} defaultValue={priority} css={[{'hidden':!edit}]}/>
             </div>
-            <div className="w-1/2 flex">
+            <div className="w-32 flex">
               <FontAwesomeIcon icon={faExclamationCircle} className={cn(...iconCSS)} title={'Urgency'} />
-              <Select items={urgencySelect} setValue={setUrgency}defaultValue={urgency} />
+              <div className={cn({'hidden':edit})} > 
+                {urgencySelect[urgency]}
+              </div>
+              <Select items={urgencySelect} setValue={setUrgency}defaultValue={urgency} css={[{'hidden':!edit}]}/>
             </div>
           </div>
           {/*end date, duration and period*/}
           <div className={cn(...text2CSS, ...flexCSS, 'justify-between')}>
-            <div className="w-1/2 flex">
+            <div className="w-2/3 flex">
               <FontAwesomeIcon icon={faHourglassEnd} className={cn(...iconCSS)} title={'End date'} />
-              <input type="date" value={endDate}  onChange={e=>setEndDate(e.target.value)}/>
+              <div className={cn({'hidden':edit})} > 
+                {endDate}
+              </div>
+              <input type="date" value={endDate}  onChange={e=>setEndDate(e.target.value)} className={cn({'hidden':!edit})}/>
             </div>
-            <div className="w-1/2 flex">
+            <div className="w-32 flex">
               <FontAwesomeIcon icon={faClock} className={cn(...iconCSS)} title={'Duration'} />
-              <Select items={durationSelect} setValue={setDuration} defaultValue={duration} showIcon={false}/>
+              <div className={cn({'hidden':edit})} > 
+                {duration+1} &nbsp;
+              </div>
+              <Select items={durationSelect} setValue={setDuration} defaultValue={duration} showIcon={false} css={[{'hidden':!edit}]}/>
               <div>
-                hours
+                {duration>0?'hours':'hour'}
               </div>
             </div>
             
@@ -391,14 +419,17 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
           <div className={cn(...text2CSS, ...flexCSS, 'justify-between')}>
             <div className="w-1/2 flex">
               <FontAwesomeIcon icon={faHistory} className={cn(...iconCSS)} title={'Period'} />
-              <div className={cn({'hidden':!showPeriod})} onClick={()=>setShowPeriod(false)}> {period} days </div>
-
-              <Input value={period} setValue={setPeriod} css={[{'hidden':showPeriod}]} setState={()=>setShowPeriod(true)}/>
+              <div className={cn({'hidden':!showPeriod&&edit})} onClick={()=>setShowPeriod(false)}> {period} days </div>
+              <Input value={period} setValue={setPeriod} css={[{'hidden':showPeriod||!edit}]} setState={()=>setShowPeriod(true)} />
 
             </div>
             <div className="w-1/2 flex">
+              
               <FontAwesomeIcon icon={faList} className={cn(...iconCSS)} title={'type'} />
-              <Select items={typeSelect} setValue={setType} defaultValue={type} />
+              <div className={cn({'hidden':edit})} > 
+                {typeSelect[type]} 
+              </div>
+              <Select items={typeSelect} setValue={setType} defaultValue={type} css={[{'hidden':!edit}]}/>
             </div>
 
           </div>
@@ -406,8 +437,8 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
           <div className={cn(...text2CSS, ...flexCSS, 'justify-between',)}>
             <div className={cn('flex', 'w-9/10')}>
               <FontAwesomeIcon icon={faTags} className={cn(...iconCSS,)} title={'Tags'} />
-              <div className={cn({'hidden':!showTags})} onClick={()=>setShowTags(false)}> {tags || 'your tags'} </div>
-              <Input value={tags} setValue={setTags} css={[{'hidden':showTags}]} setState={()=>setShowTags(true)}/>
+              <div className={cn({'hidden':!showTags&&edit})} onClick={()=>setShowTags(false)}> {tags || 'your tags'} </div>
+              <Input value={tags} setValue={setTags} css={[{'hidden':showTags||!edit}]} setState={()=>setShowTags(true)}/>
             </div>
             {/*details symbol*/}
             <div className="w-1/10">
@@ -419,13 +450,13 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
           {
             showContent &&
             <div>
-              <div className={cn({'hidden':!showDetails}, )} onClick={()=>setShowDetails(false)}>
+              <div className={cn({'hidden':!showDetails&&edit}, )} onClick={()=>setShowDetails(false)}>
                 <Markdown content={content} />
                 {content.length<=1 && 'Enter something'}
               </div>
-              <TextArea value={originalContent} setValue={setOriginalContent} setHtml={setTmpData} css={[{'hidden':showDetails}]} setState={()=>setShowDetails(true)} />
+              <TextArea value={originalContent} setValue={setOriginalContent} setHtml={setTmpData} css={[{'hidden':showDetails||!edit}]} setState={()=>setShowDetails(true)} />
               <div className={cn({'hidden':showDetails}, 'flex')}>
-                <button onClick={()=>setShowDetails(true)}> Confirm </button>
+                <button onClick={()=>setShowDetails(true)} className={cn({'hidden':showDetails||!edit})}> Confirm </button>
               </div>
             </div>
           }
@@ -470,6 +501,7 @@ export function PlanLayer({items, layer, actions, password, update}){
         editAction: actions.editAction,
         completeAction: actions.completeAction,
         activeAction: actions.activeAction,
+        cancelAction: actions.cancelAction,
     }
     // all children items
     for (let i of items){

@@ -365,6 +365,8 @@ export default function PlanPage(data) {
           return
       }
   }
+  const cancelAction = () => {
+  }
   const dragAction = (source, target) => {
       let sourceId
       let targetId
@@ -457,6 +459,7 @@ export default function PlanPage(data) {
       editAction: editAction,
       completeAction: completeAction,
       activeAction: activeAction,
+      cancelAction: cancelAction,
   }
   const actionsNew = {
       setShowNew: setShowNew,

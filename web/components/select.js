@@ -1,7 +1,7 @@
 import cn from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSortDown } from '@fortawesome/free-solid-svg-icons'
-export default function Select({items, setValue, defaultValue=0, showIcon=true}){
+export default function Select({items, setValue, css=[], defaultValue=0, showIcon=true}){
   if (items===undefined){
       items = ['1', '2', '3']
   }
@@ -12,7 +12,7 @@ export default function Select({items, setValue, defaultValue=0, showIcon=true})
   const onChange = e => setValue(e.target.value)
   const main = (
     <>
-      <div className="flex">
+      <div className={cn(...css, 'flex')}>
         <select className={cn(...selectCSS)} onChange={onChange}>
           <option value={defaultValue} aria-selected="true"> {items[defaultValue]} </option>
           {items.map((e, index)=>{
