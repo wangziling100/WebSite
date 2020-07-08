@@ -80,7 +80,6 @@ export default function PlanPage(data) {
       }
       return result
   }
-  console.log(layers)
   const findAncestors = (id, layer) => {
       let ancestors = []
       //const searchArea = localData.layers.slice(0, layer+1)
@@ -534,23 +533,33 @@ export default function PlanPage(data) {
       const diffDate = getDateDiff(endDate)
       const layer = i.layer/20
       let timePriority = (24-(diffDate/3600 - i.duration))/24
-      i['order'] = timePriority*coeff+stdPriority*(1-coeff)+layer
+      i['order'] = timePriority*coeff+stdPriority*(1-coeff)-layer
   }
   let businessPlan = []
   let privatePlan = []
+  let runBusinessPlan = []
+  let runPrivatePlan = []
   for (let i of allItems){
       if (i.itemStatus === 'completed') continue
       if (i.planType === 0 || i.planType==='business'){
-          businessPlan.push(i)
+          if (i.stopCount!==undefined && !i.stopCount){
+              runBusinessPlan.push(i)
+          }
+          else businessPlan.push(i)
           continue
       }
       if (i.planType === 1 || i.planType==='private') {
-          privatePlan.push(i)
+          if (i.stopCount!==undefined && !i.stopCount){
+              runPrivatePlan.push(i)
+          }
+          else privatePlan.push(i)
           continue
       }
   }
   businessPlan = businessPlan.sort(compare('order'))
   privatePlan = privatePlan.sort(compare('order'))
+  businessPlan = runBusinessPlan.concat(businessPlan)
+  privatePlan = runPrivatePlan.concat(privatePlan)
 
   //components
   const planRoute = (
