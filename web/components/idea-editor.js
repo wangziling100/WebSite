@@ -93,7 +93,6 @@ export function IdeaEditor({background, data, item, savedPassword, page, actions
     }
     if (userPassword==='' && savedPassword!==''){
         await sendData(form, isTest, actions.afterAction, true)
-        //Router.push(page)
         return
     }
     if (userPassword==='' && savedPassword===''){

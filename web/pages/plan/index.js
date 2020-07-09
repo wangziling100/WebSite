@@ -605,7 +605,7 @@ export default function PlanPage(data) {
       case 'PlanRoute': right=planRoute; break;
       case 'TopPlan': right=<TopPlan businessPlan={businessPlan} privatePlan={privatePlan} password={adminPassword} actions={topActions}/>; break;
       case 'dailySummary': right=dailySummary; break;
-      case 'Setting': right=<PlanSetting password={adminPassword} actions={settingActions}/>; break;
+      case 'Setting': right=<PlanSetting password={adminPassword} actions={settingActions} userPassword={userPassword}/>; break;
   }
 
   const main = (

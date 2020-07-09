@@ -128,7 +128,7 @@ export function IdeaItem({ data, password, actions, orderBy="priority", selected
   // CSS
   const optionCSS = ['pr-1', 'hover:text-blue-500', 'cursor-pointer']
   // Attributes
-  const startTime = new Date(data._createdAt).toGMTString()
+  const startTime = new Date(data._createdAt||data.createdAt).toGMTString()
   const title = data.title
   const content = data.content
   const owner = data.owner || "Public"

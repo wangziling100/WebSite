@@ -2,6 +2,7 @@ import { GraphQLClient } from "graphql-request";
 const API_URL = 'https://graphql.datocms.com'
 const API_TOKEN = process.env.NEXT_EXAMPLE_CMS_DATOCMS_API_TOKEN
 import React, { useRef, useState, useEffect } from 'react'
+import { flat } from '../lib/tools'
 
 // See: https://www.datocms.com/blog/offer-responsive-progressive-lqip-images-in-2020
 const responsiveImageFragment = `
@@ -316,6 +317,23 @@ export function readLocal(page, password){
     return record
 }
 
+export function readAllLocalBusiness(password){
+    let all = {}
+    const ideaItems = readLocal('idea', password)
+    all['idea'] = ideaItems.ideaItem
+    const planLayers = readLocal('plan', password)
+    const tmp = []
+    for (let el of flat(planLayers.layers)){
+        if (el.planType===0){
+            tmp.push(el)
+        }
+    }
+    all['plan'] = tmp
+    
+    return all
+
+}
+
 export function getItem(persistentData, setFunction, key){
     useEffect(() =>{
         if (persistentData!==undefined && persistentData){
@@ -333,6 +351,9 @@ export function getHostname(setFunction){
 }
 
 export function toItemFormat(data){
+    if (data.origin_content!==undefined){
+        data.content = data.origin_content
+    }
     const tmp = {
         id: data.id,
         ref: data.ref,
@@ -346,6 +367,7 @@ export function toItemFormat(data){
         completeness: data.completeness,
         itemStatus: data.itemStatus,
         _createdAt: data._createdAt,
+        createdAt: data.createdAt || null,
         evaluation: data.evaluation,
         allowPriorityChange: data.allowPriorityChange,
         version: data.version,
@@ -358,6 +380,8 @@ export function toItemFormat(data){
         duration: data.duration,
         period: data.period,
         planType: data.planType,
+        itemId: data.itemId,
+        option: data.option,
     }
     return tmp
 }
