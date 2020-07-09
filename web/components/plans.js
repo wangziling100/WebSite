@@ -118,7 +118,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
               "difficulty": difficulty,
               "urgency": urgency,
               "endDate": endDate,
-              "duration": duration,
+              "duration": parseInt(duration),
               "period": period,
               "planType": parseInt(type),
               "itemId": Math.random().toString()
@@ -139,7 +139,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
               "difficulty": difficulty,
               "urgency": urgency,
               "endDate": endDate,
-              "duration": duration,
+              "duration": parseInt(duration),
               "period": period,
               "id": data.id,
               "option": "update",
@@ -401,7 +401,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
             <div className="w-32 flex">
               <FontAwesomeIcon icon={faClock} className={cn(...iconCSS)} title={'Duration'} />
               <div className={cn({'hidden':edit})} > 
-                {duration+1} &nbsp;
+                {(duration+1)} &nbsp;
               </div>
               <Select items={durationSelect} setValue={setDuration} defaultValue={duration} showIcon={false} css={[{'hidden':!edit}]}/>
               <div>
