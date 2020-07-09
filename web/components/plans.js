@@ -74,10 +74,6 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
   const [ diffDate, setDiffDate ] = useState(s2Time(dateDiff))
   const [ stopCount, setStopCount] = useState(data?.stopCount || true)
   const [ startTime, setStartTime ] = useState(data?.startTime || null)
-  const [ counter, setCounter ] = useState(0)
-  if (counter===0){
-      setCounter(counter+1)
-  }
   const condition = (data!==undefined && data.startTime!==null) ? (new Date()-new Date(data.startTime))/1000 : 0
   const [ usedTime, setUsedTime ] = useState(condition)
   const [ totalUsedTime, setTotalUsedTime ] = useState(data?.totalUsedTime || 0)

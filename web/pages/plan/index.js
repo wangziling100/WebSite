@@ -275,6 +275,9 @@ export default function PlanPage(data) {
       for (let key in form){
           newData[key] = form[key]
       }
+      newData['startTime'] = null
+      newData['totalUsedTime'] = 0
+      newData['stopCount'] = true
       if (userPassword!=='') {
           afterEditAction(newData)
           setUpdateCount(updateCount+1)
