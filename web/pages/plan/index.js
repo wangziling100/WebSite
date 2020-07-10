@@ -2,7 +2,7 @@ import Head from 'next/head'
 import Container from '../../components/container'
 import Navigation from '../../components/navigation'
 import Layout from '../../components/layout'
-import { useLoadData, useUpdateData, useAdminPassword, useUserPassword, getVersion, toItemFormat, sendData, getHostname, getImageByReference, getItemByReference } from '../../lib/api'
+import { useGithubLogin, useGithubCode, useLoadData, useUpdateData, useAdminPassword, useUserPassword, getVersion, toItemFormat, sendData, getHostname, getImageByReference, getItemByReference } from '../../lib/api'
 import { useState, useEffect } from 'react'
 import { PlanItem, PlanLayer } from '../../components/plans'
 import cn from 'classnames'
@@ -28,6 +28,7 @@ export default function PlanPage(data) {
   const textCSS = [ 'm-5', 'text-xl', 'hover:text-blue-500', 'text-gray-800', 'cursor-pointer' ]
   // States
   const [ localData, setLocalData ] = useState()
+  const [ sessionData, setSessionData ] = useState()
   const [ showOverlay, setShowOverlay ] = useState(false)
   const [ selectedId, setSelectedId ] = useState('')
   const [ selectedLayer, setSelectedLayer ] = useState()
@@ -44,11 +45,23 @@ export default function PlanPage(data) {
   const [ showNew, setShowNew ] = useState(false)
   const [ updateCount, setUpdateCount ] = useState(0)
   const [ adminData, setAdminData ] = useState(data)
+  const [ githubCode, setGithubCode ] = useState()
   const layers = localData?.layers || data.layers
-
+  // Variables
+  const loginStatus = sessionData?.loginStatus || 'logout'
+  const githubUserData = sessionData?.userData || null
+  const githubRepos = sessionData?.repos || null
+  // Function 
+  function updateFunction(){
+      setUpdateCount(updateCount+1)
+  }
+  // Effects
   getHostname(setHostname)
   useUserPassword(userPassword, setUserPassword)
   useAdminPassword(adminPassword, setAdminPassword)
+  useLoadData('plan', userPassword, setLocalData, setSessionData, [updateCount])
+  useUpdateData('plan', userPassword, localData, [localData?.layers.length, updateCount])
+  useGithubLogin('plan', isTest, updateFunction)
   // Actions
   const addNewAction = () => {
       setShowNew(!showNew)
@@ -425,6 +438,7 @@ export default function PlanPage(data) {
       
   }
 
+  // Effects
   useEffect(()=>{
       // drag item 
       if (dragSource!==null && dropTarget!==null){
@@ -445,8 +459,7 @@ export default function PlanPage(data) {
           setDropTarget(null)
       }
   }, [dragSource, dropTarget])
-  useLoadData('plan', userPassword, setLocalData)
-  useUpdateData('plan', userPassword, localData, [localData?.layers.length, updateCount])
+  
 
   //data
   const actions = {
@@ -473,6 +486,7 @@ export default function PlanPage(data) {
       setShowOverlay: setShowOverlay,
       deleteAction: (password)=>deleteAction(selectedItem, password),
       setOption: setOverlayOption,
+      updateFunction: updateFunction,
   }
 
   const settingActions = {
@@ -609,7 +623,7 @@ export default function PlanPage(data) {
   }
 
   const main = (
-    <Navigation page="plan" password={userPassword} actions={downflowActions} logo={logo}/>
+    <Navigation page="plan" password={userPassword} actions={downflowActions} logo={logo} hostname={hostname} loginStatus={loginStatus} githubUserData={githubUserData} repos={githubRepos}/>
   )
 
   children['top'] = main

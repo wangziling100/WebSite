@@ -18,8 +18,13 @@ jobs:
       env: 
         CMS_TOKEN: ${{ secrets.CMS_TOKEN }}
         PASSWORD: ${{ secrets.PASSWORD }}
+        CLIENT_ID: ${{ secrets.CLIENT_ID }}
+        CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+        BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
+        FILE_NAME: ${{ secrets.FILE_NAME }}
+        APP_ID: ${{ secrets.APP_ID }}
     - name: CICD pipeline
-      run: cd .github && bash lambda_push.sh #&& bash lambda_build.sh
+      run: cd .github && bash lambda_push.sh && bash lambda_auth.sh && bash lambda_regi.sh #&& bash lambda_build.sh
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.ACCESS_KEY }}

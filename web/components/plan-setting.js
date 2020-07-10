@@ -11,6 +11,9 @@ export function PlanSetting({ password, actions, userPassword}){
       setUserPassword: actions.setUserPassword,
   }
   const loginTxt = password?'Logout':'Admin Login'
+  const CLIENT_ID = 'Iv1.f70dacffd5b15781'
+  const REDIRECT_URL = 'http://localhost:3000/plan'
+  const githubURL = 'https://github.com/login/oauth/authorize?client_id='+CLIENT_ID+'&redirect_uri='+REDIRECT_URL
   // Functions
   const updateItems = (newItems, targetDataSet) => {
       for (let newItem of newItems){
@@ -97,12 +100,19 @@ export function PlanSetting({ password, actions, userPassword}){
       }
       
   }
+  const githubLoginAction = () => {
+      console.log('github login')
+      
+  }
   
   const main = (
     <>
       <Button bn='Build' onClick={buildAction}/>
       <Button bn={loginTxt} onClick={logInOutAction}/>
       <Button bn='Sync' onClick={syncAction} />
+      <a href={githubURL}>
+        <Button bn='Github' onClick={githubLoginAction}/>
+      </a>
       {
           showOverlay &&
           <Overlay page='plan/setting' option='adminLogin' actions={downflowActions} />

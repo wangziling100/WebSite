@@ -2,7 +2,6 @@ const https = require('https')
 const password = process.env.PASSWORD
 
 exports.lambdaHandler = async (event, context) =>{
-    console.log(event)
     let data
     let error
     let response

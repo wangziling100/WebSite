@@ -2,7 +2,8 @@ import { GraphQLClient } from "graphql-request";
 const API_URL = 'https://graphql.datocms.com'
 const API_TOKEN = process.env.NEXT_EXAMPLE_CMS_DATOCMS_API_TOKEN
 import React, { useRef, useState, useEffect } from 'react'
-import { flat } from '../lib/tools'
+import Router from 'next/router'
+import { flat,getQueryVariable } from '../lib/tools'
 
 // See: https://www.datocms.com/blog/offer-responsive-progressive-lqip-images-in-2020
 const responsiveImageFragment = `
@@ -130,6 +131,123 @@ export async function getVersion(preview=false){
         preview: preview
     })
     return data.version
+}
+
+
+export function setServerRequestOptions(exHost, exPath, method='POST', isTest=false){
+    let host
+    let port
+    let route
+    let https
+    if (isTest){
+        host = 'localhost'
+        port = 4000
+        route = '/' + exPath
+        https = require('http')
+    }
+    else{
+        host = exHost
+        route = '/Prod/'+exPath
+        port = null
+        https = require('https')
+    }
+    const options = {
+        hostname: host,
+        port: port,
+        path: route,
+        method: method,
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            accept: 'application/json',
+        }
+    }
+    return [options, https]
+}
+
+export async function sendRequest(options, https, postData, afterAction){
+    let req = https.request(options, (res) => {
+        res.setEncoding('utf8')
+        let body = []
+        res.on('data', (chunk) => {
+            body.push(chunk)
+        })
+        res.on('end', () => {
+            if (body.length===0) return
+            body = body.join('').toString()
+            body = JSON.parse(body)
+            afterAction && afterAction(body)
+        })
+    }).on('error',(e) => {
+        console.log('Got error: ', e)
+        afterAction && afterAction(null)
+    })
+    await req.write(postData)
+    await req.end()
+
+}
+
+export async function sendGithubCode(code, isTest, updateFunction){
+    const host = 'ukp35adj20.execute-api.eu-central-1.amazonaws.com'
+    const path = 'auth'
+    const postData = JSON.stringify(code)
+    const [options, https] = setServerRequestOptions(host, path, 'POST', isTest)
+    const afterAction = (newData) => {
+        const message = newData?.message
+        const userData = newData?.userData
+        const repos = newData?.repos
+        if (message === undefined || message === null) return
+        if (newData.message!=='error'){
+            writeData({
+                loginStatus: 'github_login',
+                userData: userData,
+                repos: repos,
+            })
+            writeLocalGlobal({
+                githubCode: code.githubCode,
+            })
+        }
+        else {
+            writeData({
+                loginStatus: 'logout',
+                userData: null,
+                repos: null,
+            })
+        }
+        updateFunction()
+    }
+    const result = await sendRequest(options, https, postData, afterAction)
+}
+
+export async function sendGithubRegi(code, isTest, updateFunction){
+    const host = '531yewov75.execute-api.eu-central-1.amazonaws.com'
+    const path = 'regi'
+    const postData = JSON.stringify(code)
+    const [options, https] = setServerRequestOptions(host, path, 'POST', isTest)
+    const afterAction = (newData) => {
+        const message = newData?.message
+        const userData = newData?.userData
+        const repos = newData?.repos
+        if (message === undefined || message === null) return
+        if (newData.message!=='error'){
+            writeData({
+                loginStatus: 'github_login',
+                userData: userData,
+                repos: repos,
+            })
+            writeLocalGlobal({
+                githubCode: code.githubCode,
+            })
+        }
+        else {
+            writeData({
+                loginStatus: 'logout',
+                userData: null,
+                repos: null,
+            })
+        }
+        updateFunction()
+    }
+    const result = await sendRequest(options, https, postData, afterAction)
 }
 
 export async function sendData(data, isTest, refreshAction, refresh=false){
@@ -307,11 +425,30 @@ export function writeLocal(page, password, data){
     return [true, record]
 }
 
+export function writeLocalGlobal(data){
+    const recordName = 'global'
+    let [ existRecord, record ] = checkRecord(recordName)
+    if (!existRecord) record = {}
+    for (let key in data){
+        record[key] = data[key]
+    }
+    localStorage.setItem(recordName, JSON.stringify(record))
+    return [true, record]
+}
+
+
 export function readLocal(page, password){
     // return [existRecord, record]
     const recordName = page+'_'+password
     const existUser = checkUser(password)
     if (!existUser) return [false, null]
+    const [ existRecord, record ] = checkRecord(recordName)
+    if (!existRecord) return {}
+    return record
+}
+
+function readLocalGlobal(){
+    const recordName = 'global'
     const [ existRecord, record ] = checkRecord(recordName)
     if (!existRecord) return {}
     return record
@@ -349,6 +486,34 @@ export function getHostname(setFunction){
         setFunction(hostname)
     },[hostname])
 }
+/*
+export function useGithubCode(setFunction, page, isTest=false){
+    let code
+    useEffect( () => {
+        let params = window.location.search
+        //code = params.match(/^?.*code\=(.*)$/)
+        const result = params.match(/code=(.*)/)
+        if (result!==null && result.length>1) code = result[1]
+        else { return}
+        const global = readLocalGlobal()
+        const previousCode = global.githubCode
+        if (code===previousCode) {
+            Router.push(page)
+            return
+        }
+
+        // send new code
+        const data = {
+            githubCode: code, 
+            previousCode: previousCode,
+        }
+        const response = sendGithubCode(data, isTest).then(response=>{return response})
+        setFunction(code)
+        writeLocalGlobal({githubCode: code})
+        Router.push(page)
+    }, [code])
+}
+*/
 
 export function toItemFormat(data){
     if (data.origin_content!==undefined){
@@ -386,6 +551,14 @@ export function toItemFormat(data){
     return tmp
 }
 
+export function useRedirect(redirectPage, page){
+    useEffect(() => {
+        if (redirectPage!==null && redirectPage!==undefined && redirectPage!==page){
+            Router.push('/'+redirectPage)
+            writeData({redirectPage: null})
+        }
+    }, [redirectPage])
+}
 export function useInterval(callback, delay ){
     const savedCallback = useRef()
     useEffect(() => {
@@ -426,6 +599,78 @@ export function writeData(data){
     sessionStorage.setItem('data', JSON.stringify(origin))
 }
 
+export function useGithubLogin(page, redirectPage, isTest, updateFunction){
+    function checkTimeout(){
+        const data = readData()
+        const loginStatus = data.loginStatus
+        if (loginStatus === 'github_pending'){
+            writeData({loginStatus: 'logout'})
+            updateFunction()
+        }
+    }
+    if (redirectPage!==null && redirectPage!==undefined && page!==redirectPage){
+
+        updateFunction = () => {Router.push('/'+redirectPage)}
+    }
+    let loginStatus
+    let code
+
+    let timerId = null
+    useEffect(() => {
+        if (redirectPage!==null && redirectPage!==undefined){
+            const data = readData()
+            loginStatus = data.loginStatus
+            //loginStatus = 'github_pending'
+            if (loginStatus === 'github_pending') {
+                timerId = setTimeout(checkTimeout, 30000)
+                //let params = window.location.search
+                //let result = params.match(/code=(.*)/)
+                const code = getQueryVariable('code')
+                const installationId = getQueryVariable('installation_id')
+                //window.location.href = window.location.host+'/idea'
+                //result = null
+                if (code!==null && installationId===null){
+                    const global = readLocalGlobal()
+                    const previousCode = global.githubCode
+                    if (code===previousCode){
+                        Router.push('/idea')
+                    }
+                    // send new code
+                    let hostname = window.location.host
+                    hostname = hostname.split(':')[0]
+                    const data = {
+                        githubCode: code,
+                        previousCode: previousCode,
+                        hostname: hostname,
+                    }
+                    sendGithubCode(data, isTest, updateFunction)
+                    Router.push('/idea')
+                }
+                else if(code!==null && installationId!==null){
+                    let hostname = window.location.host
+                    hostname = hostname.split(':')[0]
+                    const data = {
+                        githubCode: code,
+                        installationId: installationId,
+                        hostname: hostname,
+                    }
+                    sendGithubRegi(data, isTest, updateFunction)
+                    Router.replace('/idea')
+                }
+                else{
+                    writeData({
+                        loginStatus: 'logout',
+                        userData: null,
+                        repos: null,
+                    })
+                }
+
+            }
+        }
+    return (()=>{clearTimeout(timerId)})
+    }, [loginStatus, code, redirectPage])
+}
+
 export function useUserPassword(userPassword, setUserPassword){
     useEffect(() => {
         if (userPassword===undefined){
@@ -459,13 +704,15 @@ export function useAdminPassword(adminPassword, setAdminPassword){
     }, [adminPassword])
 }
 
-export function useLoadData(page, password, setData){
+export function useLoadData(page, password, setData, setSessionData, dep){
     useEffect(() => {
         if (password){
             const data = readLocal(page, password)
             setData(data)
         }
-    }, [password])
+        const sessionData = readData()
+        setSessionData(sessionData)
+    }, [password].concat(dep))
 }
 
 export function useUpdateData(page, password, data, dep){

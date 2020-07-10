@@ -3,7 +3,7 @@ import Link from 'next/link'
 import Container from '../../components/container'
 import Navigation from '../../components/navigation'
 import Layout from '../../components/layout'
-import { readLocal, writeLocal, useUpdateData, useLoadData, useUserPassword, useAdminPassword, sendData, getHostname, getItemByReference, getImageByReference } from '../../lib/api'
+import { useRedirect, useGithubLogin, readLocal, writeLocal, useUpdateData, useLoadData, useUserPassword, useAdminPassword, sendData, getHostname, getItemByReference, getImageByReference } from '../../lib/api'
 import { IdeaHeader, Ideas } from '../../components/ideas'
 import Notice from '../../components/notice'
 import Router, { useRouter } from 'next/router'
@@ -11,10 +11,14 @@ import markdownToHtml from '../../lib/markdownToHtml'
 import { Overlay } from '../../components/overlay'
 import { useState, useEffect } from 'react'
 import { Image } from 'react-datocms'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSpinner } from '@fortawesome/free-solid-svg-icons'
+import { RotateType1 } from '../../components/animation'
 
 export default function IdeaPage(props) {
   // Variables
   const [ localData, setLocalData ] = useState()
+  const [ sessionData, setSessionData ] = useState()
   const img = props.data.ideaBg
   const noticeTitle = props.data.ideaItemTitle[0].title
   const noticeContent = props.data.ideaItemTitle[0].content
@@ -24,6 +28,11 @@ export default function IdeaPage(props) {
   const isTest = false
   const ideaItem = localData?.ideaItem || props.data.ideaItem
   const noContentImg = props.data.noContentImg
+  const loginStatus = sessionData?.loginStatus || 'logout'
+  const githubUserData = sessionData?.userData || null
+  const githubRepos = sessionData?.repos || null
+  const redirectPage = sessionData?.redirectPage || null
+  const page = 'idea'
 
   // States
   const [ orderBy, setOrderBy ] = useState("priority")
@@ -37,6 +46,20 @@ export default function IdeaPage(props) {
   const [ adminPassword, setAdminPassword ] = useState()
   const [ updateLocal, setUpdateLocal ] = useState(0)
   const [ refresh, setRefresh ] = useState(false)
+  
+  // Functions
+  function updateFunction(){
+      setUpdateLocal(updateLocal+1)
+  }
+  // Effects
+  getHostname(setHostname)
+  useUserPassword(userPassword, setUserPassword)
+  useAdminPassword(adminPassword, setAdminPassword)
+  useLoadData('idea', userPassword, setLocalData, setSessionData, [updateLocal])
+  
+  useUpdateData('idea', userPassword, localData, [localData?.ideaItem.length, updateLocal])
+  useGithubLogin('idea', redirectPage, isTest, updateFunction)
+  //useRedirect(redirectPage, page)
   // Actions
   const afterActiveAction = (postData, itemData) => {
       if (userPassword!==''){
@@ -171,19 +194,15 @@ export default function IdeaPage(props) {
       newCommentAction: newCommentAction,
       completeAction: completeAction,
       activeAction: activeAction,
+      updateFunction: updateFunction,
   }
   
-  getHostname(setHostname)
-  useUserPassword(userPassword, setUserPassword)
-  useAdminPassword(adminPassword, setAdminPassword)
-  useLoadData('idea', userPassword, setLocalData)
-  
-  useUpdateData('idea', userPassword, localData, [localData?.ideaItem.length, updateLocal])
+
   
   const main = (
   
     <>
-      <Navigation page="idea" password={userPassword} actions={downflowActions} logo={logo}/>
+      <Navigation page="idea" password={userPassword} actions={downflowActions} logo={logo} hostname={hostname} loginStatus={loginStatus} githubUserData={githubUserData} repos={githubRepos}/>
       <Notice title={noticeTitle} content={noticeContent} />
       <div className="mt-6">
         <div className="flex mx-12 mb-2 justify-end">
@@ -206,15 +225,26 @@ export default function IdeaPage(props) {
     </>
   )
   return (
-    <div>
-      <Head>
-        <title>Good ideas are common – what’s uncommon are people who’ll work hard enough to bring them about. </title>
-        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
-      </Head>
-      <Layout page={'idea'} bgImgAndSetting={bgImgAndSetting} hostname={hostname}>
-        {main}
-      </Layout>
-    </div>
+    <>
+    { loginStatus!=='github_pending' &&
+      <div>
+        <Head>
+          <title>Good ideas are common – what’s uncommon are people who’ll work hard enough to bring them about. </title>
+          <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+        </Head>
+        <Layout page={'idea'} bgImgAndSetting={bgImgAndSetting} hostname={hostname}>
+          {main}
+        </Layout>
+      </div>
+    }
+    { loginStatus==='github_pending' &&
+        <div className='flex justify-center w-screen h-screen items-center bg-gray-100'>
+          <RotateType1>
+            <FontAwesomeIcon icon={faSpinner} className='h-20 w-20 text-gray-600'/>
+          </RotateType1>
+        </div>
+    }
+    </>
   )
 }
 
