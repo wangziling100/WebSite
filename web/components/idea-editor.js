@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Router, { useRouter } from 'next/router'
 import cn from 'classnames'
 import Link from 'next/link'
+import { isGithubLogin } from '../lib/github'
 
 export function IdeaEditor({background, data, item, savedPassword, page, actions, userPassword}){
   // Variable
@@ -44,6 +45,7 @@ export function IdeaEditor({background, data, item, savedPassword, page, actions
   const getTags = e => {setTags(e.target.value)}
   const getPriority = e => {setPriority(e.target.value)}
   const getOwner = e => {setOwner(e.target.value)}
+  //console.log(item, 'idea editor')
   const getData = async () => { 
     if(title===undefined || content===undefined || tags==undefined || title==="" || content===""){
         setFormWarning(false)
@@ -80,22 +82,31 @@ export function IdeaEditor({background, data, item, savedPassword, page, actions
         "originContent": item?.originContent,
         "comments": item?.comments
     }
-    if (item && item.id !== undefined){
+    if (item && (item.id !== undefined || item.itemId!==undefined)){
         form['refId'] = item.id
         form['option'] = 'edit'
         form['version'] = item.version+1
+        if(item.number!==undefined) form['number'] = item.number
         
     } 
     if (userPassword!==''){
-        actions.afterAction(form)
-        Router.push(page)
+        //console.log(form, 'form')
+     
+        if (isGithubLogin()) {
+            const response = await actions.githubAction(form)
+            //console.log(response, 'response')
+        }
+        else{ 
+            actions.afterAction(form)
+            //Router.push(page)
+        }
         return
     }
-    if (userPassword==='' && savedPassword!==''){
+    else if (userPassword==='' && savedPassword!==''){
         await sendData(form, isTest, actions.afterAction, true)
         return
     }
-    if (userPassword==='' && savedPassword===''){
+    else if (userPassword==='' && savedPassword===''){
         Router.push(page)
     }
 

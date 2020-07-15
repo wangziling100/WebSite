@@ -14,6 +14,7 @@ import { Image } from 'react-datocms'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 import { RotateType1 } from '../../components/animation'
+import { updateGithubItem, sendGithubRequest, isGithubLogin, getGithubInfo } from '../../lib/github'
 
 export default function IdeaPage(props) {
   // Variables
@@ -33,6 +34,7 @@ export default function IdeaPage(props) {
   const githubRepos = sessionData?.repos || null
   const redirectPage = sessionData?.redirectPage || null
   const page = 'idea'
+  //console.log(ideaItem, 'ideaItem')
 
   // States
   const [ orderBy, setOrderBy ] = useState("priority")
@@ -78,12 +80,17 @@ export default function IdeaPage(props) {
       }
   }
   const activeAction = async (postData, itemData) => {
-      if (userPassword!==''){
+      if (userPassword!=='' && !isGithubLogin()){
           postData['itemId'] = itemData.itemId
           afterActiveAction(postData, itemData)
           return
       }
-      if (userPassword==='' && adminPassword!==''){
+      else if (userPassword!=='' && isGithubLogin()){
+          itemData['itemStatus'] = 'active'
+          await updateGithubItem(itemData, hostname, afterActiveAction)
+
+      }
+      else if (userPassword==='' && adminPassword!==''){
           postData['id'] = itemData.id
           postData['password'] = adminPassword
           await sendData(postData)
@@ -103,12 +110,18 @@ export default function IdeaPage(props) {
       }
   }
   const completeAction = async (postData, itemData) => {
-      if (userPassword!==''){
+      if (userPassword!=='' && !isGithubLogin()){
           postData['itemId'] = itemData.itemId
           afterCompleteAction(postData, itemData)
           return
       }
-      if (userPassword==='' && adminPassword!==''){
+      else if (userPassword!=='' && isGithubLogin()){
+          //console.log(postData, 'postData')
+          itemData['itemStatus'] = 'completed'
+          await updateGithubItem(itemData, hostname, afterCompleteAction)
+          
+      }
+      else if (userPassword==='' && adminPassword!==''){
           postData['id'] = itemData.id
           postData['password'] = adminPassword
           await sendData(postData)
@@ -147,8 +160,9 @@ export default function IdeaPage(props) {
           await sendData(postData, isTest, afterNewCommentAction, true)
       }
   }
-  const afterDeleteAction = () => {
-      if (userPassword!==''){
+  const afterDeleteAction = (newData) => {
+      //console.log(newData, 'new data')
+      if (userPassword!=='' && !isGithubLogin()){
           const data = localData
           for (let index in data.ideaItem){
               if (data.ideaItem[index].itemId === itemData.itemId){
@@ -158,7 +172,26 @@ export default function IdeaPage(props) {
           }
           setLocalData(data)
       }
-      if (userPassword==='' && adminPassword!==''){
+      else if (userPassword!=='' && isGithubLogin()){
+          const statusText = newData.statusText || null
+          if (statusText==='No Content'){
+              //console.log(statusText, 'statusText')
+              const data = localData
+              for (let index in data.ideaItem){
+                  if (data.ideaItem[index].itemId === itemData.itemId){
+                      data.ideaItem.splice(index, 1)
+                      break
+                  }
+              }
+              setLocalData(data)
+              updateFunction()
+          }
+          else {
+              alert('Sorry, delete failed')
+          }
+
+      }
+      else if (userPassword==='' && adminPassword!==''){
           for (let index in ideaItem){
               if (ideaItem[index].id === itemData.id){
                   ideaItem.splice(index, 1)
@@ -175,12 +208,27 @@ export default function IdeaPage(props) {
           "option": "delete",
           "password": tmpPassword,
       }
-      if (userPassword!==''){
+      if (userPassword!=='' && !isGithubLogin()){
           afterDeleteAction(tmpData)
           setShowOverlay(false)
           return
       }
-      if (userPassword==='' && tmpPassword!==''){
+      else if (userPassword!=='' && isGithubLogin()){
+          const githubInfo = getGithubInfo()
+          tmpData['itemType'] = 'milestone'
+          tmpData['userName'] = githubInfo.userName
+          tmpData['userId'] = githubInfo.userId
+          tmpData['repo'] = githubInfo.repo
+          tmpData['hostname'] = hostname
+          tmpData['option'] = 'delete'
+          tmpData['version'] = new Date()
+          tmpData['number'] = itemData.number
+          //console.log('delete action')
+          sendGithubRequest(tmpData, afterDeleteAction)
+          setShowOverlay(false)
+          return
+      }
+      else if (userPassword==='' && tmpPassword!==''){
           await sendData(tmpData, isTest, afterDeleteAction, true)
           setShowOverlay(false)
           return
@@ -255,12 +303,25 @@ export default function IdeaPage(props) {
 }
 
 export async function getStaticProps({ preview=false }){
-  const ideaBg = (await getImageByReference("idea_bg", preview))
-  const noContentImg = await getImageByReference('no_content', preview)
-  let ideaItemTitle = (await getItemByReference("idea_item_title", preview))
-  let ideaItem = (await getItemByReference("idea_item", preview))
-  let comments = (await getItemByReference("idea_comment", preview))
-  let logo = await getImageByReference('logo', preview)
+  let ideaBg = null
+  let noContentImg = null
+  let ideaItemTitle = null
+  let ideaItem = null
+  let comments = null
+  let logo = null
+  try{
+      ideaBg = (await getImageByReference("idea_bg", preview))
+      noContentImg = await getImageByReference('no_content', preview)
+      ideaItemTitle = (await getItemByReference("idea_item_title", preview))
+      ideaItem = (await getItemByReference("idea_item", preview))
+      comments = (await getItemByReference("idea_comment", preview))
+      logo = await getImageByReference('logo', preview)
+  }
+  catch{
+      ideaItem = []
+      comments = []
+  }
+  
   for (let e of ideaItem){
       e.originContent = e.content
       e.content = await markdownToHtml(e.content || '')
@@ -272,7 +333,9 @@ export async function getStaticProps({ preview=false }){
       }
   }
   const data = {ideaBg, ideaItemTitle, ideaItem, logo, noContentImg}
-  ideaItemTitle[0].content = await markdownToHtml(ideaItemTitle[0].content || '')
+  if (ideaItemTitle!==null){
+      ideaItemTitle[0].content = await markdownToHtml(ideaItemTitle[0].content || '')
+  }
   return{
     props: {
         data: data,

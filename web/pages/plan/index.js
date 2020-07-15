@@ -13,6 +13,8 @@ import { Overlay } from '../../components/overlay'
 import { TopPlan } from '../../components/top-plan'
 import { flat, compare, getDateDiff, s2Time } from '../../lib/tools'
 import { PlanSetting } from '../../components/plan-setting'
+import { deleteGithubItem, updateGithubItem, createGithubItem, isGithubLogin } from '../../lib/github'
+import markdownToHtml from '../../lib/markdownToHtml'
 
 export default function PlanPage(data) {
   // Variables
@@ -51,16 +53,16 @@ export default function PlanPage(data) {
   const loginStatus = sessionData?.loginStatus || 'logout'
   const githubUserData = sessionData?.userData || null
   const githubRepos = sessionData?.repos || null
-  console.log(sessionData, 'sessionData')
-  console.log(layers, 'layers')
-  console.log(localData, 'localData')
-  console.log(updateCount, 'updateCount')
+  //console.log(sessionData, 'sessionData')
+  //console.log(layers, 'layers')
+  //console.log(localData, 'localData')
+  //console.log(updateCount, 'updateCount')
   // Function 
   function updateFunction(){
       setUpdateCount(updateCount+1)
   }
   function cleanLocalData(){
-      setLocalData()
+      setLocalData({})
   }
   // Effects
   getHostname(setHostname)
@@ -200,7 +202,7 @@ export default function PlanPage(data) {
       
   }
 
-  const afterDeleteAction = (newData) => {
+  const afterDeleteAction = (newData, sourceData=null) => {
       if (newData === undefined || newData === null) return
       if (newData.data !== undefined) newData = newData.data
       if (newData instanceof Array){
@@ -226,21 +228,71 @@ export default function PlanPage(data) {
               }
           }
       }
+      else if(userPassword!=='' && isGithubLogin()){
+          //console.log(sourceData, 'after delete')
+          const statusText = newData.statusText
+          if (statusText==='OK'){
+              for (let i of sourceData){
+                  if (i===null) return
+                  const id = i.itemId
+                  const layer = i.layer
+                  const option = i.option
+                  if (option==='delete'){
+                      deleteItemInLayer(id, layer)
+                      continue
+                  }
+                  else if (option==='update'){
+                      updateItemInLayer(id, layer+1, i)
+                      continue
+                  }
+              }
+          }
+          else {
+              alert('Something wrong happens')
+          }
+      }
       setUpdateCount(updateCount+1)
   }
-  const afterCreateAction = (newData) => {
+  const afterCreateAction = (newData, sourceData=null) => {
       //newData = newData.data
+      if (newData===null){
+          alert('Something wrong')
+          return
+      }
       if (userPassword==='' && adminPassword!==''){
           newData = newData.data
+      }
+      else if( isGithubLogin() ){
+          //console.log(newData, sourceData, 'after create action')
+          const statusText = newData.statusText
+          if (statusText==='Created'){
+              sourceData['number'] = newData.data.number
+              sourceData['url'] = newData.data.url
+              sourceData['id'] = newData.data.id
+              newData = sourceData
+          }
+          else {
+              alert('Something wrong happens')
+          }
       }
       addItemInLayer(newData.layer, newData)
       setUpdateCount(updateCount+1)
   }
-  const afterEditAction = (newData) => {
-      if (userPassword!==''){
+  const afterEditAction = (newData, sourceData=null) => {
+      if (userPassword!=='' && !isGithubLogin()){
           updateItemInLayer(newData.itemId, newData.layer, newData,0)
       }
-      if (userPassword==='' && adminPassword!==''){
+      else if (userPassword!=='' && isGithubLogin()){
+          //console.log(newData, sourceData, 'after edit action')
+          const statusText = newData.statusText
+          if (statusText==='OK'){
+              updateItemInLayer(sourceData.itemId, sourceData.layer, sourceData, 0)
+          }
+          else {
+              alert('Something wrong happens')
+          }
+      }
+      else if (userPassword==='' && adminPassword!==''){
           updateItemInLayer(newData.id, newData.layer, newData, 0)
       }
       //setUpdateCount(updateCount+1)
@@ -265,24 +317,37 @@ export default function PlanPage(data) {
               }
           }
       }
-      setRefresh(!refresh)
+      //setRefresh(!refresh)
+      setUpdateCount(updateCount+1)
   }
   const createAction = async (form) => {
-      if (userPassword!==''){
+      form['contentPerformance'] = await markdownToHtml(form.content)
+      if (userPassword!=='' && !isGithubLogin()){
           form['itemId'] = Math.random().toString()
           afterCreateAction(form)
       }
-      if (userPassword==='' && adminPassword!==''){
+      else if (userPassword!=='' && isGithubLogin()){
+          form['option'] = 'create'
+          await createGithubItem(form, hostname, afterCreateAction, 'issue')
+
+      }
+      else if (userPassword==='' && adminPassword!==''){
           await sendData(form, isTest, afterCreateAction, true)
       }
   }
   const editAction = async (form, data) => {
+      //console.log('edit', data, form)
       for (let key in form){
           data[key] = form[key]
       }
-      if (userPassword!=='') {
+      if (userPassword!=='' && !isGithubLogin()) {
           afterEditAction(data)
           setUpdateCount(updateCount+1)
+      }
+      else if (userPassword!=='' && isGithubLogin()){
+          data['option'] = 'update'
+          data['version'] = new Date()
+          await updateGithubItem(data, hostname, afterEditAction, 'issue')
       }
 
       if (userPassword==='' && adminPassword!==''){
@@ -298,9 +363,14 @@ export default function PlanPage(data) {
       newData['startTime'] = null
       newData['totalUsedTime'] = 0
       newData['stopCount'] = true
-      if (userPassword!=='') {
+      if (userPassword!=='' && !isGithubLogin()) {
           afterEditAction(newData)
           setUpdateCount(updateCount+1)
+      }
+      else if (userPassword!=='' && isGithubLogin()){
+          newData['option'] = 'update'
+          await updateGithubItem(newData, hostname, afterEditAction, 'issue')
+
       }
       if (userPassword==='' && adminPassword!==''){
           form['password'] = adminPassword
@@ -313,11 +383,15 @@ export default function PlanPage(data) {
       for (let key in form){
           newData[key] = form[key]
       }
-      if (userPassword!=='') {
+      if (userPassword!=='' && !isGithubLogin()) {
           afterEditAction(newData)
           setUpdateCount(updateCount+1)
       }
-      if (userPassword==='' && adminPassword!==''){
+      else if (userPassword!=='' && isGithubLogin()){
+          newData['option'] = 'update'
+          await updateGithubItem(newData, hostname, afterEditAction, 'issue')
+      }
+      else if (userPassword==='' && adminPassword!==''){
           form['password'] = adminPassword
           await sendData(form, isTest)
           afterEditAction(newData)
@@ -355,11 +429,18 @@ export default function PlanPage(data) {
               child.password = pwd
           }
           allOpt = children.concat([data])
-          afterDeleteAction(allOpt)
-          return
+          if (!isGithubLogin()){
+              afterDeleteAction(allOpt)
+              return
+          }
+          else if (isGithubLogin()){
+              //console.log(allOpt, 'delete action')
+              await deleteGithubItem(allOpt, hostname, afterDeleteAction, 'issue')
+          }
+          
       }
 
-      if (userPassword==='' && adminPassword!==''){
+      else if (userPassword==='' && adminPassword!==''){
           id = data.id
           let children = findChildren(id, layer)
           if (password===''){
@@ -390,7 +471,7 @@ export default function PlanPage(data) {
   }
   const cancelAction = () => {
   }
-  const dragAction = (source, target) => {
+  const dragAction = async (source, target) => {
       let sourceId
       let targetId
       if (userPassword!==''){
@@ -414,12 +495,21 @@ export default function PlanPage(data) {
               child.layer = child.layer - layerDiff
               allOpt.push(child)
           }
-          afterDragAction(allOpt, layerDiff)
-          setRefresh(!refresh)
-          setUpdateCount(updateCount+1)
-          return
+
+          if (!isGithubLogin()){
+              afterDragAction(allOpt, layerDiff)
+              setRefresh(!refresh)
+              setUpdateCount(updateCount+1)
+              return
+          }
+          else if (isGithubLogin()){
+              //console.log(allOpt, 'drag action')
+              const tmpAfterAction = (newData, sourceData) => afterDragAction(allOpt, layerDiff)
+              await updateGithubItem(allOpt, hostname, tmpAfterAction, 'issue')
+          }
+          
       }
-      if (userPassword==='' && adminPassword!==''){
+      else if (userPassword==='' && adminPassword!==''){
           const targetOpt = {
               id: source.id,
               option: 'update',
@@ -448,7 +538,7 @@ export default function PlanPage(data) {
   // Effects
   useEffect(()=>{
       // drag item 
-      if (dragSource!==null && dropTarget!==null){
+      if (dragSource?.itemId!==undefined && dropTarget?.itemId!==undefined && dragSource!==null && dropTarget!==null){
           let sourceId
           let targetId
           if (userPassword!==''){
@@ -655,12 +745,21 @@ export default function PlanPage(data) {
 }
 
 export async function getStaticProps({ preview=false }){
-  const ideaBg = (await getImageByReference("idea_bg", preview))
-  const logo = await getImageByReference("logo", preview)
-  const allItems = await getItemByReference("plan_item", preview)
-  let versionData = await getVersion()
-  const versionId = versionData.id
-  const version = versionData.plan
+  let data = null
+  let ideaBg = null
+  let logo = null
+  let allItems = null
+  try{
+      ideaBg = (await getImageByReference("idea_bg", preview))
+      logo = await getImageByReference("logo", preview)
+      allItems = await getItemByReference("plan_item", preview)
+      //let versionData = await getVersion()
+      //const versionId = versionData.id
+      //const version = versionData.plan
+  }
+  catch{
+      allItems = []
+  }
   // seperate items in layer
   let layers = {}
   for (let i of allItems){
@@ -707,7 +806,8 @@ export async function getStaticProps({ preview=false }){
   businessPlan = businessPlan.sort(compare('order'))
   privatePlan = privatePlan.sort(compare('order'))
 
-  const data = {logo, layers, businessPlan, privatePlan, version, versionId}
+  data = {logo, layers, businessPlan, privatePlan}
+  
   return{
     props: data,
   }

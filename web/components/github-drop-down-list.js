@@ -10,6 +10,7 @@ export default function GithubList({name, actions}){
             loginStatus: 'logout',
             repos: null,
             userPassword:'',
+            selectedRepo: null,
         })
         actions.updateFunction()
         actions.cleanLocalData()

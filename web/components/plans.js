@@ -10,6 +10,7 @@ import { useInterval, sendData } from '../lib/api'
 import { useDrag, useDrop } from 'react-dnd'
 import { Overlay } from '../components/overlay'
 import { getDateDiff, s2Time } from '../lib/tools'
+import { isGithubLogin } from '../lib/github'
 
 const ItemTypes = {
     PLAN: 'plan'
@@ -46,6 +47,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
   const month = (date.getMonth()+1).toString().padStart(2,'0')
   const day = (date.getDate()+1).toString().padStart(2,'0')
   const dateString = year+'-'+month+'-'+day
+  const [ contentPerformance, setContentPerformance] = useState(data?.contentPerformance || "Enter something")
   const [ title, setTitle ] = useState(data?.title || "")
   const [ showTitle, setShowTitle ] = useState(true)
   const [ target, setTarget ] = useState(data?.target || "")
@@ -62,9 +64,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
   const [ type, setType ] = useState((data?.planType===undefined || data?.planType===null)? 0: data.planType)
   const [ period, setPeriod ] = useState((data?.period===undefined || data?.period===null)? 0: data.period)
   const [ tags, setTags ] = useState(data?.tag || '')
-  const [ content, setContent ] = useState(data?.content || 'Enter something')
-  const [ tmpData, setTmpData ] = useState()
-  const [ originalContent, setOriginalContent ] = useState(data?.originalContent || '')
+  const [ content, setContent ] = useState(data?.content || '')
   const [ showDetails, setShowDetails ] = useState(true)
   const [ showPeriod, setShowPeriod ] = useState(true)
   const [ showContent, setShowContent ] = useState(init?.showContent===undefined?false:init.showContent)
@@ -95,63 +95,52 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
 
   const submit = async () =>{
       let form
-      if (data?.id===undefined && data?.itemId===undefined){
-          form = {
+      form = {
               "title": title,
               "content": content,
               "tag": tags,
               "priority": parseInt(priority),
-              "completeness":0,
-              "startTime": null,
-              "evaluation": null,
-              "allowPriorityChange": false,
-              "ref": "plan_new",
-              "refId": null,
-              "owner": null,
-              "contributor": null,
               "itemStatus": "active",
-              "version": 0,
               "password": password,
-              "layer": parseInt(layer),
-              "parents": parents,
               "target": target,
               "difficulty": difficulty,
               "urgency": urgency,
               "endDate": endDate,
               "duration": parseInt(duration),
               "period": period,
+              "option": "update",
               "planType": parseInt(type),
-              "itemId": Math.random().toString()
+              'completeness': 0,
+              'startTime': null,
+              'evaluation': null,
+              'allowPriorityChange': false,
+              'ref': 'plan_new',
+              'owner': null,
+              'contributor': null,
+              'version': 0,
+              'layer': parseInt(layer),
+              'parents': parents || data.parents,
+              'itemId': data?.itemId || Math.random().toString(),
                   
-          }
+      }
+      if (data?.id===undefined && data?.itemId===undefined){
           actions.createAction(form)
           return
       }
       if (data?.id!==undefined || data?.itemId!==undefined){
-          form = {
-              "title": title,
-              "content": content,
-              "tag": tags,
-              "priority": parseInt(priority),
-              "itemStatus": "active",
-              "password": password,
-              "target": target,
-              "difficulty": difficulty,
-              "urgency": urgency,
-              "endDate": endDate,
-              "duration": parseInt(duration),
-              "period": period,
-              "id": data.id,
-              "option": "update",
-              "planType": parseInt(type),
-                  
-          }
+          form['id'] = data.id
+          form['contentPerformance'] = contentPerformance
           actions.editAction(form, data)
           return
       }
   }
+  /*
   if (tmpData!==undefined){
       tmpData.then(v=>setContent(v))
+  }
+  */
+  if (data!==undefined){
+      //console.log(data.title, originalContent, 'original content')
   }
   const editAction = () =>{
       setEdit(true)
@@ -178,7 +167,8 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
       setType((data?.planType===undefined || data?.planType===null)? 0: data.planType)
       setPeriod((data?.period===undefined || data?.period===null)? 0: data.period)
       setTags(data?.tag || '')
-      setContent(data?.content || 'Enter something')
+      setContent(data?.content || "")
+      setContentPerformance(data?.contentPerformance || 'Enter something')
 
       actions.cancelAction
   }
@@ -447,10 +437,10 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
             showContent &&
             <div>
               <div className={cn({'hidden':!showDetails&&edit}, )} onClick={()=>setShowDetails(false)}>
-                <Markdown content={content} />
-                {content.length<=1 && 'Enter something'}
+                <Markdown content={contentPerformance} />
+                {contentPerformance.length<=1 && 'Enter something'}
               </div>
-              <TextArea value={originalContent} setValue={setOriginalContent} setHtml={setTmpData} css={[{'hidden':showDetails||!edit}]} setState={()=>setShowDetails(true)} />
+              <TextArea value={content} setValue={setContent} setHtml={setContentPerformance} css={[{'hidden':showDetails||!edit}]} setState={()=>setShowDetails(true)} />
               <div className={cn({'hidden':showDetails}, 'flex')}>
                 <button onClick={()=>setShowDetails(true)} className={cn({'hidden':showDetails||!edit})}> Confirm </button>
               </div>

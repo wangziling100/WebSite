@@ -134,6 +134,7 @@ export default function Navigation({ page, password, actions, states, logo, host
         const onClickAction = () => {
             writeData({loginStatus: 'github_pending'})
         }
+        
         if (repos===null){
             repoSelect = (
                 <div className='' >
@@ -145,9 +146,14 @@ export default function Navigation({ page, password, actions, states, logo, host
         }
         else {
             const repoListSelect = repos.map(el=>el.repoName)
+            const selectAction = (value) => {
+                writeData({
+                    selectedRepo: repoListSelect[value],
+                })
+            }
             repoSelect = (
                 <>
-                  <Select items={repoListSelect} setValue={setRepoIndex} defaultValue={repoIndex} />
+                  <Select items={repoListSelect} setValue={setRepoIndex} defaultValue={repoIndex} action={selectAction}/>
                 </>
             )
         }

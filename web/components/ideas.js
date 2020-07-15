@@ -133,7 +133,7 @@ export function IdeaItem({ data, password, actions, orderBy="priority", selected
   const content = data.content
   const owner = data.owner || "Public"
   const contributor = data.contributor || "Nobody"
-  const tags = data.tags
+  const tags = '#'+data.number + ' ' +data.tag 
   const priority = data.priority
   const comments = data.comments || []
   const [ itemStatus, setItemStatus] = useState(data.itemStatus)
@@ -170,6 +170,9 @@ export function IdeaItem({ data, password, actions, orderBy="priority", selected
         </div>
         <div className={cn('text-lg', {'hidden': !hideContent}, )}>
           <Markdown content={content}/>
+        </div>
+        <div className='text-sm text-gray-600'>
+          {tags}
         </div>
         <div className="text-sm flex justify-between text-gray-500">
           <div>

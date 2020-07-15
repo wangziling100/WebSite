@@ -5,6 +5,8 @@ import { useState, useEffect } from 'react'
 import Footer from '../../components/footer'
 import markdownToHtml from '../../lib/markdownToHtml'
 import Head from 'next/head'
+import { isGithubLogin, createGithubItem, milestone2Item, getGithubInfo, sendGithubRequest } from '../../lib/github'
+import { copy } from '../../lib/tools'
 
 export default function NewPage(props){
     //const [ persistentStates, setPersistentStates ] = useState()
@@ -22,10 +24,29 @@ export default function NewPage(props){
 
     }
     // Actions
-    const afterCreateAction = async (newData) => {
+    const afterCreateAction = async (newData, oldData=null) => {
+        //console.log(newData, oldData, 'after create action')
+        if (isGithubLogin()){
+            const statusText = newData.statusText || null
+            if (statusText==='Unprocessable Entity'){
+                alert("Sorry, you can't use the same name with other milestones'")
+            }
+            else if (statusText==='Created'){
+                oldData['number'] = newData.data.number
+                oldData['id'] = newData.data.id
+                oldData['url'] = newData.data.url
+                newData = oldData
+                //console.log(newData, 'new data1')
+            }
+            else{
+                alert("Some unknown error happens")
+            } 
+        
+        } 
+        //console.log(newData, userPassword, 'new data')
         if(userPassword!==''){
             const data = readLocal('idea', userPassword)
-            let createTime = new Date()
+            let createTime = new Date().toISOString()
             newData['_createdAt'] = createTime
             newData['originContent'] = newData['content']
             newData['comments'] = []
@@ -33,12 +54,20 @@ export default function NewPage(props){
             data.ideaItem.push(newData)
             writeLocal('idea', userPassword, data)
         }
-        if (userPassword==='' && adminPassword!==''){
-            Router.push('/idea')
+        else if (userPassword==='' && adminPassword!==''){
         }
+        Router.push('/idea')
     }
+
+    const createAction = async (data) => {
+        data['_createdAt'] = new Date()
+        data['option'] = 'create'
+        await createGithubItem(data, hostname, afterCreateAction, 'milestone')
+    }
+
     const downflowActions = {
         afterAction: afterCreateAction,
+        githubAction: createAction,
     }
     const main = (
       <>

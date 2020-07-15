@@ -45,3 +45,10 @@ export function getQueryVariable(variable){
     }
     return null
 }
+export function copy(obj){
+    let result = {}
+    for (let index in obj){
+        result[index] = obj[index]
+    }
+    return result
+}

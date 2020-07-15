@@ -1,7 +1,7 @@
 import cn from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSortDown } from '@fortawesome/free-solid-svg-icons'
-export default function Select({items, setValue, css=[], defaultValue=0, showIcon=true}){
+export default function Select({items, setValue, action, css=[], defaultValue=0, showIcon=true}){
   if (items===undefined){
       items = ['1', '2', '3']
   }
@@ -9,7 +9,10 @@ export default function Select({items, setValue, css=[], defaultValue=0, showIco
   const selectCSS = ['cursor-pointer border-solide appearance-none h-full w-full']
   const iconCSS = ['mr-2', 'h-5', 'w-5']
   //Action
-  const onChange = e => setValue(e.target.value)
+  const onChange = e => {
+      setValue(e.target.value)
+      action && action(e.target.value)
+  }
   const main = (
     <>
       <div className={cn(...css, 'flex')}>

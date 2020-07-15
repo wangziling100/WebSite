@@ -165,16 +165,20 @@ export function setServerRequestOptions(exHost, exPath, method='POST', isTest=fa
 }
 
 export async function sendRequest(options, https, postData, afterAction){
+    console.log('send request')
     let req = https.request(options, (res) => {
         res.setEncoding('utf8')
         let body = []
         res.on('data', (chunk) => {
+            console.log('chunk', chunk)
             body.push(chunk)
         })
         res.on('end', () => {
+            console.log('body', body)
             if (body.length===0) return
             body = body.join('').toString()
             body = JSON.parse(body)
+            console.log('response', body)
             afterAction && afterAction(body)
         })
     }).on('error',(e) => {
@@ -198,9 +202,10 @@ export async function sendGithubCode(code, isTest, updateFunction){
         if (message === undefined || message === null) return
         let password
         if (newData.message!=='error'){
-            const repoName = repos[0]?.repoId || null
-            if (repoName!==null) {
-                password = 'github_'+userData.id+'_'+repoName
+            const repoName = repos[0]?.repoName|| null
+            const repoId = repos[0]?.repoId || null
+            if (repoId!==null) {
+                password = 'github_'+userData.id+'_'+repoId
             }
             else password = 'github_'+userData.id
             writeData({
@@ -208,6 +213,7 @@ export async function sendGithubCode(code, isTest, updateFunction){
                 userData: userData,
                 repos: repos,
                 userPassword: password,
+                selectedRepo: repoName,
             })
             writeLocalGlobal({
                 githubCode: code.githubCode,
@@ -219,6 +225,7 @@ export async function sendGithubCode(code, isTest, updateFunction){
                 loginStatus: 'logout',
                 userData: null,
                 repos: null,
+                selectedRepo: null,
             })
         }
         updateFunction(password)
@@ -238,9 +245,10 @@ export async function sendGithubRegi(code, isTest, updateFunction){
         if (message === undefined || message === null) return
         let password
         if (newData.message!=='error'){
-            const repoName = repos[0]?.id || null
-            if (repoName!==null){
-                password = 'github_'+userData.id+'_'+repoName
+            const repoId = repos[0]?.repoId || null
+            const repoName = repos[0]?.repoName || null
+            if (repoId!==null){
+                password = 'github_'+userData.id+'_'+repoId
             }
             else password = 'github_'+userData.id
             writeData({
@@ -248,6 +256,7 @@ export async function sendGithubRegi(code, isTest, updateFunction){
                 userData: userData,
                 repos: repos,
                 userPassword: password,
+                selectedRepo: repoName,
             })
             writeLocalGlobal({
                 githubCode: code.githubCode,
@@ -259,6 +268,7 @@ export async function sendGithubRegi(code, isTest, updateFunction){
                 loginStatus: 'logout',
                 userData: null,
                 repos: null,
+                selectedRepo: null,
             })
         }
         updateFunction(password)
@@ -393,12 +403,16 @@ export function setItem(list, obj){
 }
 
 export function createNewUser(password){
-    const existUser = checkUser(password)
-    if (existUser) return false
+    //const isIntegrity = checkUserIntegrity(password)
+    //console.log(isIntegrity, 'integrity')
+    //if (isIntegrity) return false
     let [existRecord, localUser] = checkRecord('local user')
     if (!existRecord) localUser = {data: []}
-    localUser.data.push(password)
-    localStorage.setItem('local user', JSON.stringify(localUser))
+    const userExist = checkUser(password)
+    if (!userExist) {
+        localUser.data.push(password)
+        localStorage.setItem('local user', JSON.stringify(localUser))
+    }
     initAccount(password)
     return true
 }
@@ -416,9 +430,22 @@ export function checkUser(password){
 function checkRecord(recordName){
     // return [existRecord, record]
     let record = localStorage.getItem(recordName)
+    if (record==='') return [false, null]
     record = JSON.parse(record)
     if (record===undefined||record===null) return [false, null]
     return [true, record]
+}
+
+function checkUserIntegrity(password){
+    const userExist = checkUser(password)
+    if (!userExist) return false
+    // record means all records in one page
+    const recordNames = getAllRecoredNames(password)
+    for (let name of recordNames){
+        const recordExist = checkRecord(name)
+        if (!recordExist) return false
+    }
+    return true
 }
 
 export function writeLocal(page, password, data){
@@ -746,7 +773,7 @@ function initAccount(password){
     {
         const name = 'idea_' + password
         const [exist, record] = checkRecord(name)
-        if (!exist){
+        if (!exist || record.ideaItem===undefined){
             const tmp = {
                 ideaItem: [],
             }
@@ -758,11 +785,22 @@ function initAccount(password){
     {
         const name = 'plan_' + password
         const [exist, record] = checkRecord(name)
-        if (!exist){
+        if (!exist || record.layers===undefined){
             const tmp = {
                 layers: [],
             }
             writeLocal('plan', password, tmp)
         }
     }
+}
+
+function getAllRecoredNames(password){
+    let result = []
+    // idea
+    let name = 'idea_' + password
+    result.push(name)
+    // plan
+    name = 'plan_' + password
+    result.push(name)
+    return result
 }
