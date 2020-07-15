@@ -196,15 +196,23 @@ export async function sendGithubCode(code, isTest, updateFunction){
         const userData = newData?.userData
         const repos = newData?.repos
         if (message === undefined || message === null) return
+        let password
         if (newData.message!=='error'){
+            const repoName = repos[0]?.repoId || null
+            if (repoName!==null) {
+                password = 'github_'+userData.id+'_'+repoName
+            }
+            else password = 'github_'+userData.id
             writeData({
                 loginStatus: 'github_login',
                 userData: userData,
                 repos: repos,
+                userPassword: password,
             })
             writeLocalGlobal({
                 githubCode: code.githubCode,
             })
+            createNewUser(password)
         }
         else {
             writeData({
@@ -213,7 +221,7 @@ export async function sendGithubCode(code, isTest, updateFunction){
                 repos: null,
             })
         }
-        updateFunction()
+        updateFunction(password)
     }
     const result = await sendRequest(options, https, postData, afterAction)
 }
@@ -228,15 +236,23 @@ export async function sendGithubRegi(code, isTest, updateFunction){
         const userData = newData?.userData
         const repos = newData?.repos
         if (message === undefined || message === null) return
+        let password
         if (newData.message!=='error'){
+            const repoName = repos[0]?.id || null
+            if (repoName!==null){
+                password = 'github_'+userData.id+'_'+repoName
+            }
+            else password = 'github_'+userData.id
             writeData({
                 loginStatus: 'github_login',
                 userData: userData,
                 repos: repos,
+                userPassword: password,
             })
             writeLocalGlobal({
                 githubCode: code.githubCode,
             })
+            createNewUser(password)
         }
         else {
             writeData({
@@ -245,7 +261,7 @@ export async function sendGithubRegi(code, isTest, updateFunction){
                 repos: null,
             })
         }
-        updateFunction()
+        updateFunction(password)
     }
     const result = await sendRequest(options, https, postData, afterAction)
 }
@@ -710,6 +726,8 @@ export function useLoadData(page, password, setData, setSessionData, dep){
             const data = readLocal(page, password)
             setData(data)
         }
+    }, [password])
+    useEffect(() => {
         const sessionData = readData()
         setSessionData(sessionData)
     }, [password].concat(dep))

@@ -7,7 +7,7 @@ import markdownToHtml from '../../lib/markdownToHtml'
 import Head from 'next/head'
 
 export default function NewPage(props){
-    const [ persistentStates, setPersistentStates ] = useState()
+    //const [ persistentStates, setPersistentStates ] = useState()
     const [ hostname, setHostname ] = useState()
     const [ userPassword, setUserPassword ] = useState()
     const [ adminPassword, setAdminPassword ] = useState()

@@ -46,18 +46,23 @@ export default function IdeaPage(props) {
   const [ adminPassword, setAdminPassword ] = useState()
   const [ updateLocal, setUpdateLocal ] = useState(0)
   const [ refresh, setRefresh ] = useState(false)
-  
+
   // Functions
-  function updateFunction(){
+  function updateFunction(password){
       setUpdateLocal(updateLocal+1)
+      if (password!==undefined && password!==null){
+          setUserPassword(password)
+      }
+  }
+  function cleanLocalData(){
+      setLocalData()
   }
   // Effects
   getHostname(setHostname)
   useUserPassword(userPassword, setUserPassword)
   useAdminPassword(adminPassword, setAdminPassword)
   useLoadData('idea', userPassword, setLocalData, setSessionData, [updateLocal])
-  
-  useUpdateData('idea', userPassword, localData, [localData?.ideaItem.length, updateLocal])
+  useUpdateData('idea', userPassword, localData, [localData?.ideaItem?.length, updateLocal])
   useGithubLogin('idea', redirectPage, isTest, updateFunction)
   //useRedirect(redirectPage, page)
   // Actions
@@ -195,6 +200,7 @@ export default function IdeaPage(props) {
       completeAction: completeAction,
       activeAction: activeAction,
       updateFunction: updateFunction,
+      cleanLocalData: cleanLocalData,
   }
   
 

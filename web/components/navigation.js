@@ -67,7 +67,12 @@ export default function Navigation({ page, password, actions, states, logo, host
         actions.setShowOverlay(false)
         setOption("")
         actions.setPassword("")
-        window.location.reload()
+        writeData({
+            userPassword: '',
+            loginStatus: 'logout',
+        })
+        actions.cleanLocalData()
+        actions.updateFunction()
     }
     const logInOutAction = () => {
         (password===undefined || password==="")?loginAction():logoutAction()
@@ -172,10 +177,10 @@ export default function Navigation({ page, password, actions, states, logo, host
               <div className='flex'>
                 <div className='relative px-4 cursor-pointer items-center justify-start p-2 text-base font-serif-Georgia tracking-widest rounded-lg' onMouseLeave={()=>setShowLoginType(false)}>
                   <div className='' onMouseOver={()=>setShowLoginType(true)} >
-                    { password?"Logout":"Login" }
+                    { "Login" }
                   </div>
                   <div className={cn({'hidden':!showLoginType}, 'absolute', 'z-20', 'w-40', 'bg-gray-100')}>
-                    <div className='mt-1 text-center text-white flex justify-center hover:bg-orange-600 bg-orange-400 rounded ' onClick={logInOutAction}>
+                    <div className='mt-1 text-center text-white flex justify-center hover:bg-orange-600 bg-orange-400 rounded ' onClick={loginAction}>
                       <div className=''>
                         Local
                       </div>
@@ -197,6 +202,17 @@ export default function Navigation({ page, password, actions, states, logo, host
                   Sign up
                 </div>
               </div>
+            )
+            break;
+        case 'local_login':
+            loginComponent = (
+              <>
+                <div className='flex justify-end items-center'>
+                  <div className='cursor-pointer' onClick={logoutAction}>
+                    Logout
+                  </div>
+                </div>
+              </>
             )
             break;
         case 'github_pending':

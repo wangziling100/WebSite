@@ -1,7 +1,7 @@
 import cn from 'classnames'
 import Router from 'next/router'
 import { useState } from 'react'
-import { checkUser, createNewUser, sendData } from '../lib/api'
+import { writeData, checkUser, createNewUser, sendData } from '../lib/api'
 import { withRouter } from 'next/router'
 
 export function Overlay({ page, option, overlayData, password, actions }){
@@ -66,6 +66,10 @@ function LoginWnd({ option, actions }){
                 actions.setPassword(password)
                 actions.setShowOverlay(false)
                 actions?.setShowRootOverlay && actions.setShowRootOverlay(false)
+                writeData({
+                    loginStatus: 'local_login',
+                    userPassword: password,
+                })
                 return
             }
             if (!exist) {

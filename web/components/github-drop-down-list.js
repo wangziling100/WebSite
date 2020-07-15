@@ -9,8 +9,10 @@ export default function GithubList({name, actions}){
             userData: null,
             loginStatus: 'logout',
             repos: null,
+            userPassword:'',
         })
         actions.updateFunction()
+        actions.cleanLocalData()
     }
     const main = (
       <>

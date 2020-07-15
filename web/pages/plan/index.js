@@ -51,17 +51,24 @@ export default function PlanPage(data) {
   const loginStatus = sessionData?.loginStatus || 'logout'
   const githubUserData = sessionData?.userData || null
   const githubRepos = sessionData?.repos || null
+  console.log(sessionData, 'sessionData')
+  console.log(layers, 'layers')
+  console.log(localData, 'localData')
+  console.log(updateCount, 'updateCount')
   // Function 
   function updateFunction(){
       setUpdateCount(updateCount+1)
+  }
+  function cleanLocalData(){
+      setLocalData()
   }
   // Effects
   getHostname(setHostname)
   useUserPassword(userPassword, setUserPassword)
   useAdminPassword(adminPassword, setAdminPassword)
   useLoadData('plan', userPassword, setLocalData, setSessionData, [updateCount])
-  useUpdateData('plan', userPassword, localData, [localData?.layers.length, updateCount])
-  useGithubLogin('plan', isTest, updateFunction)
+  useUpdateData('plan', userPassword, localData, [localData?.layers?.length, updateCount])
+  //useGithubLogin('plan', isTest, updateFunction)
   // Actions
   const addNewAction = () => {
       setShowNew(!showNew)
@@ -487,6 +494,7 @@ export default function PlanPage(data) {
       deleteAction: (password)=>deleteAction(selectedItem, password),
       setOption: setOverlayOption,
       updateFunction: updateFunction,
+      cleanLocalData: cleanLocalData,
   }
 
   const settingActions = {
