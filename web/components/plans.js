@@ -352,7 +352,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
           {/*target*/}
           <div className={cn(...text2CSS, ...flexCSS)} >
             <FontAwesomeIcon icon={faCrosshairs} className={cn(...iconCSS)} title={'Target'} />
-            <div className={cn({'hidden':!showTarget&&edit})} onClick={()=>setShowTarget(false)}> {target || "what's your target?"} </div>
+            <div className={cn({'hidden':!showTarget&&edit}, {'cursor-pointer':edit} )} onClick={()=>setShowTarget(false)}> {target || "what's your target?"} </div>
             <Input value={target} setValue={setTarget} css={[{'hidden':showTarget||!edit}]} setState={()=>setShowTarget(true)}/>
           </div>
           {/*difficutly*/}
@@ -380,19 +380,19 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
               <Select items={urgencySelect} setValue={setUrgency}defaultValue={urgency} css={[{'hidden':!edit}]}/>
             </div>
           </div>
-          {/*end date, duration and period*/}
+          {/*end date and duration */}
           <div className={cn(...text2CSS, ...flexCSS, 'justify-between')}>
             <div className="w-2/3 flex">
               <FontAwesomeIcon icon={faHourglassEnd} className={cn(...iconCSS)} title={'End date'} />
-              <div className={cn({'hidden':edit})} > 
+              <div className={cn({'hidden':edit},)} > 
                 {endDate}
               </div>
-              <input type="date" value={endDate}  onChange={e=>setEndDate(e.target.value)} className={cn({'hidden':!edit})}/>
+              <input type="date" value={endDate}  onChange={e=>setEndDate(e.target.value)} className={cn({'hidden':!edit}, 'cursor-pointer')}/>
             </div>
             <div className="w-32 flex">
               <FontAwesomeIcon icon={faClock} className={cn(...iconCSS)} title={'Duration'} />
               <div className={cn({'hidden':edit})} > 
-                {(duration+1)} &nbsp;
+                {(parseInt(duration)+1)} &nbsp;
               </div>
               <Select items={durationSelect} setValue={setDuration} defaultValue={duration} showIcon={false} css={[{'hidden':!edit}]}/>
               <div>
@@ -406,7 +406,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
           <div className={cn(...text2CSS, ...flexCSS, 'justify-between')}>
             <div className="w-1/2 flex">
               <FontAwesomeIcon icon={faHistory} className={cn(...iconCSS)} title={'Period'} />
-              <div className={cn({'hidden':!showPeriod&&edit})} onClick={()=>setShowPeriod(false)}> {period} days </div>
+              <div className={cn({'hidden':!showPeriod&&edit}, {'cursor-pointer':edit})} onClick={()=>setShowPeriod(false)}> {period} days </div>
               <Input value={period} setValue={setPeriod} css={[{'hidden':showPeriod||!edit}]} setState={()=>setShowPeriod(true)} />
 
             </div>
@@ -424,7 +424,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
           <div className={cn(...text2CSS, ...flexCSS, 'justify-between',)}>
             <div className={cn('flex', 'w-9/10')}>
               <FontAwesomeIcon icon={faTags} className={cn(...iconCSS,)} title={'Tags'} />
-              <div className={cn({'hidden':!showTags&&edit})} onClick={()=>setShowTags(false)}> {tags || 'your tags'} </div>
+              <div className={cn({'hidden':!showTags&&edit}, {'cursor-pointer':edit})} onClick={()=>setShowTags(false)}> {tags || 'your tags'} </div>
               <Input value={tags} setValue={setTags} css={[{'hidden':showTags||!edit}]} setState={()=>setShowTags(true)}/>
             </div>
             {/*details symbol*/}
@@ -437,7 +437,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
           {
             showContent &&
             <div>
-              <div className={cn({'hidden':!showDetails&&edit}, )} onClick={()=>setShowDetails(false)}>
+              <div className={cn({'hidden':!showDetails&&edit}, {'cursor-pointer':edit})} onClick={()=>setShowDetails(false)}>
                 <Markdown content={contentPerformance} />
                 {contentPerformance.length<=1 && 'Enter something'}
               </div>
