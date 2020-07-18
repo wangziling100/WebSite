@@ -229,7 +229,7 @@ export async function sendGithubRequest(data, afterAction, isTest=false) {
     //if (data.itemType==='milestone') data = item2Milestone(data)
     //else if (data.itemType==='issue') data = item2Issue(data)
     const postData = JSON.stringify(data)
-    const host = null
+    const host = 'wm1269hl6e.execute-api.eu-central-1.amazonaws.com'
     const path = 'github'
     const [options, https] = setServerRequestOptions(host, path, 'POST', isTest)
     //console.log('send github request')
