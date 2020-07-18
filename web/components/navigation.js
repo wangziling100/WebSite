@@ -51,6 +51,7 @@ export default function Navigation({ page, password, actions, states, logo, host
         setShowOverlay: setShowOverlay,
         setOption: actions.setOption,
         setShowRootOverlay: actions.setShowOverlay,
+        updateFunction: actions.updateFunction,
     }
     // Functions
     function getUserIdentity(){

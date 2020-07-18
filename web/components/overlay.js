@@ -58,6 +58,11 @@ function LoginWnd({ option, actions }){
             actions.setPassword(password)
             actions.setShowOverlay(false)
             actions?.setShowRootOverlay && actions.setShowRootOverlay(false)
+            writeData({
+                loginStatus: 'local_login',
+                userPassword: password,
+            })
+            actions.updateFunction()
             return
         }
         if (option==='login'){
