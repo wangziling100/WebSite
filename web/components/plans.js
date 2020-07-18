@@ -233,6 +233,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
       }
   }
   function attachRef(el){
+      if (edit) return
       drop(el)
       end(el)
   }
