@@ -56,7 +56,7 @@ export default function PlanPage(data) {
   const githubUserData = sessionData?.userData || null
   const githubRepos = sessionData?.repos || null
   //console.log(sessionData, 'sessionData')
-  //console.log(layers, 'layers')
+  console.log(layers, 'layers')
   //console.log(localData, 'localData')
   //console.log(updateCount, 'updateCount')
   // Function 
@@ -299,7 +299,7 @@ export default function PlanPage(data) {
       else if (userPassword==='' && adminPassword!==''){
           updateItemInLayer(newData.id, newData.layer, newData, 0)
       }
-      //setUpdateCount(updateCount+1)
+      setUpdateCount(updateCount+1)
   }
 
   const afterDragAction = (newData, layerDiff) =>{
