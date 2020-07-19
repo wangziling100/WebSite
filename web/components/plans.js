@@ -73,6 +73,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
   const [ dateDiff, setDateDiff ] = useState(getDateDiff(data?.endDate))
   const [ diffDate, setDiffDate ] = useState(s2Time(dateDiff))
   const [ stopCount, setStopCount] = useState(data?.stopCount || true)
+  const [ lastTime, setLastTime ] = useState(new Date())
   const [ startTime, setStartTime ] = useState(data?.startTime || null)
   const condition = (data!==undefined && data.startTime!==null) ? (new Date()-new Date(data.startTime))/1000 : 0
   const [ usedTime, setUsedTime ] = useState(condition)
@@ -273,9 +274,20 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
   
   useInterval(()=>{
       if (!stopCount){
-        setLeft(left-1)
-        setLeftTime(s2Time(left))
-        setUsedTime(usedTime+1)
+        const now = new Date()
+        if (now-lastTime>2000){
+            const tmpUsedTime = (now-new Date(data.startTime))/1000
+            setUsedTime(tmpUsedTime+1)
+            setLeft(data.duration*3600+3600-(totalUsedTime+usedTime))
+            setLeftTime(s2Time(left))
+        }
+        else{
+            setLeft(left-1)
+            setLeftTime(s2Time(left))
+            setUsedTime(usedTime+1)
+        }
+        
+        setLastTime(now)
       }
      
   }, 1000)
