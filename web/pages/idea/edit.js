@@ -52,7 +52,7 @@ export default function EditPage(props){
         }
     }
     const editGithubItem = async (data) => {
-        //console.log(data, 'edit action')
+        console.log(data, 'edit action')
         Router.push('/idea')
         updateGithubItem(data, hostname, afterEditAction, 'milestone')
     }

@@ -13,7 +13,7 @@ exports.lambdaHandler = async (event, context) =>{
     const userId = body.userId
     const hostname = body.hostname
     const itemType = body.itemType
-    console.log(body, 'body')
+    //console.log(body, 'body')
     let result = null
     let clientId = null
     let clientSecret = null
@@ -53,19 +53,61 @@ exports.lambdaHandler = async (event, context) =>{
         clientSecret: clientSecret,
     })
 
-    console.log(1)
+    //console.log(1)
         
-    console.log(existUser, installation)
+    //console.log(existUser, installation)
     if (body.list===undefined){
         const option = body.option
-        result  = await tmpFunc(option, body, body.userName, body.repo, body.number)
+        result  = await tmpFunc(option, body, body.userName, body.repo, body.number, itemType)
+        const statusCode = result.statusCode
+        // generate milestone with comment issue
+        if (statusCode<300 && itemType==='milestone' && option==='create'){
+            const milestoneNum = result.data.number
+            const milestoneUrl = result.data.url
+            const milestoneContent = extractContentFromMilestone(body)
+            const commentIssue = genCommentIssue(milestoneNum, milestoneUrl, milestoneContent, 'active')
+            // create associated issue
+            const result2 = await tmpFunc('create', commentIssue, body.userName, body.repo, null, 'issue')
+            //console.log(result2, 'result2')
+            const tmpData = {
+                issueNumber: result2.data.number,
+                url: result2.data.url
+            }
+            newMilestone = updateMilestoneDescription(body, tmpData)
+            // update milestone with adding url
+            result = await tmpFunc('update', newMilestone, body.userName, body.repo, milestoneNum, 'milestone')
+            result = resultFusion(result, result2)
+        }
+
+        // update milestone with comment issue
+        else if (statusCode<300 && itemType==='milestone' && option==='update'){
+            const milestoneNum = result.data.number
+            const milestoneUrl = result.data.url
+            const milestoneContent = extractContentFromMilestone(body)
+            const commentIssue = genCommentIssue(milestoneNum, milestoneUrl, milestoneContent, body.state)
+            // update the associated issue
+            const result2 = await tmpFunc('update', commentIssue, body.userName, body.repo, body.issueNumber, 'issue')
+            //console.log(result2, 'result2')
+            result = resultFusion(result, result2)
+        }
+
+        // delete milestone with comment issue
+        else if (statusCode<300 && itemType==='milestone' && option==='delete'){
+            const milestoneNum = body.number
+            const milestoneUrl = 'deleted'
+            const milestoneContent = extractContentFromMilestone(body)
+            const commentIssue = genCommentIssue(milestoneNum, milestoneUrl, milestoneContent, 'completed')
+            // update the associated issue
+            const result2 = await tmpFunc('delete', commentIssue, body.userName, body.repo, body.issueNumber, 'issue')
+            //console.log(result2, 'result2')
+        }
     }
     else if (body.list!==undefined){
         list = body.list
         tmpList = []
         for (let request of list){
             const option = request.option
-            tmp = await tmpFunc(option, request, body.userName, body.repo, request.number)
+            tmp = await tmpFunc(option, request, body.userName, body.repo, request.number, itemType)
             if (tmp.statusCode<300) tmpList.push(tmp)
             else {
                 response = setResponse(tmp)
@@ -78,18 +120,19 @@ exports.lambdaHandler = async (event, context) =>{
             list: tmpList,
         }
     }
-    console.log(4, result)
+    //console.log(4, result)
     
     response = setResponse(result)
-    console.log(5, response)
+    //console.log(5, response)
     return response
 
-    async function tmpFunc(option, body, userName, repo, number){
+    async function tmpFunc(option, body, userName, repo, number, itemType){
+        //console.log(itemType, 'itemType')
         let result = null
         switch (option){
             case 'create':
                 if (itemType==='milestone'){
-                    console.log(2)
+                    //console.log(2)
                     data = {
                         title: body.title,
                         description: body.description
@@ -98,52 +141,45 @@ exports.lambdaHandler = async (event, context) =>{
                     postProcess = (data) => getMilestone(data)
                 }
                 if (itemType==='issue'){
-                    console.log(2)
+                    //console.log(2, '---------------issue')
                     data = {
                         title: body.title,
                         body: body.body,
                         assignees: body.assignees,
                     }
-                    if (body.milestone!==null) {
+                    if (body.milestone!==undefined && body.milestone!==null) {
                         data['milestone'] = body.milestone
                     }
-                    if (body.labels!==null){
+                    if (body.labels!==undefined && body.labels!==null){
                         data['labels'] = body.labels
                     }
                     action = (token) => createIssue(token, data, userName, repo)
-                    postProcess = (data) => getIssue(data, body.option)
+                    postProcess = (data) => getIssue(data, option)
                 }
 
                 break;
-            case 'select':
-                if (itemType==='milestone'){
-                    const query = {
-
-                    }
-                }
-                break
             case 'delete':
                 if (itemType==='milestone'){
-                    console.log(2.2)
+                    //console.log(2.2)
                     action = (token) => deleteMilestone(token, userName, repo, number)
                     postProcess = (data) => getMilestone(data, body.option)
                 }
                 if (itemType==='issue'){
-                    console.log(2.2)
+                    //console.log(2.2)
                     data = {
                         title: body.title+'(deleted)',
                         state: 'closed',
                         body: body.body
                     }
-                    console.log(data, body, 'delete') 
+                    //console.log(data, body, 'delete') 
                     //data.body['isDeleted'] = true
                     action = (token) => deleteIssue(token, data, userName, repo, number)
-                    postProcess = (data) => getIssue(data)
+                    postProcess = (data) => getIssue(data, option)
                 }
                 break
             case 'update':
                 if (itemType==='milestone'){
-                    console.log(2.3)
+                    //console.log(2.3)
                     data = {
                         title: body.title,
                         state: body.state==='active'? 'open': 'closed',
@@ -153,7 +189,7 @@ exports.lambdaHandler = async (event, context) =>{
                     postProcess = (data) => getMilestone(data)
                 }
                 if (itemType==='issue'){
-                    console.log(2.3)
+                    //console.log(2.3)
                     if (body.state===undefined) tmpState = body.itemStatus
                     else tmpState = body.state
                     data = {
@@ -169,19 +205,21 @@ exports.lambdaHandler = async (event, context) =>{
                         data['labels'] = body.labels
                     }
                     action = (token) => updateIssue(token, data, userName, repo, number)
-                    postProcess = (data) => getIssue(data)
+                    postProcess = (data) => getIssue(data, option)
                 }
 
         }
         await auth({type: 'installation'})
         .then(async (token) => {
-            console.log(3, token)
+            //console.log(3, token)
             token = token.token
             result = await action(token)
+            //console.log('tmp func', result)
+
             result = postProcess(result)
         })
         .catch((error) => {
-            //console.log(error)
+            console.log(error, 'error')
             result = getError(error)
         })
         return result
@@ -244,7 +282,7 @@ async function sendRequestWrapper(someFunc){
 async function createMilestone(token, data, owner, repo){
     const baseUrl = 'https://api.github.com'
     const url = baseUrl + '/repos/'+owner+'/'+repo+'/milestones'
-    console.log(url)
+    //console.log(url)
     const result = await sendPostRequest(token, url, data)
     return result
 }
@@ -252,7 +290,7 @@ async function createMilestone(token, data, owner, repo){
 async function deleteMilestone(token, owner, repo, number){
     const baseUrl = 'https://api.github.com'
     const url = baseUrl+'/repos/'+owner+'/'+repo+'/milestones/'+number
-    console.log(url)
+    //console.log(url)
     const result = await sendDeleteRequest(token, url)
     return result
     
@@ -262,7 +300,7 @@ async function deleteMilestone(token, owner, repo, number){
 async function updateMilestone(token, data, owner, repo, number){
     const baseUrl = 'https://api.github.com'
     const url = baseUrl + '/repos/'+owner+'/'+repo+'/milestones/'+number
-    console.log(url)
+    //console.log(url)
     const result = await sendPostRequest(token, url, data)
     return result
 }
@@ -270,14 +308,14 @@ async function updateMilestone(token, data, owner, repo, number){
 async function deleteIssue(token, data, owner, repo, number){
     const baseUrl = 'https://api.github.com'
     const url = baseUrl+'/repos/'+owner+'/'+repo+'/issues/'+number
-    console.log(url)
+    //console.log(url)
     const result = await sendPostRequest(token, url, data)
     return result
 }
 async function createIssue(token, data, owner, repo){
     const baseUrl = 'https://api.github.com'
     const url = baseUrl + '/repos/'+owner+'/'+repo+'/issues'
-    console.log(url)
+    //console.log(url)
     const result = await sendPostRequest(token, url, data)
     return result
 }
@@ -285,7 +323,7 @@ async function createIssue(token, data, owner, repo){
 async function updateIssue(token, data, owner, repo, number){
     const baseUrl = 'https://api.github.com'
     const url = baseUrl + '/repos/'+owner+'/'+repo+'/issues/'+number
-    console.log(url)
+    //console.log(url)
     const result = await sendPostRequest(token, url, data)
     return result
 }
@@ -387,7 +425,7 @@ function getMilestone(data, option='create'){
         }
     }
     let tmpData
-    if (option === 'create'){
+    if (option === 'create' || option==='update'){
         tmpData = {
             number: data.data.number,
             url: data.data.html_url,
@@ -415,7 +453,7 @@ function getIssue(data, option){
         }
     }
     let tmpData
-    if (option === 'create'){
+    if (option === 'create' || option==='update'){
         tmpData = {
             number: data.data.number,
             url: data.data.html_url,
@@ -464,4 +502,44 @@ function bin2String(array) {
         result += tmp
     }
     return result
+}
+
+function genCommentIssue(milestoneNum, milestoneUrl, milestoneContent, state){
+    const body = '## Title: ' + milestoneContent.title + '\n' + milestoneUrl + '\n' + milestoneContent.content
+
+    const commentIssue= {
+        title: 'Comment area for idea ' + milestoneNum,
+        body: body,
+        labels: ['documentation'],
+        state: state || 'active',
+    }
+    //console.log(commentIssue, 'commentIssue')
+    return commentIssue
+}
+
+function extractContentFromMilestone(milestone){
+    //console.log(milestone, 'extract content from milestone')
+    const description = JSON.parse(milestone.description)
+    const content = {
+        title: milestone.title,
+        content: description.content,
+    }
+    //console.log(content, 'milestone content')
+    return content
+}
+
+function resultFusion(milestone, issue){
+    milestone.data['url'] = issue.data.url
+    milestone.data['issueNumber'] = issue.data.number
+    return milestone
+}
+
+function updateMilestoneDescription(milestone, obj){
+    let description = JSON.parse(milestone.description)
+    for (let index  in obj){
+        description[index] = obj[index]
+    }
+    milestone.description = JSON.stringify(description)
+    //console.log(milestone, 'update milestone description')
+    return milestone
 }

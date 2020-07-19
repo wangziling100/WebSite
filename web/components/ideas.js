@@ -74,6 +74,7 @@ export function IdeaHeader({ actions }){
 }
 export function IdeaItem({ data, password, actions, orderBy="priority", selectedStatus="active"}){
   // Variables
+  const commentUrl = data.url
   let [ showAddComment, setShowAddComment ] = useState(false)
   const [ hideContent, setHideContent ] = useState(true)
   const [ showComment, setShowComment ] = useState(false)
@@ -188,12 +189,17 @@ export function IdeaItem({ data, password, actions, orderBy="priority", selected
             <div className={cn(...optionCSS)} onClick={deleteAction}>
               delete
             </div>
-            <div className={cn(...optionCSS)} onClick={newCommentAction}>
-              +
-            </div>
-            <div className={cn(...optionCSS)} onClick={()=>setShowComment(!showComment)}>
+            {
+                /*
+                <div className={cn(...optionCSS)} onClick={newCommentAction}>
+                  +
+                </div>
+                */
+            }
+            
+            <a href={commentUrl} className={cn(...optionCSS)} target='_blank'>
               comment
-            </div>
+            </a>
             <div className={cn(...optionCSS)} onClick={activeCompletedAction}>
               {(selectedStatus==='active')?'completed':'undo'}
             </div>

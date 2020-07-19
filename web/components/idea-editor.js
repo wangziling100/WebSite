@@ -87,6 +87,10 @@ export function IdeaEditor({background, data, item, savedPassword, page, actions
         form['option'] = 'edit'
         form['version'] = item.version+1
         if(item.number!==undefined) form['number'] = item.number
+        if (isGithubLogin()){
+            form['url'] = item.url
+            form['issueNumber'] = item.issueNumber
+        }
         
     } 
     if (userPassword!==''){

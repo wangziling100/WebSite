@@ -14,7 +14,7 @@ import { Image } from 'react-datocms'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 import { RotateType1 } from '../../components/animation'
-import { updateGithubItem, sendGithubRequest, isGithubLogin, getGithubInfo } from '../../lib/github'
+import { deleteGithubItem, updateGithubItem, sendGithubRequest, isGithubLogin, getGithubInfo } from '../../lib/github'
 import { SyncOverlay } from '../../components/sync-overlay'
 
 export default function IdeaPage(props) {
@@ -35,7 +35,7 @@ export default function IdeaPage(props) {
   const githubRepos = sessionData?.repos || null
   const redirectPage = sessionData?.redirectPage || null
   const page = 'idea'
-  //console.log(ideaItem, 'ideaItem')
+  console.log(ideaItem, 'ideaItem')
 
   // States
   const [ orderBy, setOrderBy ] = useState("priority")
@@ -162,7 +162,7 @@ export default function IdeaPage(props) {
           await sendData(postData, isTest, afterNewCommentAction, true)
       }
   }
-  const afterDeleteAction = (newData) => {
+  const afterDeleteAction = (newData, sourceData=null) => {
       //console.log(newData, 'new data')
       if (userPassword!=='' && !isGithubLogin()){
           const data = localData
@@ -218,17 +218,7 @@ export default function IdeaPage(props) {
       }
       else if (userPassword!=='' && isGithubLogin()){
           setPageStatus('pending')
-          const githubInfo = getGithubInfo()
-          tmpData['itemType'] = 'milestone'
-          tmpData['userName'] = githubInfo.userName
-          tmpData['userId'] = githubInfo.userId
-          tmpData['repo'] = githubInfo.repo
-          tmpData['hostname'] = hostname
-          tmpData['option'] = 'delete'
-          tmpData['version'] = new Date()
-          tmpData['number'] = itemData.number
-          //console.log('delete action')
-          sendGithubRequest(tmpData, afterDeleteAction)
+          await deleteGithubItem(itemData, hostname, afterDeleteAction, 'milestone')
           setShowOverlay(false)
           return
       }

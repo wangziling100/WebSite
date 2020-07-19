@@ -188,6 +188,7 @@ export async function sendRequest(options, https, postData, afterAction){
         console.log('Got error: ', e)
         afterAction && afterAction(null)
     })
+    console.log(postData, 'send request')
     await req.write(postData)
     await req.end()
     setPageStatus('normal')

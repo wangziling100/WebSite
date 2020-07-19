@@ -4,7 +4,7 @@ function item2Milestone(item){
     let milestone = null
     const option = item.option
     if (option==='create' || option==='update'){
-        //console.log(item, 'item2Milestone')
+        console.log(item, 'item2Milestone')
         let tmp = {
             tag: item.tag,
             priority: parseInt(item.priority),
@@ -12,6 +12,8 @@ function item2Milestone(item){
             createdAt: item._createdAt,
             version: item.version,
             content: item.originContent || item.content,
+            url: item.url || null,
+            issueNumber: item.issueNumber || null,
         }
         milestone= {
             title: item.title,
@@ -23,14 +25,17 @@ function item2Milestone(item){
             userName: item.userName,
             repo: item.repo,
             hostname: item.hostname,
+            issueNumber: item.issueNumber || null,
         }
         if (option==='update') milestone['number'] = item.number
     }
     else if (option==='delete'){
         const tmp = {
             version: item.version,
+            content: item.originContent || item.content,
         }
         milestone = {
+            title: item.title,
             number: item.number,
             itemType: 'milestone',
             userId: item.userId,
@@ -39,9 +44,9 @@ function item2Milestone(item){
             hostname: item.hostname,
             description: JSON.stringify(tmp),
             option: item.option,
+            issueNumber: item.issueNumber,
         }
     }
-    
     //console.log(milestone, 'item2Milestone')
     return milestone
 }
@@ -109,33 +114,6 @@ export function item2Issue(item){
                 option: item.option,
             }
         }
-        /*
-        else if (option==='delete'){
-            let tmp = {
-                priority: parseInt(item.priority),
-                duration: parseInt(item.duration),
-                target: item.target,
-                difficulty: item.difficulty,
-                urgency: item.urgency,
-                endDate: item.endDate,
-                period: item.period,
-                planType: item.planType,
-                itemId: item.itemId,
-                createdAt: item._createdAt,
-                version: item.version,
-            }
-            const [numMilestone, labels] = findMilestoneFromTags(item.tag)
-            issue = {
-                //userId: item.userId,
-                //userName: item.userName,
-                //repo: item.repo,
-                //hostname: item.hostname,
-                body: JSON.stringify(tmp) + '\n' + item.content,
-                number: item.number,
-                option: item.option
-            }
-        }
-        */
         return issue
     }
     
@@ -205,7 +183,7 @@ async function processGithubItem(data, hostname, afterAction, type, option){
         postData = item2Issue(data)
         postData = addGithubInfo(postData, hostname, type)
     }
-    //console.log(postData, 'postData')
+    console.log(postData, 'postData')
     const tmpAction = newData => afterAction(newData, data)
     return await sendGithubRequest(postData, tmpAction)
 
@@ -228,10 +206,11 @@ export async function deleteGithubItem(data, hostname, afterAction, type='milest
 export async function sendGithubRequest(data, afterAction, isTest=false) {
     //if (data.itemType==='milestone') data = item2Milestone(data)
     //else if (data.itemType==='issue') data = item2Issue(data)
+    console.log(data, 'send github')
     const postData = JSON.stringify(data)
     const host = 'wm1269hl6e.execute-api.eu-central-1.amazonaws.com'
     const path = 'github'
-    const [options, https] = setServerRequestOptions(host, path, 'POST', isTest)
+    const [options, https] = setServerRequestOptions(host, path, 'POST', true)
     //console.log('send github request')
     sendRequest(options, https, postData, afterAction)
     

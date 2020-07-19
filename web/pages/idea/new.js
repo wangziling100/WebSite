@@ -32,10 +32,11 @@ export default function NewPage(props){
             if (statusText==='Unprocessable Entity'){
                 alert("Sorry, you can't use the same name with other milestones'")
             }
-            else if (statusText==='Created'){
+            else if (statusText==='OK'){
                 oldData['number'] = newData.data.number
                 oldData['id'] = newData.data.id
                 oldData['url'] = newData.data.url
+                oldData['issueNumber'] = newData.data.issueNumber
                 newData = oldData
                 //console.log(newData, 'new data1')
             }
