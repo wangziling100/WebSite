@@ -59,7 +59,6 @@ export default function PlanPage(data) {
   //console.log(layers, 'layers')
   //console.log(localData, 'localData')
   //console.log(updateCount, 'updateCount')
-  console.log(pageStatus, 'pageStatus')
   // Function 
   function updateFunction(){
       setUpdateCount(updateCount+1)

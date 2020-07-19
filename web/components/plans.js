@@ -41,12 +41,15 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
     'Business',
     'Private',
   ]
+  // Variables
   const durationSelect= [1,2,3,4,5,6,7,8]
   const date = new Date()
   const year = date.getFullYear()
   const month = (date.getMonth()+1).toString().padStart(2,'0')
   const day = (date.getDate()+1).toString().padStart(2,'0')
   const dateString = year+'-'+month+'-'+day
+  const commentUrl = data?.url
+  // Status
   const [ contentPerformance, setContentPerformance] = useState(data?.contentPerformance || "Enter something")
   const [ title, setTitle ] = useState(data?.title || "")
   const [ showTitle, setShowTitle ] = useState(true)
@@ -135,14 +138,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
           return
       }
   }
-  /*
-  if (tmpData!==undefined){
-      tmpData.then(v=>setContent(v))
-  }
-  */
-  if (data!==undefined){
-      //console.log(data.title, originalContent, 'original content')
-  }
+  
   const editAction = () =>{
       setEdit(true)
       setShowBody(false)
@@ -306,6 +302,9 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
       }}>
         {/* head */}
         <div className={cn("flex", "justify-end", {'hidden':!showEditbar})}>
+          <a href={commentUrl} className={cn(...text3CSS, {'hidden':edit})} target='_blank'>
+            comment
+          </a>
           <div className={cn(...text3CSS, {'hidden':edit}, )} onClick={itemStatus==="completed"?activeAction:completeAction}>
             {itemStatus==="completed"?"active":"complete"}
           </div>
