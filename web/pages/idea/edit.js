@@ -7,6 +7,7 @@ import markdownToHtml from '../../lib/markdownToHtml'
 import Head from 'next/head'
 import { isGithubLogin, updateGithubItem } from '../../lib/github'
 import { updateLocalItem } from '../../lib/localData'
+import { SyncOverlay } from '../../components/sync-overlay'
 
 export default function EditPage(props){
     //const [ persistentStates, setPersistentStates ] = useState()
@@ -14,6 +15,7 @@ export default function EditPage(props){
     const [ hostname, setHostname ] = useState()
     const [ userPassword, setUserPassword ] = useState()
     const [ adminPassword, setAdminPassword ] = useState()
+    const [ pageStatus, setPageStatus ] = useState('normal')
 
     getHostname(setHostname)
     useUserPassword(userPassword, setUserPassword)
@@ -36,7 +38,6 @@ export default function EditPage(props){
         //console.log(newData,'edit new data')
         if(userPassword!=='' && !isGithubLogin()){
             await updateLocalItem('idea', userPassword, newData)
-            Router.push('/idea')
         }
         else if (userPassword!=='' && isGithubLogin()){
             const statusText = newData.statusText || null
@@ -48,12 +49,12 @@ export default function EditPage(props){
             }
         }
         else if (userPassword==='' && adminPassword!==''){
-            Router.push('/idea')
         }
+        Router.push('/idea')
     }
     const editGithubItem = async (data) => {
-        console.log(data, 'edit action')
-        Router.push('/idea')
+        //console.log(data, 'edit action')
+        setPageStatus('pending')
         updateGithubItem(data, hostname, afterEditAction, 'milestone')
     }
     const downflowActions = {
@@ -70,6 +71,9 @@ export default function EditPage(props){
         </Head>
          <IdeaEditor background={props.data.background} data={data} item={itemData} savedPassword={adminPassword} page={'/idea'} actions={downflowActions} userPassword={userPassword}/>
          <Footer hostname={hostname}/>
+         {  pageStatus==='pending' &&
+             <SyncOverlay css={['bg-opacity-75']} />
+         }
       </>
     )
     return (

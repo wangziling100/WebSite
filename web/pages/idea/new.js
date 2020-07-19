@@ -43,7 +43,6 @@ export default function NewPage(props){
             else{
                 alert("Some unknown error happens")
             } 
-        
         } 
         //console.log(newData, userPassword, 'new data')
         if(userPassword!==''){
@@ -55,17 +54,16 @@ export default function NewPage(props){
             newData.content = await markdownToHtml(newData.content || '')
             data.ideaItem.push(newData)
             writeLocal('idea', userPassword, data)
-            Router.push('/idea')
         }
         else if (userPassword==='' && adminPassword!==''){
-            Router.push('/idea')
         }
+        Router.push('/idea')
     }
 
     const createAction = async (data) => {
         data['_createdAt'] = new Date()
         data['option'] = 'create'
-        Router.push('/idea')
+        setPageStatus('pending')
         await createGithubItem(data, hostname, afterCreateAction, 'milestone')
     }
 
