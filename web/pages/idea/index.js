@@ -15,6 +15,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 import { RotateType1 } from '../../components/animation'
 import { updateGithubItem, sendGithubRequest, isGithubLogin, getGithubInfo } from '../../lib/github'
+import { SyncOverlay } from '../../components/sync-overlay'
 
 export default function IdeaPage(props) {
   // Variables
@@ -48,6 +49,7 @@ export default function IdeaPage(props) {
   const [ adminPassword, setAdminPassword ] = useState()
   const [ updateLocal, setUpdateLocal ] = useState(0)
   const [ refresh, setRefresh ] = useState(false)
+  const [ pageStatus, setPageStatus ] = useState('normal')
 
   // Functions
   function updateFunction(password){
@@ -189,6 +191,7 @@ export default function IdeaPage(props) {
           else {
               alert('Sorry, delete failed')
           }
+          setPageStatus('normal')
 
       }
       else if (userPassword==='' && adminPassword!==''){
@@ -214,6 +217,7 @@ export default function IdeaPage(props) {
           return
       }
       else if (userPassword!=='' && isGithubLogin()){
+          setPageStatus('pending')
           const githubInfo = getGithubInfo()
           tmpData['itemType'] = 'milestone'
           tmpData['userName'] = githubInfo.userName
@@ -292,11 +296,11 @@ export default function IdeaPage(props) {
       </div>
     }
     { loginStatus==='github_pending' &&
-        <div className='flex justify-center w-screen h-screen items-center bg-gray-100'>
-          <RotateType1>
-            <FontAwesomeIcon icon={faSpinner} className='h-20 w-20 text-gray-600'/>
-          </RotateType1>
-        </div>
+        <SyncOverlay />
+    }
+    {
+        pageStatus==='pending' &&
+        <SyncOverlay css={['bg-opacity-75']}/>
     }
     </>
   )

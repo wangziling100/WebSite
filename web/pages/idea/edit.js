@@ -42,12 +42,10 @@ export default function EditPage(props){
             const statusText = newData.statusText || null
             if (statusText==='OK'){
                 await updateLocalItem('idea', userPassword, sourceData)
-                Router.push('/idea')
             }
             else{
                 alert("Some unknown error happens")
             }
-            Router.push('/idea')
         }
         else if (userPassword==='' && adminPassword!==''){
             Router.push('/idea')
@@ -55,6 +53,7 @@ export default function EditPage(props){
     }
     const editGithubItem = async (data) => {
         //console.log(data, 'edit action')
+        Router.push('/idea')
         updateGithubItem(data, hostname, afterEditAction, 'milestone')
     }
     const downflowActions = {

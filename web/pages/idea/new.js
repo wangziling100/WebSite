@@ -7,12 +7,13 @@ import markdownToHtml from '../../lib/markdownToHtml'
 import Head from 'next/head'
 import { isGithubLogin, createGithubItem, milestone2Item, getGithubInfo, sendGithubRequest } from '../../lib/github'
 import { copy } from '../../lib/tools'
+import { SyncOverlay } from '../../components/sync-overlay'
 
 export default function NewPage(props){
-    //const [ persistentStates, setPersistentStates ] = useState()
     const [ hostname, setHostname ] = useState()
     const [ userPassword, setUserPassword ] = useState()
     const [ adminPassword, setAdminPassword ] = useState()
+    const [ pageStatus, setPageStatus ] = useState('normal')
     
     getHostname(setHostname)
     useUserPassword(userPassword, setUserPassword)
@@ -53,15 +54,17 @@ export default function NewPage(props){
             newData.content = await markdownToHtml(newData.content || '')
             data.ideaItem.push(newData)
             writeLocal('idea', userPassword, data)
+            Router.push('/idea')
         }
         else if (userPassword==='' && adminPassword!==''){
+            Router.push('/idea')
         }
-        Router.push('/idea')
     }
 
     const createAction = async (data) => {
         data['_createdAt'] = new Date()
         data['option'] = 'create'
+        Router.push('/idea')
         await createGithubItem(data, hostname, afterCreateAction, 'milestone')
     }
 
@@ -78,11 +81,14 @@ export default function NewPage(props){
         </Head>
          <IdeaEditor background={props.data.background} data={data} savedPassword={adminPassword} page={'/idea'} actions={downflowActions} userPassword={userPassword}/>
          <Footer hostname={hostname} />
+         {
+             pageStatus === 'pending' &&
+             <SyncOverlay />
+         }
       </>
     )
     return (
       <>
-        
         {(adminPassword!==undefined) && main}
       </>
     )

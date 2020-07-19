@@ -4,6 +4,7 @@ const API_TOKEN = process.env.NEXT_EXAMPLE_CMS_DATOCMS_API_TOKEN
 import React, { useRef, useState, useEffect } from 'react'
 import Router from 'next/router'
 import { flat,getQueryVariable } from '../lib/tools'
+import { setPageStatus } from '../lib/sessionData'
 
 // See: https://www.datocms.com/blog/offer-responsive-progressive-lqip-images-in-2020
 const responsiveImageFragment = `
@@ -166,6 +167,8 @@ export function setServerRequestOptions(exHost, exPath, method='POST', isTest=fa
 
 export async function sendRequest(options, https, postData, afterAction){
     console.log('send request')
+    setPageStatus('pending')
+    const timerId = setTimeout(setPageStatus('normal'), '5000')
     let req = https.request(options, (res) => {
         res.setEncoding('utf8')
         let body = []
@@ -187,6 +190,8 @@ export async function sendRequest(options, https, postData, afterAction){
     })
     await req.write(postData)
     await req.end()
+    setPageStatus('normal')
+    clearTimeout(timerId)
 
 }
 

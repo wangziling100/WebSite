@@ -15,6 +15,7 @@ import { flat, compare, getDateDiff, s2Time } from '../../lib/tools'
 import { PlanSetting } from '../../components/plan-setting'
 import { deleteGithubItem, updateGithubItem, createGithubItem, isGithubLogin } from '../../lib/github'
 import markdownToHtml from '../../lib/markdownToHtml'
+import { SyncOverlay } from '../../components/sync-overlay'
 
 export default function PlanPage(data) {
   // Variables
@@ -48,6 +49,7 @@ export default function PlanPage(data) {
   const [ updateCount, setUpdateCount ] = useState(0)
   const [ adminData, setAdminData ] = useState(data)
   const [ githubCode, setGithubCode ] = useState()
+  const [ pageStatus, setPageStatus ] = useState('normal')
   const layers = localData?.layers || data.layers
   // Variables
   const loginStatus = sessionData?.loginStatus || 'logout'
@@ -57,6 +59,7 @@ export default function PlanPage(data) {
   //console.log(layers, 'layers')
   //console.log(localData, 'localData')
   //console.log(updateCount, 'updateCount')
+  console.log(pageStatus, 'pageStatus')
   // Function 
   function updateFunction(){
       setUpdateCount(updateCount+1)
@@ -250,6 +253,7 @@ export default function PlanPage(data) {
           else {
               alert('Something wrong happens')
           }
+          setPageStatus('normal')
       }
       setUpdateCount(updateCount+1)
   }
@@ -274,6 +278,7 @@ export default function PlanPage(data) {
           else {
               alert('Something wrong happens')
           }
+          setPageStatus('normal')
       }
       addItemInLayer(newData.layer, newData)
       setUpdateCount(updateCount+1)
@@ -317,7 +322,7 @@ export default function PlanPage(data) {
               }
           }
       }
-      //setRefresh(!refresh)
+      setPageStatus('normal')
       setUpdateCount(updateCount+1)
   }
   const createAction = async (form) => {
@@ -327,6 +332,7 @@ export default function PlanPage(data) {
           afterCreateAction(form)
       }
       else if (userPassword!=='' && isGithubLogin()){
+          setPageStatus('pending')
           form['option'] = 'create'
           await createGithubItem(form, hostname, afterCreateAction, 'issue')
 
@@ -435,6 +441,7 @@ export default function PlanPage(data) {
           }
           else if (isGithubLogin()){
               //console.log(allOpt, 'delete action')
+              setPageStatus('pending')
               await deleteGithubItem(allOpt, hostname, afterDeleteAction, 'issue')
           }
           
@@ -504,6 +511,7 @@ export default function PlanPage(data) {
           }
           else if (isGithubLogin()){
               //console.log(allOpt, 'drag action')
+              setPageStatus('pending')
               const tmpAfterAction = (newData, sourceData) => afterDragAction(allOpt, layerDiff)
               await updateGithubItem(allOpt, hostname, tmpAfterAction, 'issue')
           }
@@ -739,6 +747,11 @@ export default function PlanPage(data) {
       { 
           showOverlay && 
           <Overlay page='plan' option={overlayOption} actions={downflowActions}/>
+      }
+      {
+          pageStatus==='pending' &&
+          <SyncOverlay css={['bg-opacity-75']} />
+
       }
     </div>
   )
