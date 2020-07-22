@@ -52,3 +52,37 @@ export function copy(obj){
     }
     return result
 }
+/*
+ * targets: Objects that should be deleted
+ * array: where target deleted from
+ * key: comparable attribute, which used to locate target in array
+ *
+ */
+
+export function deleteElementsFromArray(targets, array, key){
+    console.log(targets, array, 'delete elements from array')
+    let counter = {}
+    let ret = []
+    let setContinue = false
+
+    if (key === undefined){
+        for (let el1 of array){
+            for(let el2 of targets){
+                if (el1===el2) { setContinue = true;break}
+            }
+            if (setContinue) continue
+            ret.push(el1)
+        }
+    }
+
+    else{
+        for (let el of targets){
+            counter[el[key]] = 1
+        }
+        for (let el of array){
+            if (counter[el[key]]===undefined) ret.push(el)
+        }
+    }
+    console.log(ret, 'delete elements from array 2')
+    return ret
+}

@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  github data synchronize
+  test
+  
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 30
+
+Resources:
+  GithubSyncFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: github-sync/
+      Layers:
+        - !Ref GithubSyncLayer
+      Handler: app.lambdaHandler
+      Runtime: nodejs12.x
+      Policies:
+      # Give DynamoDB Full Access to your Lambda Function
+      - AmazonDynamoDBFullAccess
+      - AmazonS3FullAccess
+      Events:
+        GithubSync:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /github-sync
+            Method: post
+      Environment:
+        Variables:
+          CLIENT_ID: "your id"
+          CLIENT_SECRET: "your secret"
+          BUCKET_NAME: "bucket name"
+          FILE_NAME: "file name"
+          APP_ID: "app id"
+  GithubSyncLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: github-sync-dependencies
+      Description: Dependency layer for github-sync function
+      ContentUri: github-sync/node_modules/
+      RetentionPolicy: Retain
+
+Outputs:
+  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+  # Find out more about other implicit resources you can reference within SAM
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  GithubSyncApi:
+    Description: "API Gateway endpoint URL for Prod stage for Github Sync function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/github-sync/"
+  GithubSyncFunction:
+    Description: "Github Sync  Lambda Function ARN"
+    Value: !GetAtt GithubSyncFunction.Arn

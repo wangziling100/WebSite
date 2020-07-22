@@ -1,0 +1,17 @@
+{
+  "name": "github-sync",
+  "version": "1.0.0",
+  "description": "deliver data to Datocms",
+  "main": "app.js",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:wangziling100/WebSite.git/lambda/push/push"
+  },
+  "author": "wangziling100",
+  "license": "MIT",
+  "dependencies": {
+    "@octokit/auth": "^2.0.0",
+    "aws-sdk": "^2.713.0",
+    "axios": "^0.19.2"
+  }
+}

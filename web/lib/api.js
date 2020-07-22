@@ -424,6 +424,7 @@ export function createNewUser(password){
 }
 
 export function checkUser(password){
+    //console.log(password, 'checkUser')
     if (password === '') return false
     let localUser = localStorage.getItem('local user')
     localUser = JSON.parse(localUser)

@@ -592,6 +592,7 @@ export default function PlanPage(data) {
       setOption: setOverlayOption,
       updateFunction: updateFunction,
       cleanLocalData: cleanLocalData,
+      setPageStatus: setPageStatus,
   }
 
   const settingActions = {

@@ -6,16 +6,19 @@ import { Overlay } from '../components/overlay'
 import { Image } from 'react-datocms'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGithubSquare } from '@fortawesome/free-brands-svg-icons'
-import { faCaretDown } from '@fortawesome/free-solid-svg-icons'
+import { faCaretDown, faRedoAlt } from '@fortawesome/free-solid-svg-icons'
 import { writeData } from '../lib/api'
 import Avatar from '../components/avatar'
 import GithubList from '../components/github-drop-down-list'
 import { Button } from '../components/button'
 import  Select from '../components/select'
+import { deleteLocalPlans, checkIsolatedPlan, addAllToLocal, collectAllGithubData } from '../lib/localData'
+import { createGithubItemBatch, deleteGithubItemBatch, deleteGithubItem, remoteData2Local, sendAllGithubData } from '../lib/github'
+import { flat } from '../lib/tools'
 
 export default function Navigation({ page, password, actions, states, logo, hostname, loginStatus, githubUserData, repos}){
     // Variable
-    const isTest = true
+    const isTest = false
     const [ showOverlay, setShowOverlay ] = useState(false)
     const [ option, setOption ] = useState("")
     const [ showLoginType, setShowLoginType ] = useState(false)
@@ -30,8 +33,7 @@ export default function Navigation({ page, password, actions, states, logo, host
     let redirectPage = null
     if (hostname==='localhost'){
         clientId = 'Iv1.f70dacffd5b15781'
-        let tmpHostname
-        if (isTest) tmpHostname = 'http://'+hostname+':3000'
+        const tmpHostname = 'http://'+hostname+':3000'
         redirectURL = tmpHostname+'/idea'
     }
     else if (hostname==='wangxingbo.now.sh'){
@@ -92,9 +94,40 @@ export default function Navigation({ page, password, actions, states, logo, host
     const showLoginTypeAction = () => {
         setShowLoginType(!showLoginType)
     }
-    const testAction = () => {
-        getUserIdentity()
+    const afterSyncAction = async (newData) => {
+        console.log(newData, 'after github sync')
+        const statusText = newData.statusText
+        if ( statusText==='OK' ){
+            const download = remoteData2Local(newData.data.download)
+            const upload = newData.data.upload
+            console.log(upload, 'upload')
+            //console.log(download, 'download')
+            //console.log(password, 'password')
+            let invalid = addAllToLocal(password, download)
+            const isolatedPlans = checkIsolatedPlan(password)
+            invalid = invalid.concat(isolatedPlans)
+            console.log(invalid, 'invalid data')
+            deleteLocalPlans(invalid, password)
+            if (invalid.length>0 && invalid!==undefined && invalid!==null){
+                await deleteGithubItemBatch(flat(invalid), hostname, null)
+            }
+            if (upload.length>0 && upload!==undefined && upload!==null){
+                await createGithubItemBatch(upload, hostname, null)
+            }
+        }
+        else{
+            alert('Synchronise failed')
+        }
+        actions.setPageStatus('normal')
+        
     }
+    const syncAction = () => {
+        console.log('Synchronise')
+        actions.setPageStatus('pending')
+        const allGithubData = collectAllGithubData()
+        sendAllGithubData(allGithubData, hostname, afterSyncAction, isTest)
+    }
+    
     const showGithubListAction = () => {
         if (showGithubList){
             setListFocus(false)
@@ -165,7 +198,12 @@ export default function Navigation({ page, password, actions, states, logo, host
         case 'github_login':  
             loginComponent = (
               <div className='w-1/3 flex justify-between items-center'>
-                { repoSelect }
+                <div>
+                  { repoSelect }
+                </div>
+                <div className='hover:shadow p-1 cursor-pointer ' title='Synchronise' onClick={syncAction}>
+                  <FontAwesomeIcon icon={faRedoAlt} className="w-4 h-4 text-blue-400" />
+                </div>
                 <div className='w-48'>
                   <div className='flex justify-end items-center cursor-pointer relative' onClick={showGithubListAction}>
                     <Avatar name={userData.name} picture={userData.avatar_url} />

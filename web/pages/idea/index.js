@@ -243,6 +243,7 @@ export default function IdeaPage(props) {
       activeAction: activeAction,
       updateFunction: updateFunction,
       cleanLocalData: cleanLocalData,
+      setPageStatus: setPageStatus,
   }
   
 

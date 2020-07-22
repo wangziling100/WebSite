@@ -57,6 +57,7 @@ exports.lambdaHandler = async (event, context) =>{
         
     //console.log(existUser, installation)
     if (body.list===undefined){
+        console.log('single process')
         const option = body.option
         result  = await tmpFunc(option, body, body.userName, body.repo, body.number, itemType)
         const statusCode = result.statusCode
@@ -103,10 +104,12 @@ exports.lambdaHandler = async (event, context) =>{
         }
     }
     else if (body.list!==undefined){
+        console.log('list process')
         list = body.list
         tmpList = []
         for (let request of list){
             const option = request.option
+            const itemType = request.itemType
             tmp = await tmpFunc(option, request, body.userName, body.repo, request.number, itemType)
             if (tmp.statusCode<300) tmpList.push(tmp)
             else {
@@ -127,7 +130,7 @@ exports.lambdaHandler = async (event, context) =>{
     return response
 
     async function tmpFunc(option, body, userName, repo, number, itemType){
-        //console.log(itemType, 'itemType')
+        console.log(itemType, 'itemType')
         let result = null
         switch (option){
             case 'create':
@@ -160,18 +163,18 @@ exports.lambdaHandler = async (event, context) =>{
                 break;
             case 'delete':
                 if (itemType==='milestone'){
-                    //console.log(2.2)
+                    console.log(2.2)
                     action = (token) => deleteMilestone(token, userName, repo, number)
                     postProcess = (data) => getMilestone(data, body.option)
                 }
-                if (itemType==='issue'){
-                    //console.log(2.2)
+                else if (itemType==='issue'){
+                    console.log(2.2)
                     data = {
                         title: body.title+'(deleted)',
                         state: 'closed',
                         body: body.body
                     }
-                    //console.log(data, body, 'delete') 
+                    console.log(data, body, 'delete') 
                     //data.body['isDeleted'] = true
                     action = (token) => deleteIssue(token, data, userName, repo, number)
                     postProcess = (data) => getIssue(data, option)
