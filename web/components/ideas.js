@@ -191,13 +191,6 @@ export function IdeaItem({ data, password, actions, orderBy="priority", selected
             <div className={cn(...optionCSS)} onClick={deleteAction}>
               delete
             </div>
-            {
-                /*
-                <div className={cn(...optionCSS)} onClick={newCommentAction}>
-                  +
-                </div>
-                */
-            }
             
             <a href={commentUrl} className={cn(...optionCSS)} target='_blank'>
               comment

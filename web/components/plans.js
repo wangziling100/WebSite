@@ -52,6 +52,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
   // Status
   const [ contentPerformance, setContentPerformance] = useState(data?.contentPerformance || "Enter something")
   const [ title, setTitle ] = useState(data?.title || "")
+  const [ showMenu, setShowMenu ] = useState(false)
   const [ showTitle, setShowTitle ] = useState(true)
   const [ target, setTarget ] = useState(data?.target || "")
   const [ edit, setEdit ] = useState(editStatus===undefined?false:editStatus)
@@ -90,6 +91,8 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
   const text2CSS = ['text-sm', 'break-all', 'my-1']
   const text3CSS = ['ml-1', 'text-gray-400', 'text-sm', 'hover:text-blue-400', 'cursor-pointer']
   const iconCSS = ['mr-2', 'h-5', 'w-5']
+  const menuShow = {'hidden':!showMenu}
+  const menuHidden = {'hidden':showMenu}
   // Actions
   const startCompose = () => setCompose(true)
   const stopCompose = () => setCompose(false)
@@ -301,14 +304,16 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
           background: isOver?'lightblue':'',
       }}>
         {/* head */}
-        <div className={cn("flex", "justify-end", {'hidden':!showEditbar})}>
-          <a href={commentUrl} className={cn(...text3CSS, {'hidden':edit})} target='_blank'>
+        <div className={cn("flex", "justify-end", "items-center",  {'hidden':!showEditbar})}>
+          <FontAwesomeIcon icon={faAngleDoubleRight} className={cn('w-3', 'h-3', 'cursor-pointer', menuShow, {'hidden':edit}) } onClick={()=>setShowMenu(false)} />
+          <FontAwesomeIcon icon={faAngleDoubleLeft} className={cn('w-3', 'h-3', 'cursor-pointer', menuHidden, {'hidden':edit}) } onClick={()=>setShowMenu(true)} />
+          <a href={commentUrl} className={cn(...text3CSS, {'hidden':edit}, menuShow)} target='_blank'>
             comment
           </a>
-          <div className={cn(...text3CSS, {'hidden':edit}, )} onClick={itemStatus==="completed"?activeAction:completeAction}>
+          <div className={cn(...text3CSS, {'hidden':edit}, menuShow)} onClick={itemStatus==="completed"?activeAction:completeAction}>
             {itemStatus==="completed"?"active":"complete"}
           </div>
-          <div className={cn(...text3CSS, {'hidden':edit})} onClick={deleteAction}>
+          <div className={cn(...text3CSS, {'hidden':edit}, menuShow )} onClick={deleteAction}>
             delete
           </div>
           <div className={cn(...text3CSS, {'hidden':selected})} onClick={selectAction}>
@@ -320,7 +325,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
           <div className={cn(...text3CSS, {'hidden':!edit})} onClick={confirmAction}>
             confirm
           </div>
-          <div className={cn(...text3CSS, {'hidden':edit}, )} onClick={editAction}>
+          <div className={cn(...text3CSS, {'hidden':edit}, menuShow )} onClick={editAction}>
             edit
           </div>
         </div>
