@@ -2,18 +2,19 @@ import { Button } from '../components/button'
 import { toItemFormat, sendData, readAllLocalBusiness, readLocal, writeLocal, rebuild } from '../lib/api'
 import { Overlay } from '../components/overlay'
 import { useState } from 'react'
+import { sendPublishRequest, isGithubLogin } from '../lib/github'
+import { collectAllGithubData } from '../lib/localData'
 export function PlanSetting({ password, actions, userPassword}){
   const isTest = false
   const [showOverlay, setShowOverlay] = useState(false)
-  const downflowActions = {
+  const tmpActions= {
       setPassword: actions.setAdminPassword,
       setShowOverlay: setShowOverlay,
       setUserPassword: actions.setUserPassword,
   }
+  const [ downflowActions, setDownflowActions ] = useState(tmpActions)
   const loginTxt = password?'Logout':'Admin Login'
-  const CLIENT_ID = 'Iv1.f70dacffd5b15781'
-  const REDIRECT_URL = 'http://localhost:3000/plan'
-  const githubURL = 'https://github.com/login/oauth/authorize?client_id='+CLIENT_ID+'&redirect_uri='+REDIRECT_URL
+  const [ option, setOption ] = useState()
   // Functions
   const updateItems = (newItems, targetDataSet) => {
       for (let newItem of newItems){
@@ -59,7 +60,7 @@ export function PlanSetting({ password, actions, userPassword}){
       newData = newData.data
       if (newData[0] === null) return
       let pageData
-      console.log(newData, 'new data')
+      //console.log(newData, 'new data')
       let key
       if (page==='idea') {
           key = 'ideaItem'
@@ -80,7 +81,10 @@ export function PlanSetting({ password, actions, userPassword}){
       actions.setAdminPassword('')
   }
 
-  const logInOutAction = password?logoutAction:()=>setShowOverlay(true)
+  const logInOutAction = password?logoutAction:()=>{
+      setShowOverlay(true)
+      setOption('adminLogin')
+  }
 
   const syncAction = async () => {
       const all = readAllLocalBusiness(userPassword)
@@ -95,27 +99,50 @@ export function PlanSetting({ password, actions, userPassword}){
               postItems.push(el)
           }
           const tmpFunc = (newData) => afterSyncAction(newData, page)
-          console.log(postItems, 'page data')
+          //console.log(postItems, 'page data')
           await sendData(postItems, isTest, tmpFunc, true)
       }
       
   }
-  const githubLoginAction = () => {
-      console.log('github login')
-      
+  
+  const publishAction = () => {
+      //console.log('github publish')
+      if (isGithubLogin()){
+          downflowActions['publish'] = publishGithubData
+          setDownflowActions(downflowActions)
+          setShowOverlay(true)
+          setOption('publish')
+      }
   }
+  const afterPublishGithubData = (newData) => {
+      const statusText = newData.statusText
+      //console.log('after publish github data:', statusText, newData)
+      actions.setPageStatus('normal')
+      if (statusText!=='OK') alert('Publish failed')
+  }
+
+  const publishGithubData = (password) => {
+      actions.setPageStatus('pending')
+      //console.log(password, 'publish github data')
+      const allData = collectAllGithubData()
+      //console.log(allData, 'all github data')
+      const postData = {
+          data: allData,
+          password: password,
+      }
+      sendPublishRequest(postData, afterPublishGithubData, isTest)
+  }
+  //console.log(downflowActions, 'downflowActions')
   
   const main = (
     <>
       <Button bn='Build' onClick={buildAction}/>
       <Button bn={loginTxt} onClick={logInOutAction}/>
       <Button bn='Sync' onClick={syncAction} />
-      <a href={githubURL}>
-        <Button bn='Github' onClick={githubLoginAction}/>
-      </a>
+      <Button bn='Publish' onClick={publishAction} />
       {
           showOverlay &&
-          <Overlay page='plan/setting' option='adminLogin' actions={downflowActions} />
+          <Overlay page='plan/setting' option={option} actions={downflowActions} />
       }
     </>
   )

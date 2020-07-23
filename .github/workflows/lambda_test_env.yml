@@ -24,7 +24,7 @@ jobs:
         FILE_NAME: ${{ secrets.FILE_NAME }}
         APP_ID: ${{ secrets.APP_ID }}
     - name: CICD pipeline
-      run: cd .github && bash lambda_github.sh #&& bash lambda_push.sh && bash lambda_auth.sh && bash lambda_regi.sh  #&& bash lambda_build.sh
+      run: cd .github && bash lambda_github_publish.sh #bash lambda_github.sh && bash lambda_push.sh && bash lambda_auth.sh && bash lambda_regi.sh  #&& bash lambda_build.sh
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.ACCESS_KEY }}

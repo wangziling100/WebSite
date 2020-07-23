@@ -39,4 +39,9 @@ sed -i "s/bucket name/$BUCKET_NAME/g" template.yaml
 sed -i "s/file name/$FILE_NAME/g" template.yaml
 sed -i "s/app id/$APP_ID/g" template.yaml
 cd $old_dir
-
+cd ../lambda/github-publish
+sed -i "s/your token/$CMS_TOKEN/g" env.json
+sed -i "s/your token/$CMS_TOKEN/g" template.yaml
+sed -i "s/your password/$PASSWORD/g" env.json
+sed -i "s/your password/$PASSWORD/g" template.yaml
+cd $old_dir

@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  github publish
+  test
+  
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 30
+
+Resources:
+  GithubPublishFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: github-publish/
+      Layers:
+        - !Ref GithubPublishLayer
+      Handler: app.lambdaHandler
+      Runtime: nodejs12.x
+      Policies:
+      # Give DynamoDB Full Access to your Lambda Function
+      - AmazonDynamoDBFullAccess
+      - AmazonS3FullAccess
+      Events:
+        GithubPublish:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /github-publish
+            Method: post
+      Environment:
+        Variables:
+          CMS_TOKEN: "your token"
+          PASSWORD: "your password"
+  GithubPublishLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: github-publish-dependencies
+      Description: Dependency layer for github publish function
+      ContentUri: github-publish/node_modules/
+      RetentionPolicy: Retain
+
+Outputs:
+  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+  # Find out more about other implicit resources you can reference within SAM
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  GithubPublishApi:
+    Description: "API Gateway endpoint URL for Prod stage for GithubPublish  function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/github-publish/"
+  GithubPublishFunction:
+    Description: "Github Publish Lambda Function ARN"
+    Value: !GetAtt GithubPublishFunction.Arn

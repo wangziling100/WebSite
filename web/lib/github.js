@@ -415,3 +415,12 @@ export async function sendGithubRequest(data, afterAction, isTest=false) {
     sendRequest(options, https, postData, afterAction)
     
 }
+
+export async function sendPublishRequest(data, afterAction, isTest=false){
+    console.log(data, 'send publish request')
+    const postData = JSON.stringify(data)
+    const host = '6vhagypyjd.execute-api.eu-central-1.amazonaws.com'
+    const path = 'github-publish'
+    const [options, https] = setServerRequestOptions(host, path, 'POST', isTest)
+    sendRequest(options, https, postData, afterAction)
+}

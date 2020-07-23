@@ -598,6 +598,7 @@ export default function PlanPage(data) {
   const settingActions = {
       setAdminPassword: setAdminPassword,
       setUserPassword: setUserPassword,
+      setPageStatus: setPageStatus,
   }
   const topActions = {
       completeAction: completeAction,

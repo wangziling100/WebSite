@@ -12,6 +12,7 @@ export function Overlay({ page, option, overlayData, password, actions }){
         case "disclaimer": child = (<> <DisclaimerWnd hostname={overlayData.hostname}/></>); break;
         case "signUp": child = (<> <LoginWnd option="signUp" actions={actions}/></>); break;
         case "adminLogin": child = (<> <LoginWnd actions={actions} option="adminLogin" /></>); break;
+        case "publish": child = (<> <LoginWnd actions={actions} option="publish" /></>); break;
         default: child=""; break;
     }
     return(
@@ -31,6 +32,10 @@ export function Overlay({ page, option, overlayData, password, actions }){
             { option==='adminLogin' &&
                 <Style1 child={child} page={page} password={password} actions={actions} />
             }
+            {
+              option==='publish' &&
+                <Style1 child={child} page={page} password={password} actions={actions} />
+            }
         </>
     ) 
 }
@@ -45,6 +50,7 @@ function LoginWnd({ option, actions }){
         case 'login': title='Login'; break;
         case 'signUp': title='New Password'; break;
         case 'adminLogin': title = 'Admin Login'; break;
+        case 'publish': title = 'Please enter admin password'; break;
     }
     // CSS
     const inputCSS = ['mt-2', 'p-2', 'w-full', 'shadow', 'appearance-none', 'border', 'rounded', 'text-gray-700', 'leading-tight', 'focus:outline-none', 'focus:shadow-outline', 'focus:border-red-500']
@@ -88,6 +94,10 @@ function LoginWnd({ option, actions }){
             actions.setShowOverlay(false)
             window.location.reload()
             return
+        }
+        if (option==='publish'){
+            actions.publish(password)
+            actions.setShowOverlay(false)
         }
     }
     const returnAction = () => {

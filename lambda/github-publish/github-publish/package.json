@@ -1,0 +1,15 @@
+{
+  "name": "github-publish",
+  "version": "1.0.0",
+  "description": "deliver data to Datocms",
+  "main": "app.js",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:wangziling100/WebSite.git/lambda/github-pbulish/github-publish"
+  },
+  "author": "wangziling100",
+  "license": "MIT",
+  "dependencies": {
+    "datocms-client": "^3.0.34"
+  }
+}
