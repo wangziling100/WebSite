@@ -86,3 +86,15 @@ export function deleteElementsFromArray(targets, array, key){
     console.log(ret, 'delete elements from array 2')
     return ret
 }
+export function isEqual(obj1, obj2){
+    if(typeof(obj1)!==typeof(obj2)) return false
+
+    if(obj1 instanceof Array){
+        if (obj1.length!==obj2.length) return false
+        for (let index in obj1){
+            if(obj1[index]!==obj2[index]) return false
+        }
+        return true
+    }
+    return null
+}

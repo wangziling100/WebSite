@@ -11,7 +11,7 @@ import { faArrowAltCircleRight, faArrowAltCircleDown } from '@fortawesome/free-r
 import {faPlus} from '@fortawesome/free-solid-svg-icons'
 import { Overlay } from '../../components/overlay'
 import { TopPlan } from '../../components/top-plan'
-import { flat, compare, getDateDiff, s2Time } from '../../lib/tools'
+import { isEqual, flat, compare, getDateDiff, s2Time } from '../../lib/tools'
 import { PlanSetting } from '../../components/plan-setting'
 import { deleteGithubItem, updateGithubItem, createGithubItem, isGithubLogin } from '../../lib/github'
 import markdownToHtml from '../../lib/markdownToHtml'
@@ -51,12 +51,13 @@ export default function PlanPage(data) {
   const [ githubCode, setGithubCode ] = useState()
   const [ pageStatus, setPageStatus ] = useState('normal')
   const layers = localData?.layers || data.layers
+  const [ firstItems, setFirstItems ] = useState([])
   // Variables
   const loginStatus = sessionData?.loginStatus || 'logout'
   const githubUserData = sessionData?.userData || null
   const githubRepos = sessionData?.repos || null
   //console.log(sessionData, 'sessionData')
-  console.log(layers, 'layers')
+  //console.log(layers, 'layers')
   //console.log(localData, 'localData')
   //console.log(updateCount, 'updateCount')
   // Function 
@@ -606,46 +607,65 @@ export default function PlanPage(data) {
   }
   // componets
   if (selectedItem!==undefined && selectedItem!==null){
+      /*
       if (userPassword!==''){
           ancestors = findAncestors(selectedItem.itemId, selectedItem.layer)
       }
       if (userPassword===''){
           ancestors = findAncestors(selectedItem.id, selectedItem.layer)
       }
+      */
+      ancestors = findAncestors(selectedItem.itemId, selectedItem.layer)
   }
 
   let allLayers = []
+  let tmpFirstItems = []
   // construct each layer
   for (let index in layers){
       const layer = layers[index]
       const items = []
       for (let i of layer){
           if (i.parents===parents){
-              let tmpId
+              let tmpId = i.itemId
+              /*
               if (userPassword!==''){
                   tmpId = i.itemId
               }
               if (userPassword===''){
                   tmpId = i.id
               }
-              if (ancestors!==undefined && ancestors[index]!==undefined && tmpId===ancestors[index]){
+              */
+              if (ancestors!==undefined && ancestors[index]!==undefined){
+                  console.log('ancestors exist')
+                  if (tmpId===ancestors[index]) items.splice(0, 0, i)
+                  else items.push(i)
+              }
+              else if (firstItems.length!==0 && firstItems[index]!==undefined && firstItems[index].itemId===tmpId){
                   items.splice(0, 0, i)
-              }else{
+              }
+              else{
                   items.push(i)
               }
           }
       }
       if (items[0] !== undefined){
+          /*
           if (userPassword!==''){
               parents = items[0].itemId
           }
           if (userPassword===''){
               parents = items[0].id
           }
+          */
+          parents = items[0].itemId
           allLayers.push(<PlanLayer items={items} actions={actions} layer={index} key={index} password={adminPassword} update={index+'_'+items.length}/>)
           allLayers.push(<FontAwesomeIcon icon={faArrowAltCircleDown} className="w-5 h-5 ml-5 cursor-pointer" key={index+'arrowdown'}/>) 
+          tmpFirstItems.push(items[0])
       }
-      
+  }
+  console.log(tmpFirstItems, 'tmp first items')
+  if (!isEqual(tmpFirstItems, firstItems)){
+      setFirstItems(tmpFirstItems)
   }
 
   allLayers.splice(allLayers.length-1, 1)
