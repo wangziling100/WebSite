@@ -86,6 +86,11 @@ export async function getItemByReference( ref, preview=false ){
         period
         planType
         itemId
+        url
+        number
+        issueNumber
+        createdAt1
+        itemType1
       }
     }
   `
