@@ -134,7 +134,9 @@ export function IdeaItem({ data, password, actions, orderBy="priority", selected
   const content = data.content
   const owner = data.owner || "Public"
   const contributor = data.contributor || "Nobody"
-  const tags = '#'+data.number + ' ' +data.tag 
+  let tags = null
+  if (data.number!==undefined) tags = '#'+data.number + ' ' +data.tag 
+  else tags = data.tag
   const priority = data.priority
   const comments = data.comments || []
   const [ itemStatus, setItemStatus] = useState(data.itemStatus)
