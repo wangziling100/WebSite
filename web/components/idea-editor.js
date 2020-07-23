@@ -67,7 +67,7 @@ export function IdeaEditor({background, data, item, savedPassword, page, actions
         "owner": owner,
         "contributor": "",
         "itemStatus": "active",
-        "version": 0,
+        "version": new Date(),
         "password" : savedPassword,
         "layer": null,
         "parents": null,
@@ -85,7 +85,6 @@ export function IdeaEditor({background, data, item, savedPassword, page, actions
     if (item && (item.id !== undefined || item.itemId!==undefined)){
         form['refId'] = item.id
         form['option'] = 'edit'
-        form['version'] = item.version+1
         if(item.number!==undefined) form['number'] = item.number
         if (isGithubLogin()){
             form['url'] = item.url
