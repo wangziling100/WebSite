@@ -129,11 +129,12 @@ export function remoteData2LocalFormat(remote){
             endDate: attrs.endDate || null,
             duration: attrs.duration || null,
             period: attrs.period || null,
-            _createdAt: attrs._createdAt || null,
+            _createdAt: attrs.createdAt || null,
             originContent: attrs.originContent|| null,
             comments: attrs.comments || null,
             url: attrs.url,
-            itemType, itemType,
+            itemType: itemType,
+            number: remote.number,
         }
 
     }

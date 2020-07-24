@@ -476,6 +476,7 @@ export function writeLocal(page, password, data){
     for (let key in data){
         record[key] = data[key]
     }
+    console.log(recordName, record, 'write local')
     localStorage.setItem(recordName, JSON.stringify(record))
     return [true, record]
 }
@@ -759,27 +760,49 @@ export function useAdminPassword(adminPassword, setAdminPassword){
     }, [adminPassword])
 }
 
-export function useLoadData(page, password, setData, setSessionData, dep){
+export function useLoadData(page, password, setData, setSessionData, dep, reload){
     useEffect(() => {
         if (password){
+            console.log('load data')
             const data = readLocal(page, password)
             setData(data)
         }
-    }, [password])
+    }, [password, reload])
     useEffect(() => {
         const sessionData = readData()
         setSessionData(sessionData)
     }, [password].concat(dep))
 }
 
+
 export function useUpdateData(page, password, data, dep){
+    
     useEffect(() => {
-        if (password){
+        console.log(canUpdateFunc(), 'can update')
+        if (!canUpdateFunc()){
+            console.log("can't update")
+            setCanUpdate(true)
+        }
+        else if (password){
             writeLocal(page, password, data)
         }
     }, dep)
 }
 
+export function setCanUpdate(value){
+    console.log('set can update:', value)
+    writeData({canUpdate: value})
+    console.log(canUpdateFunc(), 'after set can update')
+}
+
+function canUpdateFunc(){
+    const sessionData = readData()
+    console.log(sessionData, 'can update func')
+    if (sessionData.canUpdate===undefined) return true
+    const canUpdate = sessionData.canUpdate
+    console.log(canUpdate, sessionData.canUpdate, 'can update after')
+    return canUpdate
+}
 function initAccount(password){
     // idea
     {

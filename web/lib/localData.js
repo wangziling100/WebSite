@@ -46,7 +46,7 @@ function flatGithubData(data, page){
 }
 
 export function addAllToLocal(password, data){
-    //console.log('add all locally', data)
+    console.log('add all locally', data)
     let invalid = []
     const pages = ['idea', 'plan']
     const existUser = checkUser(password)
@@ -56,12 +56,14 @@ export function addAllToLocal(password, data){
 
         if (page==='idea'){
             if (data.ideaItem===undefined) continue
-            //console.log('add idea locally')
+            console.log('add idea locally')
             record.ideaItem = record.ideaItem.concat(data.ideaItem)
+            console.log(record, password, 'idea record')
             const tmpData = {
-                ideaItem: data.ideaItem,
+                ideaItem: record.ideaItem,
             }
-            writeLocal(page, password, tmpData)
+            const tmpResult = writeLocal(page, password, tmpData)
+            console.log(tmpResult, 'result')
         }
 
         else if (page==='plan'){

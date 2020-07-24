@@ -33,6 +33,7 @@ export default function PlanPage(data) {
   // States
   const [ localData, setLocalData ] = useState()
   const [ sessionData, setSessionData ] = useState()
+  const [ reload, setReload ] = useState(false)
   const [ showOverlay, setShowOverlay ] = useState(false)
   const [ selectedId, setSelectedId ] = useState('')
   const [ selectedLayer, setSelectedLayer ] = useState()
@@ -65,6 +66,9 @@ export default function PlanPage(data) {
   function updateFunction(){
       setUpdateCount(updateCount+1)
   }
+  function reloadFunction(){
+      setReload(!reload)
+  }
   function cleanLocalData(){
       setLocalData({})
   }
@@ -72,7 +76,7 @@ export default function PlanPage(data) {
   getHostname(setHostname)
   useUserPassword(userPassword, setUserPassword)
   useAdminPassword(adminPassword, setAdminPassword)
-  useLoadData('plan', userPassword, setLocalData, setSessionData, [updateCount])
+  useLoadData('plan', userPassword, setLocalData, setSessionData, [updateCount], reload)
   useUpdateData('plan', userPassword, localData, [localData?.layers?.length, updateCount])
   //useGithubLogin('plan', isTest, updateFunction)
   // Actions
@@ -626,6 +630,7 @@ export default function PlanPage(data) {
       updateFunction: updateFunction,
       cleanLocalData: cleanLocalData,
       setPageStatus: setPageStatus,
+      reloadFunction: reloadFunction,
   }
 
   const settingActions = {

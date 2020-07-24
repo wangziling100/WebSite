@@ -7,7 +7,7 @@ import { Image } from 'react-datocms'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGithubSquare } from '@fortawesome/free-brands-svg-icons'
 import { faCaretDown, faRedoAlt } from '@fortawesome/free-solid-svg-icons'
-import { writeData } from '../lib/api'
+import { setCanUpdate, writeData } from '../lib/api'
 import Avatar from '../components/avatar'
 import GithubList from '../components/github-drop-down-list'
 import { Button } from '../components/button'
@@ -101,7 +101,7 @@ export default function Navigation({ page, password, actions, states, logo, host
             const download = remoteData2Local(newData.data.download)
             const upload = newData.data.upload
             console.log(upload, 'upload')
-            //console.log(download, 'download')
+            console.log(download, 'download')
             //console.log(password, 'password')
             let invalid = addAllToLocal(password, download)
             const isolatedPlans = checkIsolatedPlan(password)
@@ -118,8 +118,11 @@ export default function Navigation({ page, password, actions, states, logo, host
         else{
             alert('Synchronise failed')
         }
+        console.log('----------------------')
+        //setCanUpdate(false)
+        actions.reloadFunction()
+        //actions.updateFunction()
         actions.setPageStatus('normal')
-        
     }
     const syncAction = () => {
         console.log('Synchronise')

@@ -21,6 +21,7 @@ export default function IdeaPage(props) {
   // Variables
   const [ localData, setLocalData ] = useState()
   const [ sessionData, setSessionData ] = useState()
+  const [ reload, setReload ] = useState(false)
   const img = props.data.ideaBg
   const noticeTitle = props.data.ideaItemTitle[0].title
   const noticeContent = props.data.ideaItemTitle[0].content
@@ -58,6 +59,9 @@ export default function IdeaPage(props) {
           setUserPassword(password)
       }
   }
+  function reloadFunction(){
+      setReload(!reload)
+  }
   function cleanLocalData(){
       setLocalData()
   }
@@ -65,7 +69,7 @@ export default function IdeaPage(props) {
   getHostname(setHostname)
   useUserPassword(userPassword, setUserPassword)
   useAdminPassword(adminPassword, setAdminPassword)
-  useLoadData('idea', userPassword, setLocalData, setSessionData, [updateLocal])
+  useLoadData('idea', userPassword, setLocalData, setSessionData, [updateLocal], reload)
   useUpdateData('idea', userPassword, localData, [localData?.ideaItem?.length, updateLocal])
   useGithubLogin('idea', redirectPage, isTest, updateFunction)
   //useRedirect(redirectPage, page)
@@ -244,6 +248,7 @@ export default function IdeaPage(props) {
       updateFunction: updateFunction,
       cleanLocalData: cleanLocalData,
       setPageStatus: setPageStatus,
+      reloadFunction: reloadFunction,
   }
   
 
