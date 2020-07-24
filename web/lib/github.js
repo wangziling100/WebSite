@@ -142,10 +142,11 @@ export function remoteData2LocalFormat(remote){
 }
 
 export function remoteData2Local(remote){
-    console.log('remote 2 local')
+    console.log('remote 2 local', remote)
     let ret = {}
     for (let el of remote){
         const formatedItem = remoteData2LocalFormat(el)
+        console.log(formatedItem, 'formatedItem')
         ret = reconstructRemote2LocalForEach(ret, formatedItem)
     }
     console.log('remote 2 local', ret)
@@ -165,15 +166,13 @@ function reconstructRemote2LocalForEach(output, item){
     console.log(item.itemType, 'item type')
     if (item.itemType==='milestone'){
         if (output.ideaItem===undefined) output['ideaItem'] = []
-        else output.ideaItem.push(item)
+        output.ideaItem.push(item)
     }
     else if (item.itemType==='issue'){
         if (output.layers===undefined) output['layers'] = {}
-        else {
-            const layer = item.layer
-            if (output.layers[layer]===undefined) output.layers[layer] = []
-            output.layers[layer].push(item)
-        }
+        const layer = item.layer
+        if (output.layers[layer]===undefined) output.layers[layer] = []
+        output.layers[layer].push(item)
     }
     return output
 }
@@ -400,7 +399,7 @@ export async function sendAllGithubData(data, hostname, afterAction, isTest=fals
     const postData = JSON.stringify(data)
     const host = 'z7yyx1kgf4.execute-api.eu-central-1.amazonaws.com'
     const path = 'github-sync'
-    const [options, https] = setServerRequestOptions(host, path, 'POST', true)
+    const [options, https] = setServerRequestOptions(host, path, 'POST', isTest)
     sendRequest(options, https, postData, afterAction)
 }
 
