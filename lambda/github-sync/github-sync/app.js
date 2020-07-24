@@ -8,7 +8,7 @@ const s3 = new AWS.S3()
 
 exports.lambdaHandler = async (event, context) =>{
     const body = JSON.parse(event.body)
-    console.log(body, 'body')
+    //console.log(body, 'body')
     const hostname = body.hostname
     const userId = body.userId
     let clientId = null
@@ -38,7 +38,7 @@ exports.lambdaHandler = async (event, context) =>{
     let auth = null
     if (!existUser) return 
     const key = await getKey(bucketName, fileName)
-    console.log(2)
+    //console.log(2)
     auth = Auth.createAppAuth({
         id: appId,
         privateKey: key,
@@ -48,7 +48,7 @@ exports.lambdaHandler = async (event, context) =>{
     })
     //console.log(installationId, 'installationId')
     const token = await getToken(auth)
-    console.log(token, 'installation token')
+    //console.log(token, 'installation token')
     const repo = body.repo
     const owner = body.userName
     let [ githubIssues, githubMilestones ] = await queryInLoop(token, repo, owner, 100)
@@ -62,45 +62,15 @@ exports.lambdaHandler = async (event, context) =>{
     //const listFromGithub = allGithubData2List(dataFromGithub, )
     //analyseAllData(dataFromGithub)
     console.log(githubIssues.length, githubMilestones.length, 'data from github')
+    //console.log(githubMilestones, 'milestones from github')
     const [upload, download] = compareData(local, githubIssues, githubMilestones)
+    //console.log(download, 'download')
     const returnData = {
         upload: upload,
         download: download,
     }
     //TODO check failures
 
-    /*
-    const oAuth = await Auth.createOAuthAppAuth({
-        clientId: clientId,
-        clientSecret: clientSecret,
-        code: code,
-    })
-    await oAuth({type: 'token'})
-    .then( async (token) => {
-        console.log(3, token)
-        latest_token = token.token
-    } )
-    .catch( err => {
-        console.log(err)
-    } )
-    const userData = await requestUserInfo(latest_token)
-    console.log(typeof(userData))
-    console.log(userData.id)
-    console.log(4, userData)
-    await storeRegiInDB(userData.id.toString(), installationId, hostname)
-
-    await auth({type: 'installation'})
-    .then(async (token) => {
-        console.log(token, 'token')
-        token = token.token
-        repos = await requestRepoList(token)
-        console.log(5, repos)
-    })
-    .catch((err) => {
-        console.log(6)
-        console.log(err)
-    })
-    */
     
     const options = {
         statusCode: 200,
@@ -215,6 +185,17 @@ function extractItemId(item){
     else if (item.itemType==='milestone') {
         //console.log(item, 'milestone')
         ret = JSON.parse(item.description).itemId
+    }
+    return ret
+}
+
+function extractItemVersion(item){
+    let ret
+    if (item.itemType==='issue'){
+        ret = JSON.parse(item.body).version
+    }
+    else if (item.itemType==='milestone'){
+        ret = JSON.parse(item.description).version
     }
     return ret
 }
@@ -499,27 +480,55 @@ function compareData(local, githubIssues, githubMilestones){
     let download = []
     let issueCounter= initGCounter(githubIssues)
     let milestoneCounter = initGCounter(githubMilestones)
+    //console.log(milestoneCounter, 'milestoneCounter')
     for (let l of local){
         const lItemId = l.itemId
+        const lVersion = new Date(l.version).getTime()
         let setContinue = false
         let isLInG = true
-        for (let index in githubIssues){
-            const gItemId = githubIssues[index].itemId
-            if (lItemId===gItemId){
-                setContinue = true
-                delete issueCounter[index]
-                break
-            } 
-        }
-        if (setContinue) continue
-        for (let index in githubMilestones){
-            const gItemId = githubMilestones[index].itemId
-            if (lItemId===gItemId){
-                setContinue = true
-                delete milestoneCounter[index]
-                break
+        if (l.itemType==='issue'){
+            for (let index in githubIssues){
+                const gItemId = githubIssues[index].itemId
+                let gVersion = extractItemVersion(githubIssues[index])
+                gVersion = new Date(gVersion).getTime()
+                if (lItemId===gItemId && lVersion===gVersion){
+                    setContinue = true
+                    delete issueCounter[index]
+                    break
+                } 
+                else if (lItemId===gItemId && lVersion>gVersion){
+                    upload.push(l)
+                    delete issueCounter[index]
+                    setContinue = true
+                    break
+                }
+                if (lItemId===gItemId && lVersion!==gVersion){
+                    console.log(lVersion, gVersion, 'versions')
+                }
             }
         }
+        
+        if (setContinue) continue
+        if (l.itemType==='milestone'){
+            for (let index in githubMilestones){
+                const gItemId = githubMilestones[index].itemId
+                let gVersion = extractItemVersion(githubMilestones[index])
+                gVersion = new Date(gVersion).getTime()
+                if (lItemId===gItemId && lVersion===gVersion){
+                    //console.log('find it', l)
+                    setContinue = true
+                    delete milestoneCounter[index]
+                    break
+                }
+                else if (lItemId===gItemId && lVersion>gVersion){
+                    upload.push(l)
+                    delete milestoneCounter[index]
+                    setContinue = true
+                    break
+                }
+            }
+        }
+        
         if (setContinue) continue
         else {
             isLInG = false
@@ -529,6 +538,7 @@ function compareData(local, githubIssues, githubMilestones){
 
     }
     //console.log(issueCounter, 'issueCounter')
+    //console.log(milestoneCounter, 'milestoneCounter')
 
     for (let key in issueCounter){
         download.push(issueCounter[key])
