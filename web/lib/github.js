@@ -156,9 +156,13 @@ export function remoteData2Local(remote){
 
 
 function parseBody(body){
+    console.log(body, 'parse body')
     const lines = body.split('\n')
-    let attrs = JSON.parse(lines[0])
-    const content = lines.slice(1).join("")
+    let content = null
+    let attrs = JSON.parse(lines[0]) 
+    if (attrs.content!==undefined) content = attrs.content
+    else content = lines.slice(1).join("")
+    console.log(content, 'parse body end')
     return [attrs, content]
 }
 
