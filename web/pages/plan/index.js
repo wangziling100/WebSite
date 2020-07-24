@@ -16,6 +16,7 @@ import { PlanSetting } from '../../components/plan-setting'
 import { deleteGithubItem, updateGithubItem, createGithubItem, isGithubLogin } from '../../lib/github'
 import markdownToHtml from '../../lib/markdownToHtml'
 import { SyncOverlay } from '../../components/sync-overlay'
+import { updateGithubCompleteness } from '../../lib/localData'
 
 export default function PlanPage(data) {
   // Variables
@@ -232,7 +233,7 @@ export default function PlanPage(data) {
           }
       }
       else if(userPassword!=='' && isGithubLogin()){
-          //console.log(sourceData, 'after delete')
+          //console.log(sourceData, newData, 'after delete')
           const statusText = newData.statusText
           if (statusText==='OK'){
               for (let i of sourceData){
@@ -248,6 +249,13 @@ export default function PlanPage(data) {
                       updateItemInLayer(id, layer+1, i)
                       continue
                   }
+              }
+              if (newData.completenessResult!==undefined && newData.completenessResult!==null){
+                  const result = newData.completenessResult
+                  const completeness = result.data.completeness
+                  const number = result.data.number
+                  updateGithubCompleteness('idea', userPassword, completeness, number)
+
               }
           }
           else {
@@ -270,10 +278,26 @@ export default function PlanPage(data) {
           //console.log(newData, sourceData, 'after create action')
           const statusText = newData.statusText
           if (statusText==='Created'){
-              sourceData['number'] = newData.data.number
-              sourceData['url'] = newData.data.url
-              sourceData['id'] = newData.data.id
-              newData = sourceData
+              // add new plan
+              if (newData.data instanceof Array){
+                  let tmpData = newData.data[0]
+                  sourceData['number'] = tmpData.number
+                  sourceData['url'] = tmpData.url
+                  sourceData['id'] = tmpData.id
+                  // update 
+                  tmpData = newData.data[1]
+                  const number = tmpData.number
+                  const completeness = tmpData.completeness
+                  updateGithubCompleteness('idea', userPassword, completeness, number)
+                  newData = sourceData
+              }
+              else{
+                  sourceData['number'] = newData.data.number
+                  sourceData['url'] = newData.data.url
+                  sourceData['id'] = newData.data.id
+                  newData = sourceData
+              }
+              
           }
           else {
               alert('Something wrong happens')
@@ -292,6 +316,14 @@ export default function PlanPage(data) {
           const statusText = newData.statusText
           if (statusText==='OK'){
               updateItemInLayer(sourceData.itemId, sourceData.layer, sourceData, 0)
+              if (newData.data instanceof Array){
+                  //update completeness of milestone  
+                  const tmpData = newData.data[1]
+                  const number = tmpData.number
+                  const completeness = tmpData.completeness
+                  updateGithubCompleteness('idea', userPassword, completeness, number)
+              }
+             
           }
           else {
               alert('Something wrong happens')
@@ -636,7 +668,7 @@ export default function PlanPage(data) {
               }
               */
               if (ancestors!==undefined && ancestors[index]!==undefined){
-                  console.log('ancestors exist')
+                  //console.log('ancestors exist')
                   if (tmpId===ancestors[index]) items.splice(0, 0, i)
                   else items.push(i)
               }
@@ -663,7 +695,7 @@ export default function PlanPage(data) {
           tmpFirstItems.push(items[0])
       }
   }
-  console.log(tmpFirstItems, 'tmp first items')
+  //console.log(tmpFirstItems, 'tmp first items')
   if (!isEqual(tmpFirstItems, firstItems)){
       setFirstItems(tmpFirstItems)
   }

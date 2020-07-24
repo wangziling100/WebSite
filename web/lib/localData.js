@@ -214,3 +214,20 @@ function findHighestLayer(itemLayers, existHighest){
     //console.log(highest, 'highest layer')
     return highest
 }
+
+export function updateGithubCompleteness(page, password, completeness, number){
+    const record = readLocal(page, password)
+    let result = []
+    let ideaItem = record.ideaItem
+    for (let item of ideaItem){
+        if (item.number === number){
+            item.completeness = completeness
+        }
+        result.push(item)
+    }
+    const tmpData = {
+        ideaItem: result,
+    }
+    writeLocal(page, password, tmpData)
+
+}

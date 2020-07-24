@@ -76,7 +76,7 @@ export function IdeaItem({ data, password, actions, orderBy="priority", selected
   // Variables
   const commentUrl = data.url
   let [ showAddComment, setShowAddComment ] = useState(false)
-  const [ hideContent, setHideContent ] = useState(true)
+  const [ hideContent, setHideContent ] = useState(false)
   const [ showComment, setShowComment ] = useState(false)
   const isTest = false
   const path = '/idea'
@@ -134,6 +134,7 @@ export function IdeaItem({ data, password, actions, orderBy="priority", selected
   const content = data.content
   const owner = data.owner || "Public"
   const contributor = data.contributor || "Nobody"
+  const completeness = data.completeness*100+`%`
   let tags = null
   if (data.number!==undefined) tags = '#'+data.number + ' ' +data.tag 
   else tags = data.tag
@@ -155,14 +156,25 @@ export function IdeaItem({ data, password, actions, orderBy="priority", selected
   
   const item = (
     <>
+    <style jsx>{`
+        .process-bar {
+            opacity: 0.3;
+            width: ${completeness};
+        }
+    `}
+    </style>
     <div className="order w-full mx-10">
+        
     <div className="mt-1 flex  bg-white divide-x border-gray-500 border-2 w-full hover:shadow-xl">
       <div className="w-1/10 flex items-center mx-3">
         <div className="w-10 h-10 bg-blue-600 text-blue-200 text-xl flex items-center justify-center">
           {icon}
         </div>
       </div>
-      <div className="pl-2 w-4/5 flex.col">
+      <div className="relative pl-2 w-4/5 flex.col">
+        <div className={cn('absolute', 'left-0', 'h-full', 'process-bar', 'bg-blue-200', 'pointer-events-none', {'hidden': hideContent})}>
+          
+        </div>
         <div className="flex justify-between cursor-pointer" onClick={switchContentState}>
           <div className="text-3xl font-semibold">
             {title}

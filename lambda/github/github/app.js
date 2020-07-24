@@ -57,7 +57,7 @@ exports.lambdaHandler = async (event, context) =>{
         
     //console.log(existUser, installation)
     if (body.list===undefined){
-        console.log('single process')
+        //console.log('single process')
         const option = body.option
         result  = await tmpFunc(option, body, body.userName, body.repo, body.number, itemType)
         const statusCode = result.statusCode
@@ -102,25 +102,80 @@ exports.lambdaHandler = async (event, context) =>{
             const result2 = await tmpFunc('delete', commentIssue, body.userName, body.repo, body.issueNumber, 'issue')
             //console.log(result2, 'result2')
         }
+
+        // update milestone completeness
+        else if (statusCode<300 && itemType==='issue' && body.milestone!==undefined && body.milestone!==null){
+            console.log(result, 'update milestone completeness')
+            const milestoneNum = body.milestone
+            const tmpBody = {
+                option: 'fetch',
+            }
+            const milestoneData = await tmpFunc('fetch', tmpBody, body.userName, body.repo, milestoneNum, 'milestone')
+            const open_issues = milestoneData.data.open_issues
+            const closed_issues = milestoneData.data.closed_issues
+            console.log(milestoneData, 'fetch milestone')
+            const tmpResult1 = result
+            const tmpResult2 = {
+                statusCode: 200,
+                statusText: 'OK',
+                data: {
+                    completeness: calcCompleteness(open_issues, closed_issues),
+                    itemType: 'milestone',
+                    number: milestoneNum,
+                }
+            }
+            const tmpResultData = [tmpResult1.data, tmpResult2.data]
+            result = {
+                StatusCode: tmpResult1.StatusCode,
+                statusText: tmpResult1.statusText,
+                data: tmpResultData
+            }
+
+
+        }
     }
     else if (body.list!==undefined){
         console.log('list process')
-        list = body.list
-        tmpList = []
+        let list = body.list
+        let tmpList = []
+        let dataList = []
+        let completenessResult = null
         for (let request of list){
             const option = request.option
             const itemType = request.itemType
-            tmp = await tmpFunc(option, request, body.userName, body.repo, request.number, itemType)
+            const tmp = await tmpFunc(option, request, body.userName, body.repo, request.number, itemType)
             if (tmp.statusCode<300) tmpList.push(tmp)
             else {
                 response = setResponse(tmp)
                 return response
             }
+            if (tmp.statusCode<300 && option==='delete' && itemType==='issue' && request.milestone!==undefined && request.milestone!==null){
+                console.log(tmp, 'update milestone completeness')
+                const milestoneNum = request.milestone
+                const tmpBody = {
+                    option: 'fetch',
+                }
+                const milestoneData = await tmpFunc('fetch', tmpBody, body.userName, body.repo, milestoneNum, 'milestone')
+                const open_issues = milestoneData.data.open_issues
+                const closed_issues = milestoneData.data.closed_issues
+                console.log(milestoneData, 'fetch milestone')
+                completenessResult = {
+                    statusCode: 200,
+                    statusText: 'OK',
+                    data: {
+                        completeness: calcCompleteness(open_issues, closed_issues),
+                        itemType: 'milestone',
+                        number: milestoneNum,
+                    }
+                }
+            }
         }
+        
         result = {
             statusCode: 200,
             statusText: 'OK',
             list: tmpList,
+            completenessResult: completenessResult,
         }
     }
     //console.log(4, result)
@@ -130,7 +185,7 @@ exports.lambdaHandler = async (event, context) =>{
     return response
 
     async function tmpFunc(option, body, userName, repo, number, itemType){
-        console.log(itemType, 'itemType')
+        //console.log(itemType, 'itemType')
         let result = null
         switch (option){
             case 'create':
@@ -161,20 +216,26 @@ exports.lambdaHandler = async (event, context) =>{
                 }
 
                 break;
+            case 'fetch':
+                if (itemType==='milestone'){
+                    action = (token) => fetchMilestone(token, userName, repo, number)
+                    postProcess = (data) => getMilestone(data, body.option)
+                }
+                break;
             case 'delete':
                 if (itemType==='milestone'){
-                    console.log(2.2)
+                    //console.log(2.2)
                     action = (token) => deleteMilestone(token, userName, repo, number)
                     postProcess = (data) => getMilestone(data, body.option)
                 }
                 else if (itemType==='issue'){
-                    console.log(2.2)
+                    //console.log(2.2)
                     data = {
                         title: body.title+'(deleted)',
                         state: 'closed',
                         body: body.body
                     }
-                    console.log(data, body, 'delete') 
+                    //console.log(data, body, 'delete') 
                     //data.body['isDeleted'] = true
                     action = (token) => deleteIssue(token, data, userName, repo, number)
                     postProcess = (data) => getIssue(data, option)
@@ -308,6 +369,13 @@ async function updateMilestone(token, data, owner, repo, number){
     return result
 }
 
+async function fetchMilestone(token, owner, repo, number){
+    const baseUrl = 'https://api.github.com'
+    const url = baseUrl + '/repos/'+owner+'/'+repo+'/milestones/'+number
+    const result = await sendGetRequest(token, url)
+    return result
+}
+
 async function deleteIssue(token, data, owner, repo, number){
     const baseUrl = 'https://api.github.com'
     const url = baseUrl+'/repos/'+owner+'/'+repo+'/issues/'+number
@@ -328,6 +396,30 @@ async function updateIssue(token, data, owner, repo, number){
     const url = baseUrl + '/repos/'+owner+'/'+repo+'/issues/'+number
     //console.log(url)
     const result = await sendPostRequest(token, url, data)
+    return result
+}
+
+async function fetchIssue(token, owner, repo, number){
+    const baseUrl = 'https://api.github.com'
+    const url = baseUrl + '/repos/'+owner+'/'+repo+'/issues/'+number
+    const result = await sendGetRequest(token, url)
+    return result
+}
+
+async function sendGetRequest(token, url){
+    let result = null
+    await axios.get(url, {
+        headers:{
+            'content-type': 'application/json',
+            authorization: 'Bearer ' + token
+        }
+    })
+    .then((res) => {
+        result = res
+    })
+    .catch((error) => {
+        result = error
+    })
     return result
 }
 
@@ -440,6 +532,13 @@ function getMilestone(data, option='create'){
             message: 'succeed',
         }
     }
+    else if (option==='fetch'){
+        tmpData={
+            open_issues: data.data.open_issues,
+            closed_issues: data.data.closed_issues,
+            due_on: data.data.due_on,
+        }
+    }
     
     return {
         statusCode: data.status,
@@ -545,4 +644,8 @@ function updateMilestoneDescription(milestone, obj){
     milestone.description = JSON.stringify(description)
     //console.log(milestone, 'update milestone description')
     return milestone
+}
+
+function calcCompleteness(open, closed){
+    return(closed/(closed+open))
 }
