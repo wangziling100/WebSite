@@ -13,7 +13,7 @@ exports.lambdaHandler = async (event, context) =>{
     const userId = body.userId
     const hostname = body.hostname
     const itemType = body.itemType
-    //console.log(body, 'body')
+    console.log(body, 'body')
     let result = null
     let clientId = null
     let clientSecret = null
@@ -88,7 +88,8 @@ exports.lambdaHandler = async (event, context) =>{
             const commentIssue = genCommentIssue(milestoneNum, milestoneUrl, milestoneContent, body.state)
             // update the associated issue
             const result2 = await tmpFunc('update', commentIssue, body.userName, body.repo, body.issueNumber, 'issue')
-            //console.log(result2, 'result2')
+            console.log(result, result2, 'result, result2')
+            
             result = resultFusion(result, result2)
         }
 

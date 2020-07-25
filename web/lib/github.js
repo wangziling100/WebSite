@@ -30,6 +30,7 @@ function item2Milestone(item){
                 content: item.originContent || item.content,
                 url: item.url || null,
                 issueNumber: item.issueNumber || null,
+                completeness: item.completeness, 
             }
             milestone['description'] = JSON.stringify(tmp)
         }
@@ -135,6 +136,7 @@ export function remoteData2LocalFormat(remote){
             url: attrs.url,
             itemType: itemType,
             number: remote.number,
+            issueNumber: attrs.issueNumber,
         }
 
     }

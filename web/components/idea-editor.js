@@ -58,7 +58,7 @@ export function IdeaEditor({background, data, item, savedPassword, page, actions
         "content": content,
         "tag": tags,
         "priority": parseInt(priority),
-        "completeness": 0,
+        "completeness": parseFloat(item?.completeness || 0),
         "startTime": null,
         "evaluation": null,
         "allowPriorityChange": false,
