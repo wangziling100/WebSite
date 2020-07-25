@@ -12,9 +12,9 @@ import Avatar from '../components/avatar'
 import GithubList from '../components/github-drop-down-list'
 import { Button } from '../components/button'
 import  Select from '../components/select'
-import { deleteLocalPlans, checkIsolatedPlan, addAllToLocal, collectAllGithubData } from '../lib/localData'
+import { updateAllInLocal, deleteLocalPlans, checkIsolatedPlan, addAllToLocal, collectAllGithubData } from '../lib/localData'
 import { createGithubItemBatch, deleteGithubItemBatch, deleteGithubItem, remoteData2Local, sendAllGithubData } from '../lib/github'
-import { flat } from '../lib/tools'
+import { flat, filterDuplicateItems } from '../lib/tools'
 
 export default function Navigation({ page, password, actions, states, logo, hostname, loginStatus, githubUserData, repos}){
     // Variable
@@ -98,21 +98,42 @@ export default function Navigation({ page, password, actions, states, logo, host
         console.log(newData, 'after github sync')
         const statusText = newData.statusText
         if ( statusText==='OK' ){
-            const download = remoteData2Local(newData.data.download)
-            const upload = newData.data.upload
-            console.log(upload, 'upload')
-            console.log(download, 'download')
+            //const downloadCreate = remoteData2Local(newData.data.downloadCreate)
+            //const downloadUpdate = remoteData2Local(newData.data.downloadUpdate)
+            let downloadCreate = newData.data.downloadCreate
+            let downloadUpdate = newData.data.downloadUpdate 
+            const uploadCreate = newData.data.uploadCreate
+            const uploadUpdate = newData.data.uploadUpdate
+            let invalid = []
+            let tmp = null
+            tmp = filterDuplicateItems(downloadCreate)
+            downloadCreate = remoteData2Local(tmp.ret)
+            invalid = invalid.concat(tmp.invalid)
+            tmp = filterDuplicateItems(downloadUpdate)
+            downloadUpdate = remoteData2Local(tmp.ret)
+            invalid = invalid.concat(tmp.invalid)
+            //console.log(tmp.ret, tmp.invalid, 'filter duplicate')
+            //console.log(uploadCreate, uploadUpdate, 'upload')
+            //console.log(downloadCreate, downloadUpdate, 'download')
             //console.log(password, 'password')
-            let invalid = addAllToLocal(password, download)
+            updateAllInLocal(password, downloadUpdate)
+            tmp = addAllToLocal(password, downloadCreate)
+            invalid = invalid.concat(tmp)
+            //console.log(tmp, 'invalid format')
             const isolatedPlans = checkIsolatedPlan(password)
             invalid = invalid.concat(isolatedPlans)
+            
             console.log(invalid, 'invalid data')
             deleteLocalPlans(invalid, password)
+            
             if (invalid.length>0 && invalid!==undefined && invalid!==null){
-                await deleteGithubItemBatch(flat(invalid), hostname, null)
+                await deleteGithubItemBatch(invalid, hostname, null)
             }
-            if (upload.length>0 && upload!==undefined && upload!==null){
-                await createGithubItemBatch(upload, hostname, null)
+            if (uploadCreate.length>0 && uploadCreate!==undefined && uploadCreate!==null){
+                await createGithubItemBatch(uploadCreate, hostname, null)
+            }
+            if (uploadUpdate.length>0 && uploadUpdate!==undefined && uploadUpdate!==null){
+                await updateGithubItemBatch(uploadUpdate, hostname, null)
             }
         }
         else{

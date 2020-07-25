@@ -63,14 +63,15 @@ exports.lambdaHandler = async (event, context) =>{
     //analyseAllData(dataFromGithub)
     console.log(githubIssues.length, githubMilestones.length, 'data from github')
     //console.log(githubMilestones, 'milestones from github')
-    const [upload, download] = compareData(local, githubIssues, githubMilestones)
+    const [uploadCreate, uploadUpdate, downloadCreate, downloadUpdate] = compareData(local, githubIssues, githubMilestones)
     //console.log(download, 'download')
     const returnData = {
-        upload: upload,
-        download: download,
+        uploadCreate: uploadCreate,
+        uploadUpdate: uploadUpdate,
+        downloadCreate: downloadCreate,
+        downloadUpdate: downloadUpdate,
     }
     //TODO check failures
-
     
     const options = {
         statusCode: 200,
@@ -476,10 +477,13 @@ function copy(data){
 }
 
 function compareData(local, githubIssues, githubMilestones){
-    let upload = []
-    let download = []
+    let uploadCreate = []
+    let uploadUpdate = []
+    let downloadCreate = []
+    let downloadUpdate = []
     let issueCounter= initGCounter(githubIssues)
     let milestoneCounter = initGCounter(githubMilestones)
+    console.log(local.length, githubIssues.length, githubMilestones.length, 'local issue milestone length')
     //console.log(milestoneCounter, 'milestoneCounter')
     for (let l of local){
         const lItemId = l.itemId
@@ -492,12 +496,21 @@ function compareData(local, githubIssues, githubMilestones){
                 let gVersion = extractItemVersion(githubIssues[index])
                 gVersion = new Date(gVersion).getTime()
                 if (lItemId===gItemId && lVersion===gVersion){
+                    //console.log('find it', l)
                     setContinue = true
                     delete issueCounter[index]
                     break
                 } 
                 else if (lItemId===gItemId && lVersion>gVersion){
-                    upload.push(l)
+                    l['option'] = 'update'
+                    uploadUpdate.push(l)
+                    delete issueCounter[index]
+                    setContinue = true
+                    break
+                }
+                else if (lItemId===gItemId && lVersion<gVersion){
+                    l['option'] = 'update'
+                    downloadUpdate.push(l)
                     delete issueCounter[index]
                     setContinue = true
                     break
@@ -521,7 +534,15 @@ function compareData(local, githubIssues, githubMilestones){
                     break
                 }
                 else if (lItemId===gItemId && lVersion>gVersion){
-                    upload.push(l)
+                    l['option'] = 'update'
+                    uploadUpdate.push(l)
+                    delete milestoneCounter[index]
+                    setContinue = true
+                    break
+                }
+                else if (lItemId===gItemId && lVersion<gVersion){
+                    l['option'] = 'update'
+                    downloadUpdate.push(l)
                     delete milestoneCounter[index]
                     setContinue = true
                     break
@@ -532,7 +553,8 @@ function compareData(local, githubIssues, githubMilestones){
         if (setContinue) continue
         else {
             isLInG = false
-            upload.push(l)
+            l['option'] = 'create'
+            uploadCreate.push(l)
         }
 
 
@@ -541,16 +563,15 @@ function compareData(local, githubIssues, githubMilestones){
     //console.log(milestoneCounter, 'milestoneCounter')
 
     for (let key in issueCounter){
-        download.push(issueCounter[key])
+        downloadCreate.push(issueCounter[key])
     }
     for (let key in milestoneCounter){
-        download.push(milestoneCounter[key])
+        downloadCreate.push(milestoneCounter[key])
     }
 
-    console.log(upload[0], 'upload data')
-    console.log(download[0], 'download data')
-    console.log(upload.length, download.length, 'upload download length')
-    return [ upload, download ]
+    //console.log(download[0], 'download data')
+    console.log(uploadCreate.length, uploadUpdate.length, downloadCreate.length, downloadUpdate.length, 'upload download length')
+    return [ uploadCreate, uploadUpdate, downloadCreate, downloadUpdate ]
 
     function initGCounter(items){
         let counter = {}

@@ -146,24 +146,36 @@ export function remoteData2Local(remote){
     let ret = {}
     for (let el of remote){
         const formatedItem = remoteData2LocalFormat(el)
-        console.log(formatedItem, 'formatedItem')
+        //console.log(formatedItem, 'formatedItem')
         ret = reconstructRemote2LocalForEach(ret, formatedItem)
     }
-    console.log('remote 2 local', ret)
+    //console.log('remote 2 local', ret)
     return ret
 }
 
 
 
 function parseBody(body){
-    console.log(body, 'parse body')
+    //console.log(body, 'parse body')
     const lines = body.split('\n')
     let content = null
     let attrs = JSON.parse(lines[0]) 
     if (attrs.content!==undefined) content = attrs.content
     else content = lines.slice(1).join("")
-    console.log(content, 'parse body end')
+    //console.log(content, 'parse body end')
     return [attrs, content]
+}
+
+export function parseVersion(item){
+    if (item.description!==undefined){
+        const [attrs, content] = parseBody(item.description)
+        return attrs.version
+    }
+    else if (item.body!==undefined){
+        const [attrs, content] = parseBody(item.body)
+        return attrs.version
+    }
+    return null
 }
 
 function reconstructRemote2LocalForEach(output, item){
@@ -368,6 +380,7 @@ async function processGithubItemBatch(batch, hostname, afterAction,option){
     postData = addGithubInfo(postData, hostname)
     let tmpAction = null
     if (afterAction!==null) tmpAction = newData => afterAction(newData, batch)
+    console.log(postData, 'processGithubItemBatch')
     return await sendGithubRequest(postData, tmpAction)
 
 }
@@ -393,6 +406,10 @@ export async function createGithubItemBatch(data, hostname, afterAction){
 
 export async function deleteGithubItemBatch(data, hostname, afterAction){
     await processGithubItemBatch(data, hostname, afterAction, 'delete')
+}
+
+export async function updateGithubItemBatch(data, hostname, afterAction){
+    await processGithubItemBatch(data, hostname, afterAction, 'update')
 }
 
 export async function sendAllGithubData(data, hostname, afterAction, isTest=false){

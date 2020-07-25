@@ -1,7 +1,7 @@
 import { checkRecord, checkUser, readData, readLocal, writeLocal } from '../lib/api'
 import markdownToHtml from '../lib/markdownToHtml'
 import { getGithubInfo } from '../lib/github'
-import { deleteElementsFromArray, flat } from '../lib/tools'
+import { updateItems, deleteElementsFromArray, flat } from '../lib/tools'
 
 const allPages = ['idea', 'plan']
 export async function updateLocalItem(page, password, newData){
@@ -97,6 +97,46 @@ export function addAllToLocal(password, data){
 
     }
     return invalid
+}
+
+export function updateAllInLocal(password, data){
+    let invalid = []
+    const pages = ['idea', 'plan']
+    const existUser = checkUser(password)
+    const compareFunc = (item1, item2) => {
+        if(item1.itemId===item2.itemId) return true
+        else return false
+    }
+    for (let page of pages){
+        const record = readLocal(page, password)
+        if (page==='idea'){
+            if (data.ideaItem===undefined) continue
+            console.log('update idea locally')
+            let result = []
+            let target = record.ideaItem
+            let newSet = data.ideaItem
+            const updated = updateItems(newSet, target, compareFunc)
+            const tmpData = {
+                ideaItem: updated
+            }
+            writeLocal(page, password, tmpData)
+        }
+        else if (page==='plan'){
+            if (data.layers===undefined) continue
+            const target = record.layers
+            const newSet = data.layers
+
+            for (let index in target){
+                target[index] = updateItems(newSet[index], target[index], compareFunc)
+            }
+            const tmpData = {
+                layers: target,
+            }
+            writeLocal(page, password, tmpData)
+        }
+        
+    }
+
 }
 
 export function checkIsolatedPlan(password){

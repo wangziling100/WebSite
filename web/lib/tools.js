@@ -1,3 +1,4 @@
+import {parseVersion} from '../lib/github'
 export function getDateDiff(targetDate){
     const now = new Date()
     const target = new Date(targetDate)
@@ -97,4 +98,64 @@ export function isEqual(obj1, obj2){
         return true
     }
     return null
+}
+
+export function updateItems(newSet, target, compareFunc, updateFunc){
+    let result = null
+    const defaultUpdateFunc = (item1, item2) => {
+        for (let index in item1){
+            item2[index] = item1[index]
+        }
+        return item2
+    }
+    updateFunc = updateFunc || defaultUpdateFunc
+
+    if (newSet instanceof Array && target instanceof Array){
+        for (let el1 of newSet){
+            for (let el2 of target){
+                if (compareFunc(el1, el2)){
+                    el2 = updateFunc(el1, el2)
+                    break
+                }
+            }
+        }
+        result = target
+    }
+    return result
+}
+
+export function filterDuplicateItems(items){
+    console.log(items, 'duplicates filter')
+    let result = {}
+    let invalid = []
+
+    for (let item of items){
+        if (item.itemId===undefined || item.itemId===null) {
+            invalid.push(item)
+            continue
+        }
+        const id = item.itemId
+        if (result[id]===undefined){ 
+            result[id]=item 
+            continue
+        }
+
+        else {
+            const currentVersion = new Date(parseVersion(result[id])).getTime()
+            const newVersion = new Date(parseVersion(item)).getTime()
+
+            console.log(currentVersion, newVersion, typeof(currentVersion), typeof(newVersion), 'version format')
+            if (currentVersion>=newVersion){
+                invalid.push(item)
+                continue
+            }
+            else{
+                invalid.push(result[id])
+                result[id] = item
+            }
+        }
+    }
+    let ret = []
+    for (let index in result) ret.push(result[index])
+    return {ret, invalid}
 }
