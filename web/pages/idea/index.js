@@ -84,6 +84,7 @@ export default function IdeaPage(props) {
               }
           }
       }
+      setPageStatus('normal')
   }
   const activeAction = async (postData, itemData) => {
       if (userPassword!=='' && !isGithubLogin()){
@@ -92,6 +93,7 @@ export default function IdeaPage(props) {
           return
       }
       else if (userPassword!=='' && isGithubLogin()){
+          setPageStatus('pending')
           itemData['itemStatus'] = 'active'
           await updateGithubItem(itemData, hostname, afterActiveAction)
 
@@ -114,6 +116,7 @@ export default function IdeaPage(props) {
               }
           }
       }
+      setPageStatus('normal')
   }
   const completeAction = async (postData, itemData) => {
       if (userPassword!=='' && !isGithubLogin()){
@@ -123,6 +126,7 @@ export default function IdeaPage(props) {
       }
       else if (userPassword!=='' && isGithubLogin()){
           //console.log(postData, 'postData')
+          setPageStatus('pending')
           itemData['itemStatus'] = 'completed'
           await updateGithubItem(itemData, hostname, afterCompleteAction)
           

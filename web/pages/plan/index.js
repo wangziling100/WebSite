@@ -337,6 +337,7 @@ export default function PlanPage(data) {
           updateItemInLayer(newData.id, newData.layer, newData, 0)
       }
       setUpdateCount(updateCount+1)
+      setPageStatus('normal')
   }
 
   const afterDragAction = (newData, layerDiff) =>{
@@ -410,6 +411,7 @@ export default function PlanPage(data) {
           setUpdateCount(updateCount+1)
       }
       else if (userPassword!=='' && isGithubLogin()){
+          setPageStatus('pending')
           newData['option'] = 'update'
           await updateGithubItem(newData, hostname, afterEditAction, 'issue')
 
@@ -431,6 +433,7 @@ export default function PlanPage(data) {
       }
       else if (userPassword!=='' && isGithubLogin()){
           newData['option'] = 'update'
+          setPageStatus('pending')
           await updateGithubItem(newData, hostname, afterEditAction, 'issue')
       }
       else if (userPassword==='' && adminPassword!==''){
