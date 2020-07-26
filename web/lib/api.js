@@ -3,7 +3,7 @@ const API_URL = 'https://graphql.datocms.com'
 const API_TOKEN = process.env.NEXT_EXAMPLE_CMS_DATOCMS_API_TOKEN
 import React, { useRef, useState, useEffect } from 'react'
 import Router from 'next/router'
-import { flat,getQueryVariable } from '../lib/tools'
+import { deleteValueFromArray, flat,getQueryVariable } from '../lib/tools'
 import { setPageStatus } from '../lib/sessionData'
 
 // See: https://www.datocms.com/blog/offer-responsive-progressive-lqip-images-in-2020
@@ -476,7 +476,7 @@ export function writeLocal(page, password, data){
     for (let key in data){
         record[key] = data[key]
     }
-    console.log(recordName, record, 'write local')
+    //console.log(recordName, record, 'write local')
     localStorage.setItem(recordName, JSON.stringify(record))
     return [true, record]
 }
@@ -763,7 +763,7 @@ export function useAdminPassword(adminPassword, setAdminPassword){
 export function useLoadData(page, password, setData, setSessionData, dep, reload){
     useEffect(() => {
         if (password){
-            console.log('load data')
+            //console.log('load data')
             const data = readLocal(page, password)
             setData(data)
         }
@@ -778,9 +778,9 @@ export function useLoadData(page, password, setData, setSessionData, dep, reload
 export function useUpdateData(page, password, data, dep){
     
     useEffect(() => {
-        console.log(canUpdateFunc(), 'can update')
+        //console.log(canUpdateFunc(), 'can update')
         if (!canUpdateFunc()){
-            console.log("can't update")
+            //console.log("can't update")
             setCanUpdate(true)
         }
         else if (password){
@@ -790,17 +790,17 @@ export function useUpdateData(page, password, data, dep){
 }
 
 export function setCanUpdate(value){
-    console.log('set can update:', value)
+    //console.log('set can update:', value)
     writeData({canUpdate: value})
-    console.log(canUpdateFunc(), 'after set can update')
+    //console.log(canUpdateFunc(), 'after set can update')
 }
 
 function canUpdateFunc(){
     const sessionData = readData()
-    console.log(sessionData, 'can update func')
+    //console.log(sessionData, 'can update func')
     if (sessionData.canUpdate===undefined) return true
     const canUpdate = sessionData.canUpdate
-    console.log(canUpdate, sessionData.canUpdate, 'can update after')
+    //console.log(canUpdate, sessionData.canUpdate, 'can update after')
     return canUpdate
 }
 function initAccount(password){
@@ -838,4 +838,20 @@ function getAllRecoredNames(password){
     name = 'plan_' + password
     result.push(name)
     return result
+}
+
+export function getLabels(tags){
+    let ret = []
+    if (tags==='') return []
+    const labels= tags.split(',')
+    for (let label of labels){
+        let tmp = label.replace(/(^\s*)|(\s*$)/g, "")
+        tmp = tmp.split(" ").join("")
+        ret.push(tmp)
+    }
+    return ret
+}
+
+export function deleteLabel(label, labelArray){
+    return deleteValueFromArray(labelArray, label)
 }

@@ -46,7 +46,7 @@ function flatGithubData(data, page){
 }
 
 export function addAllToLocal(password, data){
-    console.log('add all locally', data)
+    //console.log('add all locally', data)
     let invalid = []
     const pages = ['idea', 'plan']
     const existUser = checkUser(password)
@@ -56,14 +56,14 @@ export function addAllToLocal(password, data){
 
         if (page==='idea'){
             if (data.ideaItem===undefined) continue
-            console.log('add idea locally')
+            //console.log('add idea locally')
             record.ideaItem = record.ideaItem.concat(data.ideaItem)
-            console.log(record, password, 'idea record')
+            //console.log(record, password, 'idea record')
             const tmpData = {
                 ideaItem: record.ideaItem,
             }
             const tmpResult = writeLocal(page, password, tmpData)
-            console.log(tmpResult, 'result')
+            //console.log(tmpResult, 'result')
         }
 
         else if (page==='plan'){
@@ -91,7 +91,7 @@ export function addAllToLocal(password, data){
             const tmpData = {
                 layers: layers
             }
-            console.log(tmpData, 'new plan local')
+            //console.log(tmpData, 'new plan local')
             writeLocal(page, password, tmpData)
         }
 
@@ -111,7 +111,7 @@ export function updateAllInLocal(password, data){
         const record = readLocal(page, password)
         if (page==='idea'){
             if (data.ideaItem===undefined) continue
-            console.log('update idea locally')
+            //console.log('update idea locally')
             let result = []
             let target = record.ideaItem
             let newSet = data.ideaItem
@@ -272,4 +272,57 @@ export function updateGithubCompleteness(page, password, completeness, number){
     }
     writeLocal(page, password, tmpData)
 
+}
+
+export function deleteLocalIdea(idea, userPassword=""){
+    let localData = readLocal('idea', userPassword)
+    //console.log('deleteLocalIdea local data', localData)
+    const id = idea.itemId
+    const ideas = localData.ideaItem
+    for (let index in ideas){
+        //console.log(id, ideas[index].itemId, 'deleteLocalIdea id')
+        if (id===ideas[index].itemId){
+            ideas.splice(index, 1)
+            break
+        }
+    }
+    localData = {
+        ideaItem: ideas
+    }
+    //console.log('deleteLocalIdea2', localData)
+    writeLocal('idea', userPassword, localData)
+    return localData
+}
+
+export function updateLocalPlan(plan, userPassword){
+    let local = readLocal('plan', userPassword)
+    const layers = local.layers
+    const layer = plan.layer
+    for (let index in layers[layer]){
+        if (plan.itemId===layers[layer][index].itemId){
+            layers[layer][index] = plan
+            break
+        }
+    }
+    local = {
+        layers: layers
+    }
+    writeLocal('plan', userPassword, local)
+    return local
+}
+
+export function processLocalBatch(batch, userPassword){
+    for(let item of batch){
+        if (item.itemType==='milestone'){
+            if(item.option==='delete') deleteLocalIdea(item, userPassword)
+        }
+        else if (item.itemType==='issue'){
+            if(item.option==='update') updateLocalPlan(item, userPassword)
+        }
+    }
+}
+
+export function getLayers(password){
+    const record = readLocal('plan', password)
+    return record.layers
 }

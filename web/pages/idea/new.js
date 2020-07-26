@@ -26,6 +26,11 @@ export default function NewPage(props){
     }
     // Actions
     const afterCreateAction = async (newData, oldData=null) => {
+        if (newData===undefined || newData===null){
+            alert('No connection with Server!')
+            Router.push('/idea')
+            return
+        }
         //console.log(newData, oldData, 'after create action')
         if (isGithubLogin()){
             const statusText = newData.statusText || null

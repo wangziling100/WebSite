@@ -3,7 +3,7 @@ import Link from 'next/link'
 import Container from '../../components/container'
 import Navigation from '../../components/navigation'
 import Layout from '../../components/layout'
-import { useRedirect, useGithubLogin, readLocal, writeLocal, useUpdateData, useLoadData, useUserPassword, useAdminPassword, sendData, getHostname, getItemByReference, getImageByReference } from '../../lib/api'
+import { setCanUpdate, useRedirect, useGithubLogin, readLocal, writeLocal, useUpdateData, useLoadData, useUserPassword, useAdminPassword, sendData, getHostname, getItemByReference, getImageByReference } from '../../lib/api'
 import { IdeaHeader, Ideas } from '../../components/ideas'
 import Notice from '../../components/notice'
 import Router, { useRouter } from 'next/router'
@@ -14,8 +14,10 @@ import { Image } from 'react-datocms'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 import { RotateType1 } from '../../components/animation'
-import { deleteGithubItem, updateGithubItem, sendGithubRequest, isGithubLogin, getGithubInfo } from '../../lib/github'
+import { processGithubItemBatch, findAndUpdatePlanByMilestoneNumber, deleteGithubItem, updateGithubItem, sendGithubRequest, isGithubLogin, getGithubInfo } from '../../lib/github'
 import { SyncOverlay } from '../../components/sync-overlay'
+import { processLocalBatch, getLayers } from '../../lib/localData'
+import { flat } from '../../lib/tools'
 
 export default function IdeaPage(props) {
   // Variables
@@ -171,6 +173,10 @@ export default function IdeaPage(props) {
       }
   }
   const afterDeleteAction = (newData, sourceData=null) => {
+      if (newData===undefined || newData===null) {
+          alert('No connection with server')
+          return
+      }
       //console.log(newData, 'new data')
       if (userPassword!=='' && !isGithubLogin()){
           const data = localData
@@ -184,8 +190,9 @@ export default function IdeaPage(props) {
       }
       else if (userPassword!=='' && isGithubLogin()){
           const statusText = newData.statusText || null
-          if (statusText==='No Content'){
+          if (statusText==='OK'){
               //console.log(statusText, 'statusText')
+              /*      
               const data = localData
               for (let index in data.ideaItem){
                   if (data.ideaItem[index].itemId === itemData.itemId){
@@ -194,6 +201,11 @@ export default function IdeaPage(props) {
                   }
               }
               setLocalData(data)
+              updateFunction()
+              */
+              processLocalBatch(sourceData, userPassword)
+              setCanUpdate(false)
+              reloadFunction()
               updateFunction()
           }
           else {
@@ -226,7 +238,16 @@ export default function IdeaPage(props) {
       }
       else if (userPassword!=='' && isGithubLogin()){
           setPageStatus('pending')
-          await deleteGithubItem(itemData, hostname, afterDeleteAction, 'milestone')
+          const layers = getLayers(userPassword)
+          //console.log(layers, 'layers')
+          const updatedPlans = findAndUpdatePlanByMilestoneNumber(flat(layers), itemData.number)
+          itemData['option'] = 'delete'
+          itemData['itemType'] = 'milestone'
+          const batch = updatedPlans.concat([itemData])
+          //console.log(batch, 'batch')
+          const tmpAfterAction = (newData) => afterDeleteAction(newData, batch)
+          await processGithubItemBatch(batch, hostname, tmpAfterAction)
+          //await deleteGithubItem(itemData, hostname, afterDeleteAction, 'milestone')
           setShowOverlay(false)
           return
       }

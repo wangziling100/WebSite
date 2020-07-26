@@ -87,6 +87,22 @@ export function deleteElementsFromArray(targets, array, key){
     console.log(ret, 'delete elements from array 2')
     return ret
 }
+
+export function deleteValueFromArray(target, value, onlyFirst=false){
+    let returnArray = []
+    let allowCheck = true
+    let findIt = false
+    for (let el of target){
+        if (el===value && allowCheck){
+            if (onlyFirst) allowCheck=false
+            findIt = true
+            continue
+        }
+        returnArray.push(el)
+    }
+    return {findIt, returnArray}
+}
+
 export function isEqual(obj1, obj2){
     if(typeof(obj1)!==typeof(obj2)) return false
 
@@ -159,3 +175,4 @@ export function filterDuplicateItems(items){
     for (let index in result) ret.push(result[index])
     return {ret, invalid}
 }
+

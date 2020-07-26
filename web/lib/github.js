@@ -1,4 +1,4 @@
-import { setServerRequestOptions, sendRequest, readData } from '../lib/api'
+import { getLabels, deleteLabel, setServerRequestOptions, sendRequest, readData } from '../lib/api'
 import { copy } from '../lib/tools'
 function item2Milestone(item){
     let milestone = null
@@ -291,6 +291,30 @@ function findMilestoneFromTags(tags){
     return [numMilestone, labels]
 }
 
+function deleteMilestoneLabel(plan, number){
+    const label = '#'+number
+    const labels = getLabels(plan.tag)
+    const {findIt, returnArray} = deleteLabel(label, labels)
+    if (findIt) {
+        plan.tag = returnArray.join(', ')
+    }
+    return { findIt, returnPlan:plan }
+
+}
+
+export function findAndUpdatePlanByMilestoneNumber(plans, number){
+    let ret = []
+    for (let plan of plans){
+        let {findIt, returnPlan} = deleteMilestoneLabel(plan, number)
+        if (findIt) {
+            returnPlan['option'] = 'update'
+            returnPlan['itemType'] = 'issue'
+            ret.push(returnPlan)
+        }
+    }
+    return ret
+}
+
 export function isGithubLogin(){
     const data = readData()
     if (data.userData===null) return false
@@ -360,11 +384,13 @@ async function processGithubItem(data, hostname, afterAction, type, option){
 
 }
 
-async function processGithubItemBatch(batch, hostname, afterAction,option){
+export async function processGithubItemBatch(batch, hostname, afterAction,option){
     let list = []
     for (let item of batch){
         const type = item.itemType
-        item['option'] = option
+        if (option!==undefined && option!==null){
+            item['option'] = option
+        }
         if (type==='milestone'){
             const tmpData = item2Milestone(item)
             list.push(tmpData)
@@ -433,7 +459,7 @@ export async function sendGithubRequest(data, afterAction, isTest=false) {
     const postData = JSON.stringify(data)
     const host = 'wm1269hl6e.execute-api.eu-central-1.amazonaws.com'
     const path = 'github'
-    const [options, https] = setServerRequestOptions(host, path, 'POST', true)
+    const [options, https] = setServerRequestOptions(host, path, 'POST', isTest)
     //console.log('send github request')
     sendRequest(options, https, postData, afterAction)
     
