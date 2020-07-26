@@ -211,7 +211,12 @@ export default function PlanPage(data) {
   }
 
   const afterDeleteAction = (newData, sourceData=null) => {
-      if (newData === undefined || newData === null) return
+      console.log('after delete action', newData, sourceData)
+      if (newData === undefined || newData === null) {
+          setPageStatus('normal')
+          alert('No response from server')
+          return
+      }
       if (newData.data !== undefined) newData = newData.data
       if (newData instanceof Array){
           for (let i of newData){
@@ -265,8 +270,8 @@ export default function PlanPage(data) {
           else {
               alert('Something wrong happens')
           }
-          setPageStatus('normal')
       }
+      setPageStatus('normal')
       setUpdateCount(updateCount+1)
   }
   const afterCreateAction = (newData, sourceData=null) => {
@@ -279,7 +284,7 @@ export default function PlanPage(data) {
           newData = newData.data
       }
       else if( isGithubLogin() ){
-          //console.log(newData, sourceData, 'after create action')
+          console.log(newData, sourceData, 'after create action')
           const statusText = newData.statusText
           if (statusText==='Created'){
               // add new plan
@@ -479,7 +484,7 @@ export default function PlanPage(data) {
               return
           }
           else if (isGithubLogin()){
-              //console.log(allOpt, 'delete action')
+              console.log(allOpt, 'delete action')
               setPageStatus('pending')
               await deleteGithubItem(allOpt, hostname, afterDeleteAction, 'issue')
           }

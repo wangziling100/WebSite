@@ -157,18 +157,22 @@ exports.lambdaHandler = async (event, context) =>{
                     option: 'fetch',
                 }
                 const milestoneData = await tmpFunc('fetch', tmpBody, body.userName, body.repo, milestoneNum, 'milestone')
-                const open_issues = milestoneData.data.open_issues
-                const closed_issues = milestoneData.data.closed_issues
-                console.log(milestoneData, 'fetch milestone')
-                completenessResult = {
-                    statusCode: 200,
-                    statusText: 'OK',
-                    data: {
-                        completeness: calcCompleteness(open_issues, closed_issues),
-                        itemType: 'milestone',
-                        number: milestoneNum,
+                if (milestoneData?.data?.open_issues!==undefined){
+                    const open_issues = milestoneData.data.open_issues
+                    const closed_issues = milestoneData.data.closed_issues
+                    console.log(milestoneData, 'fetch milestone')
+                    completenessResult = {
+                        statusCode: 200,
+                        statusText: 'OK',
+                        data: {
+                            completeness: calcCompleteness(open_issues, closed_issues),
+                            itemType: 'milestone',
+                            number: milestoneNum,
+                        }
                     }
                 }
+                
+                
             }
         }
         

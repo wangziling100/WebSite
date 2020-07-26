@@ -144,6 +144,7 @@ export function IdeaItem({ data, password, actions, orderBy="priority", selected
   const evaluation = data.evaluation
   const icon = owner.substring(0,1) || "P"
   const startTimestamp = new Date(data._createdAt).getTime()-Date.now()
+  const endDate = data.endDate
   var orderNum
   //var selectedStatus
   switch ( orderBy ){
@@ -175,14 +176,25 @@ export function IdeaItem({ data, password, actions, orderBy="priority", selected
         <div className={cn('absolute', 'left-0', 'h-full', 'process-bar', 'bg-blue-200', 'pointer-events-none', {'hidden': hideContent})}>
           
         </div>
+        <div className="flex justify-end cursor-pointer" onClick={switchContentState}>
+          { endDate && endDate!==null &&
+            <div className="mr-2 text-sm text-gray-800">
+              due on: &nbsp;
+              {endDate}
+            </div>
+          }
+          
+          <div className="mr-2 text-sm text-gray-800">
+            created at: &nbsp;
+            {startTime}
+          </div>
+        </div>
         <div className="flex justify-between cursor-pointer" onClick={switchContentState}>
           <div className="text-3xl font-semibold">
             {title}
           </div>
-          <div className="mr-2 text-sm text-gray-800">
-            {startTime}
-          </div>
         </div>
+        
         <div className={cn('text-lg', {'hidden': !hideContent}, )}>
           <Markdown content={content}/>
         </div>
