@@ -2,7 +2,7 @@ import Head from 'next/head'
 import Container from '../../components/container'
 import Navigation from '../../components/navigation'
 import Layout from '../../components/layout'
-import { useGithubLogin, useGithubCode, useLoadData, useUpdateData, useAdminPassword, useUserPassword, getVersion, toItemFormat, sendData, getHostname, getImageByReference, getItemByReference } from '../../lib/api'
+import { setCanUpdate, useGithubLogin, useGithubCode, useLoadData, useUpdateData, useAdminPassword, useUserPassword, getVersion, toItemFormat, sendData, getHostname, getImageByReference, getItemByReference } from '../../lib/api'
 import { useState, useEffect } from 'react'
 import { PlanItem, PlanLayer } from '../../components/plans'
 import cn from 'classnames'
@@ -11,12 +11,13 @@ import { faArrowAltCircleRight, faArrowAltCircleDown } from '@fortawesome/free-r
 import {faPlus} from '@fortawesome/free-solid-svg-icons'
 import { Overlay } from '../../components/overlay'
 import { TopPlan } from '../../components/top-plan'
-import { isEqual, flat, compare, getDateDiff, s2Time } from '../../lib/tools'
+import { copy, isEqual, flat, compare, getDateDiff, s2Time } from '../../lib/tools'
 import { PlanSetting } from '../../components/plan-setting'
-import { deleteGithubItem, updateGithubItem, createGithubItem, isGithubLogin } from '../../lib/github'
+import { processGithubItemBatch, checkUpdateMilestoneEndDate, deleteGithubItem, updateGithubItem, createGithubItem, isGithubLogin } from '../../lib/github'
 import markdownToHtml from '../../lib/markdownToHtml'
 import { SyncOverlay } from '../../components/sync-overlay'
 import { updateGithubCompleteness } from '../../lib/localData'
+import { parseResponseAsBatch, processResponseBatch } from '../../lib/after-process'
 
 export default function PlanPage(data) {
   // Variables
@@ -210,7 +211,7 @@ export default function PlanPage(data) {
       
   }
 
-  const afterDeleteAction = (newData, sourceData=null) => {
+  const afterDeleteAction = async (newData, sourceData=null) => {
       console.log('after delete action', newData, sourceData)
       if (newData === undefined || newData === null) {
           setPageStatus('normal')
@@ -242,7 +243,16 @@ export default function PlanPage(data) {
           }
       }
       else if(userPassword!=='' && isGithubLogin()){
-          //console.log(sourceData, newData, 'after delete')
+          const responseBatch = parseResponseAsBatch(newData)
+          let sourceDataBatch
+          if (sourceData instanceof Array) sourceDataBatch=sourceData
+          else sourceDataBatch = [sourceData]
+          const succeed = await processResponseBatch(responseBatch, sourceDataBatch, userPassword)
+          if (!succeed) alert('Something wrong happens!')
+          setCanUpdate(false)
+          reloadFunction()
+          /*
+          console.log(sourceData, newData, 'after delete')
           const statusText = newData.statusText
           if (statusText==='OK'){
               for (let i of sourceData){
@@ -270,11 +280,12 @@ export default function PlanPage(data) {
           else {
               alert('Something wrong happens')
           }
+          */
       }
       setPageStatus('normal')
       setUpdateCount(updateCount+1)
   }
-  const afterCreateAction = (newData, sourceData=null) => {
+  const afterCreateAction = async (newData, sourceData=null) => {
       //newData = newData.data
       if (newData===null){
           alert('Something wrong')
@@ -285,6 +296,13 @@ export default function PlanPage(data) {
       }
       else if( isGithubLogin() ){
           console.log(newData, sourceData, 'after create action')
+          const responseBatch = parseResponseAsBatch(newData)
+          let sourceDataBatch
+          if (sourceData instanceof Array) sourceDataBatch = sourceData
+          else sourceDataBatch= [sourceData]
+          const succeed = await processResponseBatch(responseBatch, sourceDataBatch, userPassword)
+          if (!succeed) alert('Something wrong happens!')
+          /**
           const statusText = newData.statusText
           if (statusText==='Created'){
               // add new plan
@@ -311,17 +329,32 @@ export default function PlanPage(data) {
           else {
               alert('Something wrong happens')
           }
+          */
+          setCanUpdate(false)
+          reloadFunction()
           setPageStatus('normal')
+          //setUpdateCount(updateCount+1)
+          return
       }
       addItemInLayer(newData.layer, newData)
       setUpdateCount(updateCount+1)
   }
-  const afterEditAction = (newData, sourceData=null) => {
+  const afterEditAction = async (newData, sourceData=null) => {
+      //console.log(newData, sourceData, 'after edit action')
       if (userPassword!=='' && !isGithubLogin()){
           updateItemInLayer(newData.itemId, newData.layer, newData,0)
       }
       else if (userPassword!=='' && isGithubLogin()){
           //console.log(newData, sourceData, 'after edit action')
+          const responseBatch = parseResponseAsBatch(newData)
+          let sourceDataBatch
+          if (sourceData instanceof Array) sourceDataBatch=sourceData
+          else sourceDataBatch = [sourceData]
+          const succeed = await processResponseBatch(responseBatch, sourceDataBatch, userPassword)
+          if (!succeed) alert('Something wrong happens!')
+          setCanUpdate(false)
+          reloadFunction()
+          /*
           const statusText = newData.statusText
           if (statusText==='OK'){
               updateItemInLayer(sourceData.itemId, sourceData.layer, sourceData, 0)
@@ -337,6 +370,7 @@ export default function PlanPage(data) {
           else {
               alert('Something wrong happens')
           }
+          */
       }
       else if (userPassword==='' && adminPassword!==''){
           updateItemInLayer(newData.id, newData.layer, newData, 0)
@@ -369,6 +403,7 @@ export default function PlanPage(data) {
   }
   const createAction = async (form) => {
       form['contentPerformance'] = await markdownToHtml(form.content)
+      //console.log(form, 'plan create action')
       if (userPassword!=='' && !isGithubLogin()){
           form['itemId'] = Math.random().toString()
           afterCreateAction(form)
@@ -376,7 +411,29 @@ export default function PlanPage(data) {
       else if (userPassword!=='' && isGithubLogin()){
           setPageStatus('pending')
           form['option'] = 'create'
-          await createGithubItem(form, hostname, afterCreateAction, 'issue')
+          form['itemType'] = 'issue'
+          form['version'] = new Date()
+          const { shouldUpdateMilestoneEndDate, newMilestone, oldMilestone } = checkUpdateMilestoneEndDate(form, form, userPassword)
+          //console.log(shouldUpdateMilestoneEndDate, newMilestone, 'checkUpdateMilestoneEndDate')
+          if(shouldUpdateMilestoneEndDate){
+              //console.log('request list')
+              let batch = [form]
+              if (newMilestone!==null) {
+                  newMilestone['option'] = 'update'
+                  newMilestone['version'] = new Date()
+                  batch.push(newMilestone)
+              }
+              if (oldMilestone!==null){
+                  oldMilestone['option'] = 'update'
+                  oldMilestone['version'] = new Date()
+                  batch.push(oldMilestone)
+              }
+              await processGithubItemBatch(batch, hostname, afterCreateAction)
+          }
+          else {
+              //console.log('single request')
+              await createGithubItem(form, hostname, afterCreateAction, 'issue')
+          }
 
       }
       else if (userPassword==='' && adminPassword!==''){
@@ -384,7 +441,8 @@ export default function PlanPage(data) {
       }
   }
   const editAction = async (form, data) => {
-      //console.log('edit', data, form)
+      //console.log('edit action--------------', data, form)
+      const sourceData = copy(data)
       for (let key in form){
           data[key] = form[key]
       }
@@ -395,7 +453,29 @@ export default function PlanPage(data) {
       else if (userPassword!=='' && isGithubLogin()){
           data['option'] = 'update'
           data['version'] = new Date()
-          await updateGithubItem(data, hostname, afterEditAction, 'issue')
+          setPageStatus('pending')
+          const { shouldUpdateMilestoneEndDate, newMilestone, oldMilestone } = checkUpdateMilestoneEndDate(data, sourceData, userPassword)
+          if(shouldUpdateMilestoneEndDate){
+              //console.log('request list')
+              let batch = [data]
+              if (newMilestone!==null) {
+                  newMilestone['option'] = 'update'
+                  newMilestone['version'] = new Date()
+                  batch.push(newMilestone)
+              }
+              if (oldMilestone!==null){
+                  oldMilestone['option'] = 'update'
+                  oldMilestone['version'] = new Date()
+                  batch.push(oldMilestone)
+              } 
+              //console.log(batch, 'update action')
+              await processGithubItemBatch(batch, hostname, afterEditAction)
+
+          }
+          else{
+              //console.log('single request')
+              await updateGithubItem(data, hostname, afterEditAction, 'issue')
+          }
       }
 
       if (userPassword==='' && adminPassword!==''){
@@ -484,9 +564,28 @@ export default function PlanPage(data) {
               return
           }
           else if (isGithubLogin()){
-              console.log(allOpt, 'delete action')
+              //console.log(allOpt, 'delete action------------')
               setPageStatus('pending')
-              await deleteGithubItem(allOpt, hostname, afterDeleteAction, 'issue')
+              const {shouldUpdateMilestoneEndDate, newMilestone, oldMilestone} = checkUpdateMilestoneEndDate(data, data, userPassword)
+              if (shouldUpdateMilestoneEndDate){
+                  //console.log('update milestone end date')
+                  const batch = allOpt
+                  if (newMilestone!==null) {
+                      newMilestone['option'] = 'update'
+                      newMilestone['version'] = new Date()
+                      batch.push(newMilestone)
+                  }
+                  if (oldMilestone!==null){
+                      oldMilestone['option'] = 'update'
+                      oldMilestone['version'] = new Date()
+                      batch.push(oldMilestone)
+                  }
+                  await processGithubItemBatch(batch, hostname, afterDeleteAction)
+              }
+              else{
+                  //console.log('wont update milestone end date')
+                  await deleteGithubItem(allOpt, hostname, afterDeleteAction, 'issue')
+              }
           }
           
       }

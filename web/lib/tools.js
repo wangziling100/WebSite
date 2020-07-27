@@ -116,6 +116,41 @@ export function isEqual(obj1, obj2){
     return null
 }
 
+export function updateItem(newData, target, compareFunc, updateFunc){
+    let result = null
+    const defaultUpdateFunc = (item1, item2) => {
+        for  (let index in item1){
+            item2[index] = item1[index]
+        }
+        return item2
+    }
+    updateFunc = updateFunc || defaultUpdateFunc
+    if (target instanceof Array){
+        for (let el of target){
+            if (compareFunc(newData, el)){
+                el = updateFunc(newData, el)
+                break
+            }
+        }
+        result = target
+    }
+    return result
+    
+}
+
+export function deleteItem(data, target, compareFunc){
+    let result = []
+    if (target instanceof Array){
+        for (let el of target){
+            if (compareFunc(data, el)){
+                continue
+            }
+            result.push(el)
+        }
+    }
+    return result
+}
+
 export function updateItems(newSet, target, compareFunc, updateFunc){
     let result = null
     const defaultUpdateFunc = (item1, item2) => {
@@ -138,6 +173,14 @@ export function updateItems(newSet, target, compareFunc, updateFunc){
         result = target
     }
     return result
+}
+
+export function replaceAttr(newItem, target){
+    // newItem: Object, target: Object
+    for (let index in newItem){
+        target[index] = newItem[index]
+    }
+    return target
 }
 
 export function filterDuplicateItems(items){

@@ -1,10 +1,11 @@
 import { getLabels, deleteLabel, setServerRequestOptions, sendRequest, readData } from '../lib/api'
 import { copy } from '../lib/tools'
+import { getFlatPlans, getLocalItemByAttr, getLocalItemsByAttr } from '../lib/localData'
 function item2Milestone(item){
     let milestone = null
     const option = item.option
     if (option==='create' || option==='update'){
-        console.log(item, 'item2Milestone')
+        //console.log(item, 'item2Milestone')
         milestone= {
             title: item.title,
             state: item.itemStatus,
@@ -31,6 +32,7 @@ function item2Milestone(item){
                 url: item.url || null,
                 issueNumber: item.issueNumber || null,
                 completeness: item.completeness, 
+                endDate: item.endDate,
             }
             milestone['description'] = JSON.stringify(tmp)
         }
@@ -144,7 +146,7 @@ export function remoteData2LocalFormat(remote){
 }
 
 export function remoteData2Local(remote){
-    console.log('remote 2 local', remote)
+    //console.log('remote 2 local', remote)
     let ret = {}
     for (let el of remote){
         const formatedItem = remoteData2LocalFormat(el)
@@ -181,7 +183,7 @@ export function parseVersion(item){
 }
 
 function reconstructRemote2LocalForEach(output, item){
-    console.log(item.itemType, 'item type')
+    //console.log(item.itemType, 'item type')
     if (item.itemType==='milestone'){
         if (output.ideaItem===undefined) output['ideaItem'] = []
         output.ideaItem.push(item)
@@ -315,6 +317,309 @@ export function findAndUpdatePlanByMilestoneNumber(plans, number){
     return ret
 }
 
+export function getMilestoneByNum(password, number){
+    const {succeed, item } = getLocalItemByAttr('idea', password, 'number', number)
+    if(!succeed) console.warn('wrong number, getMilestoneByNum')
+    return item
+}
+
+function getLatestIssueEndDateByMilestone(password, number, exclude){
+    const issues = getFlatPlans(password) 
+    let latestEndDate = null
+    let latestEndTime = 0
+    for (let issue of issues){
+        const [ num, labels ] = findMilestoneFromTags(issue.tag)
+        if (num===number ){
+            if (exclude!==undefined && issue.itemId===exclude.itemId) continue
+            const endDate = new Date(issue.endDate)
+            const endTime = endDate.getTime()
+            if (endTime>latestEndTime){
+                latestEndTime = endTime
+                latestEndDate = endDate
+            }
+
+        }
+
+    }
+    return latestEndDate
+}
+
+function getIssuesByMilestone(password, number){
+    const {succeed, items} = getLocalItemsByAttr('plan', password, 'milestone', number)
+    if(!succeed) console.warn('wrong number, getIssuesByMilestone')
+    return items
+}
+
+function findLargestEndDateFromIssues(issues){
+    let largest =0
+    let largestDate = null
+    for (let issue of issues){
+        const endDate = new Date(issue.endDate)
+        const endTime = endDate.getTime()
+        if(endTime>largest){
+            largest = endTime
+            largestDate = endDate
+        }
+    }
+    return largestDate
+}
+
+export function checkUpdateMilestoneEndDate(newData, sourceData, password){
+    //console.log('---------------')
+    //console.log(newData, sourceData, 'checkUpdateMilestoneEndDate')
+    const option = newData.option
+    const newEndDate = new Date(newData.endDate)
+    const oldEndDate = new Date(sourceData.endDate)
+    /*
+    if (newEndDate===undefined || newEndDate===null) {
+        return {
+            shouldUpdateMilestoneEndDate: false,
+            newMilestone: null
+        }
+    }
+    */
+    // get newMilestone and oldMilestone
+    let newMilestone, oldMilestone
+    if (newData===null) newMilestone = null
+    else {
+        const [ number, labels ] = findMilestoneFromTags(newData.tag)
+        newMilestone = getMilestoneByNum(password, number)
+    }
+    
+    if (sourceData===null) oldMilestone = null
+    else {
+        const [number, labels] = findMilestoneFromTags(sourceData.tag)
+        oldMilestone = getMilestoneByNum(password, number)
+    }
+    //--------------------------------------
+    
+    if (option==='create'){
+        /*
+        const [ number, labels ] = findMilestoneFromTags(newData.tag)
+        let milestone  = getMilestoneByNum(password, number)
+        */
+        if(newMilestone===undefined|| newMilestone===null){
+            return {
+                shouldUpdateMilestoneEndDate: false,
+                newMilestone: null,
+                oldMilestone: null
+            }
+        }
+        return addMilestone(newMilestone, newEndDate)
+        /*
+        if (newMilestone.endDate===undefined || newMilestone.endDate===null){
+            newMilestone['endDate'] = newEndDate
+            return {
+                shouldUpdateMilestoneEndDate: true,
+                newMilestone: milestone
+            }
+        }
+        const newEndTime = newEndDate.getTime()
+        const latestEndDate = new Date(milestone.endDate)
+        const latestEndTime = latestEndDate.getTime()
+        if (newEndTime>latestEndTime){
+            milestone['endDate'] = newEndDate
+            return {
+                shouldUpdateMilestoneEndDate: true,
+                newMilestone: milestone
+            }
+        }
+        return {
+            shouldUpdateMilestoneEndDate: false,
+            newMilestone: null
+        }
+        */
+    }
+    else{
+        if(newMilestone===null && oldMilestone===null){
+            return {
+                shouldUpdateMilestoneEndDate: false,
+                newMilestone: null,
+                oldMilestone: null,
+            }
+        }
+        else if(newMilestone!==null && oldMilestone===null){
+            return addMilestone(newMilestone, newEndDate)
+        }
+        else if(newMilestone===null && oldMilestone!==null ){
+            return deleteMilestone(oldMilestone, oldEndDate)
+        }
+        else if(newMilestone.number === oldMilestone.number){
+            return updateMilestone(newMilestone, oldMilestone, newEndDate, oldEndDate)
+        }
+        else {
+            if (newMilestone.endDate===undefined || newMilestone.endDate===null){
+                newMilestone['endDate'] = newEndDate
+            }
+            else{
+                const newEndTime = newEndDate.getTime()
+                const latestEndDate = new Date(newMilestone.endDate)
+                const latestEndTime = latestEndDate.getTime()
+                if (newEndTime>latestEndTime){
+                    newMilestone['endDate'] = newEndDate
+                }
+                else newMilestone = null
+                
+            }
+            const oldEndDate = oldEndDate.getTime()
+            const latestEndDate = new Date(oldMilestone.endDate)
+            const latestEndTime = latestEndDate.getTime()
+            let oldEndTimeIsLatest
+            if (oldEndTime===latestEndTime) oldEndTimeIsLatest=true
+            else oldEndTimeIsLatest = false
+            if (oldEndTimeIsLatest){
+                const newLatestEndDate = getLatestIssueEndDateByMilestone(password, oldMilestone.number, sourceData)
+                oldMilestone['endDate'] = newLatestEndDate
+            }
+            else oldMilestone = null
+
+            if (newMilestone === null && oldMilestone===null){
+                return {
+                    shouldUpdateMilestoneEndDate: false,
+                    newMilestone: null,
+                    oldMilestone: null,
+                }
+            }
+            else{
+                return {
+                    shouldUpdateMilestoneEndDate: true,
+                    newMilestone: newMilestone,
+                    oldMilestone: oldMilestone,
+                }
+            }
+
+        }
+        /*
+        //const oldEndDate = new Date(sourceData.endDate)
+        const oldEndTime = oldEndDate.getTime()
+        let number = null
+        if (newData.milestone===undefined) {
+            console.log('checkUpdateMilestoneEndDate bug')
+            //alert('bug')
+            let holder
+            [ number, holder]  = findMilestoneFromTags(newData.tag)
+        }
+        else number = newData.milestone
+        const milestone = getMilestoneByNum(password, number)
+        const latestEndDate = new Date(milestone.endDate)
+        const latestEndTime = latestEndDate.getTime()
+        const newEndTime = newEndDate.getTime()
+        console.log(newEndDate, latestEndDate, 'new latest end date')
+
+        let oldEndDateIsLatest
+        if (oldEndTime===latestEndTime) oldEndDateIsLatest=true
+        else oldEndDateIsLatest = false
+
+        if (newEndTime>latestEndTime){
+            milestone['endDate'] = newEndDate
+            return {
+                shouldUpdateMilestoneEndDate: true,
+                newMilestone: milestone,
+                oldMilestone: null,
+            }
+        }
+        else if (oldEndDateIsLatest){
+            //const issues = getIssuesByMilestone(password, number)
+            //console.log(issues, 'related issues')
+            const newLatestEndDate = getLatestIssueEndDateByMilestone(password, number, sourceData)
+            console.log(newLatestEndDate, 'new latest end date')
+            milestone['endDate'] = newLatestEndDate
+            return {
+                shouldUpdateMilestoneEndDate: true,
+                newMilestone: milestone,
+                oldMilestone: null,
+            }
+        }
+        return {
+            shouldUpdateMilestoneEndDate: false,
+            newMilestone: null,
+            oldMilestone: null,
+        }
+        */
+        
+    } 
+
+    function addMilestone(newMilestone, newEndDate){
+        if (newMilestone.endDate===undefined || newMilestone.endDate===null){
+            newMilestone['endDate'] = newEndDate
+            return {
+                shouldUpdateMilestoneEndDate: true,
+                newMilestone: newMilestone,
+                oldMilestone: null,
+            }
+        }
+        const newEndTime = newEndDate.getTime()
+        const latestEndDate = new Date(newMilestone.endDate)
+        const latestEndTime = latestEndDate.getTime()
+        if (newEndTime>latestEndTime){
+            newMilestone['endDate'] = newEndDate
+            return {
+                shouldUpdateMilestoneEndDate: true,
+                newMilestone: newMilestone,
+                oldMilestone: null,
+            }
+        }
+        return {
+            shouldUpdateMilestoneEndDate: false,
+            newMilestone: null,
+            oldMilestone: null,
+        }
+    }
+
+    function deleteMilestone(oldMilestone, oldEndDate){
+        const oldEndTime = oldEndDate.getTime()
+        const latestEndDateOldMilestone = new Date(oldMilestone.endDate)
+        const latestEndTimeOldMilestone = latestEndDateOldMilestone.getTime()
+        let oldEndTimeIsLatest
+        if (oldEndTime===latestEndTimeOldMilestone) oldEndTimeIsLatest = true
+        else oldEndTimeIsLatest = false
+        // if delete a latest date of milestone, then pick out a new latest one
+        if (oldEndTimeIsLatest){
+            const newLatestEndDate = getLatestIssueEndDateByMilestone(password, oldMilestone.number, sourceData)
+            oldMilestone['endDate'] = newLatestEndDate
+            return {
+                shouldUpdateMilestoneEndDate: true,
+                newMilestone: null,
+                oldMilestone: oldMilestone,
+            }
+
+        }
+        else{
+            return {
+                shouldUpdateMilestoneEndDate: false,
+                newMilestone: null,
+                oldMilestone: null,
+            }
+        }
+
+    }
+
+    function updateMilestone(newMilestone, oldMilestone, newEndDate, oldEndDate){
+        const newEndTime = newEndDate.getTime()
+        const oldEndTime = oldEndDate.getTime()
+        if (newEndTime>oldEndTime) return addMilestone(newMilestone, newEndDate)
+        else if (newEndTime<oldEndTime) {
+            const tmp = deleteMilestone(oldMilestone, oldEndDate)
+            const newLatestEndDate = new Date(tmp.oldMilestone.endDate)
+            const newLatestEndTime = newLatestEndDate.getTime()
+            if (newEndTime>newLatestEndTime){
+                tmp.oldMilestone['endDate'] = newEndDate
+            }
+            return tmp
+        }
+        else if(option==='delete'){
+            return deleteMilestone(oldMilestone, oldEndDate)
+        }
+        else{
+            return {
+                shouldUpdateMilestoneEndDate: false,
+                newMilestone: null,
+                oldMilestone: null,
+            }
+        }
+    }
+}
+
 export function isGithubLogin(){
     const data = readData()
     if (data.userData===null) return false
@@ -335,7 +640,7 @@ export function getGithubInfo(){
 }
 
 function allData2MilestoneIssue(allData){
-    console.log(allData, 'all data 2 milestone and issue')
+    //console.log(allData, 'all data 2 milestone and issue')
     let ret = []
     for (let el of allData){
         el['option'] = 'update'
@@ -377,8 +682,9 @@ async function processGithubItem(data, hostname, afterAction, type, option){
         postData = item2Issue(data)
         postData = addGithubInfo(postData, hostname, type)
     }
-    console.log(postData, 'postData')
+    //console.log(postData, 'postData')
     let tmpAction = null
+    //console.log(data, afterAction, 'processGithubItem')
     if (afterAction!==null) tmpAction = newData => afterAction(newData, data)
     return await sendGithubRequest(postData, tmpAction)
 
@@ -408,8 +714,9 @@ export async function processGithubItemBatch(batch, hostname, afterAction,option
     postData = addGithubInfo(postData, hostname)
     let tmpAction = null
     if (afterAction!==null) tmpAction = newData => afterAction(newData, batch)
-    console.log(postData, 'processGithubItemBatch')
+    //console.log(postData, 'processGithubItemBatch')
     return await sendGithubRequest(postData, tmpAction)
+    //console.log(page, 'get local item by attr')
 
 }
 
@@ -441,10 +748,10 @@ export async function updateGithubItemBatch(data, hostname, afterAction){
 }
 
 export async function sendAllGithubData(data, hostname, afterAction, isTest=false){
-    console.log(data, 'send all github data')
+    //console.log(data, 'send all github data')
     data = allData2MilestoneIssue(data)
     data = addGithubInfo(data, hostname, 'all')
-    console.log(data, 'post data')
+    //console.log(data, 'post data')
     const postData = JSON.stringify(data)
     const host = 'z7yyx1kgf4.execute-api.eu-central-1.amazonaws.com'
     const path = 'github-sync'
@@ -455,7 +762,7 @@ export async function sendAllGithubData(data, hostname, afterAction, isTest=fals
 export async function sendGithubRequest(data, afterAction, isTest=false) {
     //if (data.itemType==='milestone') data = item2Milestone(data)
     //else if (data.itemType==='issue') data = item2Issue(data)
-    console.log(data, 'send github')
+    //console.log(data, 'send github')
     const postData = JSON.stringify(data)
     const host = 'wm1269hl6e.execute-api.eu-central-1.amazonaws.com'
     const path = 'github'
@@ -466,7 +773,7 @@ export async function sendGithubRequest(data, afterAction, isTest=false) {
 }
 
 export async function sendPublishRequest(data, afterAction, isTest=false){
-    console.log(data, 'send publish request')
+    //console.log(data, 'send publish request')
     const postData = JSON.stringify(data)
     const host = '6vhagypyjd.execute-api.eu-central-1.amazonaws.com'
     const path = 'github-publish'

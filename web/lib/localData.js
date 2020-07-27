@@ -1,21 +1,25 @@
 import { checkRecord, checkUser, readData, readLocal, writeLocal } from '../lib/api'
 import markdownToHtml from '../lib/markdownToHtml'
 import { getGithubInfo } from '../lib/github'
-import { updateItems, deleteElementsFromArray, flat } from '../lib/tools'
+import { deleteItem, updateItem, updateItems, deleteElementsFromArray, flat } from '../lib/tools'
 
 const allPages = ['idea', 'plan']
 export async function updateLocalItem(page, password, newData){
     const items= readLocal(page, password)
-    const itemId =  newData.itemId
-    newData['originContent'] = newData['content']
-    newData.content = await markdownToHtml(newData.content || '')
-    for (let index in items.ideaItem){
-        if(items.ideaItem[index].itemId===itemId){
-            items.ideaItem[index] = newData
-            break
+    if (page==='idea'){
+        const itemId =  newData.itemId
+        newData['originContent'] = newData['content']
+        newData.content = await markdownToHtml(newData.content || '')
+        for (let index in items.ideaItem){
+            if(items.ideaItem[index].itemId===itemId){
+                items.ideaItem[index] = newData
+                break
+            }
         }
+        writeLocal(page, password, items)
     }
-    writeLocal(page, password, items)
+    else if(page==='plan') updateLocalPlan(newData, password)
+    
 }
 
 export function collectAllGithubData(){
@@ -84,7 +88,8 @@ export function addAllToLocal(password, data){
                 try{
                     layers[parseInt(key)] = layers[parseInt(key)].concat(data.layers[key])
                 }
-                catch{
+                catch(err){
+                    console.log(err, 'error in addAllToLocal')
                     invalid = invalid.concat(data.layers[key])
                 }
             }
@@ -97,6 +102,37 @@ export function addAllToLocal(password, data){
 
     }
     return invalid
+}
+
+export function addItemInLocalLayer(data, password){
+    const local = readLocal('plan', password)
+    const layerNum = data.layer
+    const layers = local.layers
+    if (layers[layerNum]===undefined) layers.push([])
+    layers[layerNum].push(data)
+    writeLocal('plan', password, {
+        layers: layers
+    })
+}
+
+export function updateItemInLocalLayer(data, password){
+    //console.log(data, 'update item in local layer------')
+    const local = readLocal('plan', password)
+    const layerNum = data.layer
+    const layers = local.layers
+    const layer = layers[layerNum]
+    const compareFunc = (newData, oldData) => {
+        if (newData['itemId'] === oldData['itemId']) return true
+        return false
+    }
+    const newLayer = updateItem(data, layer, compareFunc)
+    //console.log(newLayer, 'new layer')
+    layers[layerNum] = newLayer
+    const tmpData = {
+        layers: layers
+    }
+    writeLocal('plan', password, tmpData)
+
 }
 
 export function updateAllInLocal(password, data){
@@ -294,21 +330,100 @@ export function deleteLocalIdea(idea, userPassword=""){
     return localData
 }
 
+export function deleteLocalPlan(plan, password){
+    let local = readLocal('plan', password)
+    let layerNum = plan.layer
+    let layers = local.layers
+    const compareFunc = (item1, item2) => {
+        if (item1.itemId===item2.itemId) return true
+        else return false
+    }
+    layers[layerNum] = deleteItem(plan, layers[layerNum], compareFunc)
+    const tmpData = {
+        layers: layers
+    }
+    writeLocal('plan', password, tmpData)
+}
+
 export function updateLocalPlan(plan, userPassword){
     let local = readLocal('plan', userPassword)
+
     const layers = local.layers
-    const layer = plan.layer
-    for (let index in layers[layer]){
-        if (plan.itemId===layers[layer][index].itemId){
-            layers[layer][index] = plan
-            break
+    // find out and delete old plan
+    for (let index1 in layers){
+        for (let index2 in layers[index1]){
+            if (layers[index1][index2].itemId===plan.itemId){
+                layers[index1].splice(index2, 1)
+                break
+            }
         }
     }
+
+    // add new plan in layer
+    layers[plan.layer].push(plan)
+
     local = {
         layers: layers
     }
     writeLocal('plan', userPassword, local)
     return local
+}
+
+export function getFlatPlans(password){
+    let local = readLocal('plan', password)
+    const layers = local.layers
+    return flat(layers)
+}
+
+export function getLocalItemByAttr(page, password, key, value){
+    let local = readLocal(page, password)
+    console.log(page, local, password, 'get local item by attr')
+    let items = null
+    if (page==='idea') items = local.ideaItem
+    else if (page==='plan') items = flat(local.layers)
+    if (items[0][key]===undefined){
+        return {
+            succeed: false,
+            item: null
+        }
+    }
+
+    for (let item of items){
+        if (item[key]===value ){
+            return {
+                succeed: true,
+                item: item
+            }
+        }
+    }
+    return {
+        succeed: false,
+        item: null
+    }
+}
+
+export function getLocalItemsByAttr(page, password, key, value){
+    let ret = []
+    let local = readLocal(page, password)
+    let items = null
+    if (page==='idea') items = local.ideaItem
+    else if (page==='plan') items = flat(local.layers)
+    if (items[0][key]===undefined){
+        return {
+            succeed: false,
+            items: null
+        }
+    }
+
+    for (let item of items){
+        if (item[key]===value ){
+            ret.push(item)
+        }
+    }
+    return {
+        succeed: true,
+        items: ret
+    }
 }
 
 export function processLocalBatch(batch, userPassword){

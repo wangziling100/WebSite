@@ -60,6 +60,8 @@ exports.lambdaHandler = async (event, context) =>{
         //console.log('single process')
         const option = body.option
         result  = await tmpFunc(option, body, body.userName, body.repo, body.number, itemType)
+        console.log(result, 'first result')
+
         const statusCode = result.statusCode
         // generate milestone with comment issue
         if (statusCode<300 && itemType==='milestone' && option==='create'){
@@ -123,16 +125,15 @@ exports.lambdaHandler = async (event, context) =>{
                     completeness: calcCompleteness(open_issues, closed_issues),
                     itemType: 'milestone',
                     number: milestoneNum,
+                    option: 'update',
                 }
             }
-            const tmpResultData = [tmpResult1.data, tmpResult2.data]
+            const tmpResultData = [tmpResult1, tmpResult2]
             result = {
-                StatusCode: tmpResult1.StatusCode,
+                StatusCode: tmpResult1.statusCode,
                 statusText: tmpResult1.statusText,
-                data: tmpResultData
+                list: tmpResultData
             }
-
-
         }
     }
     else if (body.list!==undefined){
@@ -141,6 +142,8 @@ exports.lambdaHandler = async (event, context) =>{
         let tmpList = []
         let dataList = []
         let completenessResult = null
+        let results = []
+        let extResult = []
         for (let request of list){
             const option = request.option
             const itemType = request.itemType
@@ -150,6 +153,7 @@ exports.lambdaHandler = async (event, context) =>{
                 response = setResponse(tmp)
                 return response
             }
+            results.push(tmp)
             if (tmp.statusCode<300 && option==='delete' && itemType==='issue' && request.milestone!==undefined && request.milestone!==null){
                 console.log(tmp, 'update milestone completeness')
                 const milestoneNum = request.milestone
@@ -157,7 +161,7 @@ exports.lambdaHandler = async (event, context) =>{
                     option: 'fetch',
                 }
                 const milestoneData = await tmpFunc('fetch', tmpBody, body.userName, body.repo, milestoneNum, 'milestone')
-                if (milestoneData?.data?.open_issues!==undefined){
+                if (milestoneData.data!==undefined && milestoneData.data.open_issues!==undefined){
                     const open_issues = milestoneData.data.open_issues
                     const closed_issues = milestoneData.data.closed_issues
                     console.log(milestoneData, 'fetch milestone')
@@ -168,23 +172,25 @@ exports.lambdaHandler = async (event, context) =>{
                             completeness: calcCompleteness(open_issues, closed_issues),
                             itemType: 'milestone',
                             number: milestoneNum,
+                            option: 'update'
                         }
                     }
+                    extResult.push(completenessResult)
                 }
                 
                 
             }
         }
+        results = results.concat(extResult)
         
         result = {
             statusCode: 200,
             statusText: 'OK',
-            list: tmpList,
-            completenessResult: completenessResult,
+            list: results,
+            //completenessResult: completenessResult,
         }
     }
-    //console.log(4, result)
-    
+    console.log(4, result)
     response = setResponse(result)
     //console.log(5, response)
     return response
