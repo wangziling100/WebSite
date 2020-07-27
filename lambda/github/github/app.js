@@ -107,6 +107,7 @@ exports.lambdaHandler = async (event, context) =>{
         }
 
         // update milestone completeness
+        /*
         else if (statusCode<300 && itemType==='issue' && body.milestone!==undefined && body.milestone!==null){
             console.log(result, 'update milestone completeness')
             const milestoneNum = body.milestone
@@ -135,6 +136,7 @@ exports.lambdaHandler = async (event, context) =>{
                 list: tmpResultData
             }
         }
+        */
     }
     else if (body.list!==undefined){
         console.log('list process')
@@ -143,7 +145,7 @@ exports.lambdaHandler = async (event, context) =>{
         let dataList = []
         let completenessResult = null
         let results = []
-        let extResult = []
+        //let extResult = []
         for (let request of list){
             const option = request.option
             const itemType = request.itemType
@@ -154,6 +156,7 @@ exports.lambdaHandler = async (event, context) =>{
                 return response
             }
             results.push(tmp)
+            /*
             if (tmp.statusCode<300 && option==='delete' && itemType==='issue' && request.milestone!==undefined && request.milestone!==null){
                 console.log(tmp, 'update milestone completeness')
                 const milestoneNum = request.milestone
@@ -180,8 +183,9 @@ exports.lambdaHandler = async (event, context) =>{
                 
                 
             }
+            */
         }
-        results = results.concat(extResult)
+        //results = results.concat(extResult)
         
         result = {
             statusCode: 200,
@@ -531,16 +535,21 @@ function getMilestone(data, option='create'){
         }
     }
     let tmpData
+    const open_issues =data.data.open_issues
+    const closed_issues = data.data.closed_issues
+    const completeness = (open_issues+closed_issues===0)?0:(closed_issues/(open_issues+closed_issues))
     if (option === 'create' || option==='update'){
         tmpData = {
             number: data.data.number,
-            url: data.data.html_url,
             id: data.data.id,
+            completeness: completeness,
+            due_on: data.data.due_on,
         }
     }
     else if (option==='delete') {
         tmpData={
             message: 'succeed',
+            option: 'delete',
         }
     }
     else if (option==='fetch'){

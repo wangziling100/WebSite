@@ -2,7 +2,7 @@ import { replaceAttr } from '../lib/tools'
 import { updateLocalPlan, deleteLocalPlan, updateItemInLocalLayer, addItemInLocalLayer, updateLocalItem } from '../lib/localData'
 import { getMilestoneByNum } from '../lib/github'
 export async function processResponse(responseData, sourceData, password){
-    //console.log(responseData, sourceData, 'processResponse')
+    console.log(responseData, sourceData, 'processResponse')
     let option = null
     let itemType = null
     if (sourceData===null){

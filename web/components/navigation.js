@@ -120,7 +120,6 @@ export default function Navigation({ page, password, actions, states, logo, host
             tmp = addAllToLocal(password, downloadCreate)
             invalid = invalid.concat(tmp)
             console.log(tmp, 'invalid format')
-            return
             const isolatedPlans = checkIsolatedPlan(password)
             invalid = invalid.concat(isolatedPlans)
             

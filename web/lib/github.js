@@ -461,7 +461,7 @@ export function checkUpdateMilestoneEndDate(newData, sourceData, password){
                 else newMilestone = null
                 
             }
-            const oldEndDate = oldEndDate.getTime()
+            const oldEndTime = oldEndDate.getTime()
             const latestEndDate = new Date(oldMilestone.endDate)
             const latestEndTime = latestEndDate.getTime()
             let oldEndTimeIsLatest
@@ -620,6 +620,70 @@ export function checkUpdateMilestoneEndDate(newData, sourceData, password){
     }
 }
 
+export function checkUpdateMilestoneCompleteness(newData, sourceData, password){
+    console.log(newData, sourceData, 'check update milestone completeness')
+    const option = newData.option
+    let newMilestone, oldMilestone
+    if (newData===null) newMilestone = null
+    else{
+        const [number, label] = findMilestoneFromTags(newData.tag)
+        newMilestone = getMilestoneByNum(password, number)
+    }
+    if (sourceData===null) oldMilestone = null
+    else{
+        const [number, label] = findMilestoneFromTags(sourceData.tag)
+        oldMilestone = getMilestoneByNum(password, number)
+    }
+    if (option==='create'){
+        if (newMilestone===null) return setReturn(false, null, null)
+        else return setReturn(true, newMilestone, null) 
+    }
+    else if (option==='delete'){
+        if (oldMilestone===null) return setReturn(false, null, null)
+        else return setReturn(true, null, oldMilestone)
+    }
+    else if (option==='update'){
+        if (newMilestone===null && oldMilestone!==null) return setReturn(true, null, oldMilestone)
+        else if (newMilestone!==null && oldMilestone===null) return setReturn(true, newMilestone, null)
+        else if (newMilestone===null && oldMilestone===null) return setReturn(false, null, null)
+        else if (newMilestone.number!==oldMilestone.number){
+            return setReturn(true, newMilestone, oldMilestone)
+        }
+        else if(newData.itemStatus!==sourceData.itemStatus){
+            return setReturn(true, newMilestone, null)
+        }
+        else return setReturn(false, null, null)
+    }
+    
+
+    function setReturn(should, newMilestone, oldMilestone){
+        return {
+            shouldUpdateMilestoneCompleteness: should,
+            newMilestone: newMilestone,
+            oldMilestone: oldMilestone,
+        }
+    }
+
+}
+
+export function combineCheckMilestone(endDate, completeness){
+    let newMilestone, oldMilestone
+    let shouldUpdate = endDate.shouldUpdateMilestoneEndDate || completeness.shouldUpdateMilestoneCompleteness
+    if (endDate.newMilestone!==null) newMilestone=endDate.newMilestone
+    else if(completeness.newMilestone!==null) newMilestone=completeness.newMilestone
+    else newMilestone=null
+
+    if (endDate.oldMilestone!==null) oldMilestone=endDate.oldMilestone
+    else if(completeness.oldMilestone!==null) oldMilestone=completeness.oldMilestone
+    else oldMilestone=null
+
+    return {
+        shouldUpdateMilestone: shouldUpdate,
+        newMilestone: newMilestone,
+        oldMilestone: oldMilestone,
+    }
+}
+
 export function isGithubLogin(){
     const data = readData()
     if (data.userData===null) return false
@@ -714,7 +778,7 @@ export async function processGithubItemBatch(batch, hostname, afterAction,option
     postData = addGithubInfo(postData, hostname)
     let tmpAction = null
     if (afterAction!==null) tmpAction = newData => afterAction(newData, batch)
-    //console.log(postData, 'processGithubItemBatch')
+    console.log(postData, 'processGithubItemBatch')
     return await sendGithubRequest(postData, tmpAction)
     //console.log(page, 'get local item by attr')
 
@@ -766,7 +830,7 @@ export async function sendGithubRequest(data, afterAction, isTest=false) {
     const postData = JSON.stringify(data)
     const host = 'wm1269hl6e.execute-api.eu-central-1.amazonaws.com'
     const path = 'github'
-    const [options, https] = setServerRequestOptions(host, path, 'POST', isTest)
+    const [options, https] = setServerRequestOptions(host, path, 'POST', true)
     //console.log('send github request')
     sendRequest(options, https, postData, afterAction)
     
