@@ -60,7 +60,7 @@ export default function PlanPage(data) {
   const githubUserData = sessionData?.userData || null
   const githubRepos = sessionData?.repos || null
   //console.log(sessionData, 'sessionData')
-  //console.log(layers, 'layers')
+  console.log(layers, 'layers')
   //console.log(localData, 'localData')
   //console.log(updateCount, 'updateCount')
   // Function 
@@ -211,6 +211,15 @@ export default function PlanPage(data) {
               tmp.splice(i,1)
               // add into new layer
               if (userPassword!==''){
+                  if (localData.layers[layer-layerDiff]===undefined){
+                      const newLayer = newData.layer
+                      const layerNum = layers.length
+                      let i = layerNum
+                      while(i<=newLayer){
+                          layers.push([])
+                          i++
+                      }
+                  }
                   localData.layers[layer-layerDiff].push(newData)
               }
               if (userPassword==='' && adminPassword!==''){
