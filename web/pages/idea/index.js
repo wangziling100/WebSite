@@ -349,7 +349,7 @@ export async function getStaticProps({ preview=false }){
   
   for (let e of ideaItem){
       e.originContent = e.content
-      e.content = await markdownToHtml(e.content || '')
+      e.contentPerformance = await markdownToHtml(e.content || '')
       e.comments = []
       for (let c of comments){
           if (e.id === c.refId){

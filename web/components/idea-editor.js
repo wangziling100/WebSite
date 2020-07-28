@@ -5,11 +5,13 @@ import Router, { useRouter } from 'next/router'
 import cn from 'classnames'
 import Link from 'next/link'
 import { isGithubLogin } from '../lib/github'
+import markdownToHtml from '../lib/markdownToHtml'
 
 export function IdeaEditor({background, data, item, savedPassword, page, actions, userPassword}){
   // Variable
   const [ title, setTitle ] = useState(item?.title || "")
-  const [ content, setContent ] = useState(item?.originContent || "")
+  //const [ content, setContent ] = useState(item?.originContent || "")
+  const [ content, setContent ] = useState(item?.content)
   const [ tags, setTags ] = useState(item?.tag || "")
   const [ priority, setPriority ] = useState(item?.priority || 5)
   const [ owner, setOwner ] = useState(item?.owner || 'Public')
@@ -79,8 +81,9 @@ export function IdeaEditor({background, data, item, savedPassword, page, actions
         "period": null,
         "itemId": item?.itemId || Math.random().toString(),
         "_createdAt": item?._createdAt,
-        "originContent": item?.originContent,
-        "comments": item?.comments
+        //"originContent": item?.originContent,
+        "comments": item?.comments,
+        "contentPerformance": await markdownToHtml(content),
     }
     if (item && (item.id !== undefined || item.itemId!==undefined)){
         form['refId'] = item.id

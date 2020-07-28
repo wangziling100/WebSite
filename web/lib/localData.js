@@ -9,7 +9,7 @@ export async function updateLocalItem(page, password, newData){
     if (page==='idea'){
         const itemId =  newData.itemId
         newData['originContent'] = newData['content']
-        newData.content = await markdownToHtml(newData.content || '')
+        newData.contentPerformance = await markdownToHtml(newData.content || '')
         for (let index in items.ideaItem){
             if(items.ideaItem[index].itemId===itemId){
                 items.ideaItem[index] = newData

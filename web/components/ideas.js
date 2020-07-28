@@ -133,6 +133,7 @@ export function IdeaItem({ data, password, actions, orderBy="priority", selected
   const title = data.title
   const content = data.content
   const owner = data.owner || "Public"
+  const contentPerformance = data.contentPerformance
   const contributor = data.contributor || "Nobody"
   const completeness = data.completeness*100+`%`
   let tags = null
@@ -196,7 +197,7 @@ export function IdeaItem({ data, password, actions, orderBy="priority", selected
         </div>
         
         <div className={cn('text-lg', {'hidden': !hideContent}, )}>
-          <Markdown content={content}/>
+          <Markdown content={contentPerformance}/>
         </div>
         <div className='text-sm text-gray-600'>
           {tags}

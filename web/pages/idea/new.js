@@ -3,7 +3,7 @@ import { readLocal, writeLocal, useUserPassword, useAdminPassword, getHostname, 
 import Router, {useRouter} from 'next/router'
 import { useState, useEffect } from 'react'
 import Footer from '../../components/footer'
-import markdownToHtml from '../../lib/markdownToHtml'
+//import markdownToHtml from '../../lib/markdownToHtml'
 import Head from 'next/head'
 import { isGithubLogin, createGithubItem, milestone2Item, getGithubInfo, sendGithubRequest } from '../../lib/github'
 import { copy } from '../../lib/tools'
@@ -56,7 +56,7 @@ export default function NewPage(props){
             newData['_createdAt'] = createTime
             newData['originContent'] = newData['content']
             newData['comments'] = []
-            newData.content = await markdownToHtml(newData.content || '')
+            //newData.content = await markdownToHtml(newData.content || '')
             data.ideaItem.push(newData)
             writeLocal('idea', userPassword, data)
         }

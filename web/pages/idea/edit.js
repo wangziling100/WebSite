@@ -3,7 +3,7 @@ import { writeLocal, readLocal, readData, useUserPassword, useAdminPassword, get
 import Router, {useRouter} from 'next/router'
 import { useState, useEffect } from 'react'
 import Footer from '../../components/footer'
-import markdownToHtml from '../../lib/markdownToHtml'
+//import markdownToHtml from '../../lib/markdownToHtml'
 import Head from 'next/head'
 import { isGithubLogin, updateGithubItem } from '../../lib/github'
 import { updateLocalItem } from '../../lib/localData'
