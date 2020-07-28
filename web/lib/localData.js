@@ -189,7 +189,7 @@ export function checkIsolatedPlan(password){
             counter[item.itemId] = 1
             isolatedPlan = isolatedPlan.concat(children)
             for (let child of children){
-                counter[item.itemId] = 1
+                counter[child.itemId] = 1
             }
         }
     }

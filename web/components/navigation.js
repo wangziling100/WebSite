@@ -121,6 +121,7 @@ export default function Navigation({ page, password, actions, states, logo, host
             invalid = invalid.concat(tmp)
             console.log(tmp, 'invalid format')
             const isolatedPlans = checkIsolatedPlan(password)
+            console.log(isolatedPlans, 'isolated plans')
             invalid = invalid.concat(isolatedPlans)
             
             console.log(invalid, 'invalid data')
@@ -129,9 +130,11 @@ export default function Navigation({ page, password, actions, states, logo, host
             if (invalid.length>0 && invalid!==undefined && invalid!==null){
                 await deleteGithubItemBatch(invalid, hostname, null)
             }
+            /*
             if (uploadCreate.length>0 && uploadCreate!==undefined && uploadCreate!==null){
                 await createGithubItemBatch(uploadCreate, hostname, null)
             }
+            */
             if (uploadUpdate.length>0 && uploadUpdate!==undefined && uploadUpdate!==null){
                 await updateGithubItemBatch(uploadUpdate, hostname, null)
             }
