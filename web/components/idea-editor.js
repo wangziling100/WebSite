@@ -180,7 +180,7 @@ export function IdeaEditor({background, data, item, savedPassword, page, actions
                  
                 </div>
                 <div className={cn(...hintCSS)}>
-                  Different tags should be separated by ";".
+                  Different tags should be separated by ",".
                 </div>
               </div>
               <div className="w-1/3">
