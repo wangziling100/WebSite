@@ -102,6 +102,7 @@ export function remoteData2LocalFormat(remote){
             layer: attrs.layer,
             parents: attrs.parents,
             itemType: itemType,
+            completeness: parseFloat(attrs.completeness) || 0,
         }
         return ret
     }
@@ -114,7 +115,7 @@ export function remoteData2LocalFormat(remote){
             content: content,
             tag: attrs.tag || '',
             priority: parseInt(attrs.priority),
-            completeness: parseInt(attrs.completeness || 0),
+            completeness: parseFloat(attrs.completeness || 0),
             startTime: attrs.startTime || null,
             evaluation: attrs.evaluation || null,
             allowPriorityChange: attrs.allowPriorityChange || null,
