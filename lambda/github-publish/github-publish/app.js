@@ -150,6 +150,8 @@ async function createItemBatch(createList){
     for (let item of createList){
         if (item.itemType==='milestone') ref = 'idea_item'
         else if (item.itemType==='issue') ref = 'plan_item'
+        if (item.refId===null || item.refId===undefined) refId = null
+        else refId = item.refId.toString()
         await client.items.create({
             itemType: '238671',
             title: item.title,
@@ -160,7 +162,7 @@ async function createItemBatch(createList){
             evaluation: item.evaluation,
             allowPriorityChange: item.allowPriorityChange,
             ref: ref,
-            refId: item.refId.toString(),
+            refId: refId,
             owner: item.owner,
             contributor: item.contributor,
             tag: item.tag,
@@ -180,7 +182,7 @@ async function createItemBatch(createList){
             issueNumber: item.issueNumber,
             url: item.url,
             createdAt1: item._createdAt || new Date(),
-            itemType1: item.itemType
+            itemType1: item.itemType,
         })
         .catch( (err) => {
             console.log(err)
