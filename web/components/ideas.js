@@ -137,7 +137,7 @@ export function IdeaItem({ data, password, actions, orderBy="priority", selected
   const contributor = data.contributor || "Nobody"
   const completeness = data.completeness*100+`%`
   let tags = null
-  if (data.number!==undefined) tags = '#'+data.number + ' ' +data.tag 
+  if (data.number!==undefined && data.number!==null) tags = '#'+data.number + ' ' +data.tag 
   else tags = data.tag
   const priority = data.priority
   const comments = data.comments || []
