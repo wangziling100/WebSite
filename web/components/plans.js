@@ -94,6 +94,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
   const menuShow = {'hidden':!showMenu}
   const menuHidden = {'hidden':showMenu}
   // Actions
+  //console.log(data?.itemStatus, data?.title, 'status')
   const startCompose = () => setCompose(true)
   const stopCompose = () => setCompose(false)
   function getTitle(e){
@@ -107,7 +108,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
               "content": content,
               "tag": tags,
               "priority": parseInt(priority),
-              "itemStatus": "active",
+              "itemStatus": itemStatus || 'active',
               "password": password,
               "target": target,
               "difficulty": difficulty,
