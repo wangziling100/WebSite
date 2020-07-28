@@ -109,7 +109,7 @@ exports.lambdaHandler = async (event, context) =>{
             const result2 = await tmpFunc('delete', commentIssue, body.userName, body.repo, body.issueNumber, 'issue')
             //console.log(result2, 'result2')
         }
-        else if (StatusCode<300 && itemType==='milestone' && result.data.completeness!==completeness){
+        else if (statusCode<300 && itemType==='milestone' && result.data.completeness!==completeness){
             body = rewriteMilestoneCompleteness(body, result.data.completeness)
             await tmpFunc(option, body, body.userName, body.repo, body.number, itemType)
         }
