@@ -28,7 +28,9 @@ export default function Hello(){
               <div>focus on data analysis & automation </div>
             </div>
 
+            <a href="mailto:wangziling1000@gmail.com">
             <button className="mt-2 text-base bg-red-600 p-2 rounded-full w-40 text-yellow-200 hover:bg-yellow-400 hover:text-red-600"> Let's have a talk</button>
+            </a>
           </div>
         </Appear>
         <div className="w-1/3">  </div>
