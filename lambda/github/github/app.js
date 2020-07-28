@@ -61,6 +61,10 @@ exports.lambdaHandler = async (event, context) =>{
         const option = body.option
         result  = await tmpFunc(option, body, body.userName, body.repo, body.number, itemType)
         console.log(result, 'first result')
+        let completeness = null
+        if (itemType==='milestone'){
+            completeness = extractCompletenessFromMilestone(body)
+        }
 
         const statusCode = result.statusCode
         // generate milestone with comment issue
@@ -104,6 +108,10 @@ exports.lambdaHandler = async (event, context) =>{
             // update the associated issue
             const result2 = await tmpFunc('delete', commentIssue, body.userName, body.repo, body.issueNumber, 'issue')
             //console.log(result2, 'result2')
+        }
+        else if (StatusCode<300 && itemType==='milestone' && result.data.completeness!==completeness){
+            body = rewriteMilestoneCompleteness(body, result.data.completeness)
+            await tmpFunc(option, body, body.userName, body.repo, body.number, itemType)
         }
 
         // update milestone completeness
@@ -149,13 +157,24 @@ exports.lambdaHandler = async (event, context) =>{
         for (let request of list){
             const option = request.option
             const itemType = request.itemType
+            let completeness = null
+            if (itemType==='milestone'){
+                completeness = extractCompletenessFromMilestone(request)
+            }
             const tmp = await tmpFunc(option, request, body.userName, body.repo, request.number, itemType)
+            console.log('request result', tmp)
             if (tmp.statusCode<300) tmpList.push(tmp)
             else {
                 response = setResponse(tmp)
                 return response
             }
             results.push(tmp)
+            // rewrite milestone, if completeness changed
+            console.log(tmp.data.completeness, completeness, 'compare completeness')
+            if ( itemType==='milestone' && tmp.data.completeness!==completeness ){
+                request = rewriteMilestoneCompleteness(request, tmp.data.completeness)
+                await tmpFunc(option, request, body.userName, body.repo, request.number, itemType)
+            }
             /*
             if (tmp.statusCode<300 && option==='delete' && itemType==='issue' && request.milestone!==undefined && request.milestone!==null){
                 console.log(tmp, 'update milestone completeness')
@@ -650,6 +669,18 @@ function extractContentFromMilestone(milestone){
     return content
 }
 
+function extractCompletenessFromMilestone(milestone){
+    const description = JSON.parse(milestone.description)
+    return description.completeness
+}
+
+function rewriteMilestoneCompleteness(milestone, completeness){
+    let description = JSON.parse(milestone.description)
+    description.completeness = completeness
+    milestone.description = JSON.stringify(description)
+    return milestone
+}
+
 function resultFusion(milestone, issue){
     milestone.data['url'] = issue.data.url
     milestone.data['issueNumber'] = issue.data.number
@@ -665,7 +696,8 @@ function updateMilestoneDescription(milestone, obj){
     //console.log(milestone, 'update milestone description')
     return milestone
 }
-
+/*
 function calcCompleteness(open, closed){
     return(closed/(closed+open))
 }
+*/
