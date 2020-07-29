@@ -176,7 +176,11 @@ export default function IdeaPage(props) {
   }
   const afterDeleteAction = (newData, sourceData=null) => {
       if (newData===undefined || newData===null) {
-          alert('No connection with server')
+          alert('No connection with server, but the item is still deleted locally')
+          processLocalBatch(sourceData, userPassword)
+          setCanUpdate(false)
+          reloadFunction()
+          setPageStatus('normal')
           return
       }
       //console.log(newData, 'new data')
@@ -193,18 +197,6 @@ export default function IdeaPage(props) {
       else if (userPassword!=='' && isGithubLogin()){
           const statusText = newData.statusText || null
           if (statusText==='OK'){
-              //console.log(statusText, 'statusText')
-              /*      
-              const data = localData
-              for (let index in data.ideaItem){
-                  if (data.ideaItem[index].itemId === itemData.itemId){
-                      data.ideaItem.splice(index, 1)
-                      break
-                  }
-              }
-              setLocalData(data)
-              updateFunction()
-              */
               processLocalBatch(sourceData, userPassword)
               setCanUpdate(false)
               reloadFunction()
