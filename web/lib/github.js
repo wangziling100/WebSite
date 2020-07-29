@@ -792,7 +792,7 @@ export async function createGithubItem(data, hostname, afterAction, type='milest
 
 export async function updateGithubItem(data, hostname, afterAction, type='milestone'){
     data['option'] = 'update'
-    await processGithubItem(data, hostname, afterAction, type, 'update')
+    return await processGithubItem(data, hostname, afterAction, type, 'update')
 }
 
 export async function deleteGithubItem(data, hostname, afterAction, type='milestone'){
@@ -833,7 +833,7 @@ export async function sendGithubRequest(data, afterAction, isTest=false) {
     const path = 'github'
     const [options, https] = setServerRequestOptions(host, path, 'POST', true)
     //console.log('send github request')
-    sendRequest(options, https, postData, afterAction)
+    return sendRequest(options, https, postData, afterAction)
     
 }
 

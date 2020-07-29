@@ -68,6 +68,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
   const [ type, setType ] = useState((data?.planType===undefined || data?.planType===null)? 0: data.planType)
   const [ period, setPeriod ] = useState((data?.period===undefined || data?.period===null)? 0: data.period)
   const [ tags, setTags ] = useState(data?.tag || '')
+  const tagPerformance = data?.tag||''
   const [ content, setContent ] = useState(data?.content || '')
   const [ showDetails, setShowDetails ] = useState(true)
   const [ showPeriod, setShowPeriod ] = useState(true)
@@ -444,7 +445,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
           <div className={cn(...text2CSS, ...flexCSS, 'justify-between',)}>
             <div className={cn('flex', 'w-9/10')}>
               <FontAwesomeIcon icon={faTags} className={cn(...iconCSS,)} title={'Tags'} />
-              <div className={cn({'hidden':!showTags&&edit}, {'cursor-pointer':edit})} onClick={()=>setShowTags(false)}> {tags || 'your tags'} </div>
+              <div className={cn({'hidden':!showTags&&edit}, {'cursor-pointer':edit})} onClick={()=>setShowTags(false)}> {tagPerformance || 'your tags'} </div>
               <Input value={tags} setValue={setTags} css={[{'hidden':showTags||!edit}]} setState={()=>setShowTags(true)}/>
             </div>
             {/*details symbol*/}

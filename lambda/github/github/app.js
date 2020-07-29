@@ -113,38 +113,6 @@ exports.lambdaHandler = async (event, context) =>{
             body = rewriteMilestoneCompleteness(body, result.data.completeness)
             await tmpFunc(option, body, body.userName, body.repo, body.number, itemType)
         }
-
-        // update milestone completeness
-        /*
-        else if (statusCode<300 && itemType==='issue' && body.milestone!==undefined && body.milestone!==null){
-            console.log(result, 'update milestone completeness')
-            const milestoneNum = body.milestone
-            const tmpBody = {
-                option: 'fetch',
-            }
-            const milestoneData = await tmpFunc('fetch', tmpBody, body.userName, body.repo, milestoneNum, 'milestone')
-            const open_issues = milestoneData.data.open_issues
-            const closed_issues = milestoneData.data.closed_issues
-            console.log(milestoneData, 'fetch milestone')
-            const tmpResult1 = result
-            const tmpResult2 = {
-                statusCode: 200,
-                statusText: 'OK',
-                data: {
-                    completeness: calcCompleteness(open_issues, closed_issues),
-                    itemType: 'milestone',
-                    number: milestoneNum,
-                    option: 'update',
-                }
-            }
-            const tmpResultData = [tmpResult1, tmpResult2]
-            result = {
-                StatusCode: tmpResult1.statusCode,
-                statusText: tmpResult1.statusText,
-                list: tmpResultData
-            }
-        }
-        */
     }
     else if (body.list!==undefined){
         console.log('list process')
@@ -175,37 +143,7 @@ exports.lambdaHandler = async (event, context) =>{
                 request = rewriteMilestoneCompleteness(request, tmp.data.completeness)
                 await tmpFunc(option, request, body.userName, body.repo, request.number, itemType)
             }
-            /*
-            if (tmp.statusCode<300 && option==='delete' && itemType==='issue' && request.milestone!==undefined && request.milestone!==null){
-                console.log(tmp, 'update milestone completeness')
-                const milestoneNum = request.milestone
-                const tmpBody = {
-                    option: 'fetch',
-                }
-                const milestoneData = await tmpFunc('fetch', tmpBody, body.userName, body.repo, milestoneNum, 'milestone')
-                if (milestoneData.data!==undefined && milestoneData.data.open_issues!==undefined){
-                    const open_issues = milestoneData.data.open_issues
-                    const closed_issues = milestoneData.data.closed_issues
-                    console.log(milestoneData, 'fetch milestone')
-                    completenessResult = {
-                        statusCode: 200,
-                        statusText: 'OK',
-                        data: {
-                            completeness: calcCompleteness(open_issues, closed_issues),
-                            itemType: 'milestone',
-                            number: milestoneNum,
-                            option: 'update'
-                        }
-                    }
-                    extResult.push(completenessResult)
-                }
-                
-                
-            }
-            */
         }
-        //results = results.concat(extResult)
-        
         result = {
             statusCode: 200,
             statusText: 'OK',
@@ -296,7 +234,7 @@ exports.lambdaHandler = async (event, context) =>{
                         body: body.body,
                         assignees: body.assignees,
                     }
-                    if (body.milestone!==null) {
+                    if (body.milestone!==undefined) {
                         data['milestone'] = body.milestone
                     }
                     if (body.labels!==null){

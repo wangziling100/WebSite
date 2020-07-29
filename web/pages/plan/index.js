@@ -379,6 +379,7 @@ export default function PlanPage(data) {
   }
   const afterEditAction = async (newData, sourceData=null) => {
       //console.log(newData, sourceData, 'after edit action')
+      let succeed = true
       if (userPassword!=='' && !isGithubLogin()){
           updateItemInLayer(newData.itemId, newData.layer, newData,0)
       }
@@ -388,33 +389,19 @@ export default function PlanPage(data) {
           let sourceDataBatch
           if (sourceData instanceof Array) sourceDataBatch=sourceData
           else sourceDataBatch = [sourceData]
-          const succeed = await processResponseBatch(responseBatch, sourceDataBatch, userPassword)
-          if (!succeed) alert('Something wrong happens!')
+          succeed = await processResponseBatch(responseBatch, sourceDataBatch, userPassword)
+          if (!succeed) {
+              alert('Something wrong happens!')
+          }
           setCanUpdate(false)
           reloadFunction()
-          /*
-          const statusText = newData.statusText
-          if (statusText==='OK'){
-              updateItemInLayer(sourceData.itemId, sourceData.layer, sourceData, 0)
-              if (newData.data instanceof Array){
-                  //update completeness of milestone  
-                  const tmpData = newData.data[1]
-                  const number = tmpData.number
-                  const completeness = tmpData.completeness
-                  updateGithubCompleteness('idea', userPassword, completeness, number)
-              }
-             
-          }
-          else {
-              alert('Something wrong happens')
-          }
-          */
       }
       else if (userPassword==='' && adminPassword!==''){
           updateItemInLayer(newData.id, newData.layer, newData, 0)
       }
       setUpdateCount(updateCount+1)
       setPageStatus('normal')
+      return succeed
   }
 
   const afterDragAction = (newData, layerDiff) =>{

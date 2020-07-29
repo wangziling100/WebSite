@@ -171,6 +171,7 @@ export function setServerRequestOptions(exHost, exPath, method='POST', isTest=fa
 }
 
 export async function sendRequest(options, https, postData, afterAction){
+    let succeed = true
     console.log('send request')
     setPageStatus('pending')
     const timerId = setTimeout(setPageStatus('normal'), '5000')
@@ -187,17 +188,21 @@ export async function sendRequest(options, https, postData, afterAction){
             body = body.join('').toString()
             body = JSON.parse(body)
             console.log('response', body)
-            afterAction && afterAction(body)
+            if(afterAction!==undefined){
+                succeed = afterAction(body)
+            }
         })
     }).on('error',(e) => {
         console.log('Got error: ', e)
         afterAction && afterAction(null)
+        succeed = false
     })
     console.log(postData, 'send request')
     await req.write(postData)
     await req.end()
     setPageStatus('normal')
     clearTimeout(timerId)
+    return succeed
 
 }
 
