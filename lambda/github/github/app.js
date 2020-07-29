@@ -70,7 +70,7 @@ exports.lambdaHandler = async (event, context) =>{
         // generate milestone with comment issue
         if (statusCode<300 && itemType==='milestone' && option==='create'){
             const milestoneNum = result.data.number
-            const milestoneUrl = result.data.url
+            const milestoneUrl = result.data.selfUrl
             const milestoneContent = extractContentFromMilestone(body)
             const commentIssue = genCommentIssue(milestoneNum, milestoneUrl, milestoneContent, 'active')
             // create associated issue
@@ -89,7 +89,7 @@ exports.lambdaHandler = async (event, context) =>{
         // update milestone with comment issue
         else if (statusCode<300 && itemType==='milestone' && option==='update'){
             const milestoneNum = result.data.number
-            const milestoneUrl = result.data.url
+            const milestoneUrl = result.data.selfUrl
             const milestoneContent = extractContentFromMilestone(body)
             const commentIssue = genCommentIssue(milestoneNum, milestoneUrl, milestoneContent, body.state)
             // update the associated issue
@@ -562,7 +562,8 @@ function getMilestone(data, option='create'){
             number: data.data.number,
             id: data.data.id,
             completeness: completeness,
-            due_on: data.data.due_on,
+            dueOn: data.data.due_on,
+            selfUrl: data.data.html_url,
         }
     }
     else if (option==='delete') {
@@ -575,7 +576,7 @@ function getMilestone(data, option='create'){
         tmpData={
             open_issues: data.data.open_issues,
             closed_issues: data.data.closed_issues,
-            due_on: data.data.due_on,
+            dueOn: data.data.due_on,
         }
     }
     
@@ -682,6 +683,7 @@ function rewriteMilestoneCompleteness(milestone, completeness){
 }
 
 function resultFusion(milestone, issue){
+    console.log(milestone, issue, 'result fusion')
     milestone.data['url'] = issue.data.url
     milestone.data['issueNumber'] = issue.data.number
     return milestone

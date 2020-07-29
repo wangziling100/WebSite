@@ -134,7 +134,7 @@ export function IdeaItem({ data, password, actions, orderBy="priority", selected
   const content = data.content
   const owner = data.owner || "Public"
   const contentPerformance = data.contentPerformance
-  console.log(content, contentPerformance, 'idea content')
+  //console.log(content, contentPerformance, 'idea content')
   const contributor = data.contributor || "Nobody"
   const completeness = data.completeness*100+`%`
   let tags = null

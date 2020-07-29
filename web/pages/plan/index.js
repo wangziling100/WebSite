@@ -73,14 +73,14 @@ export default function PlanPage(data) {
   function cleanLocalData(){
       setLocalData({})
   }
-  async function checkUpdateMilestone(newData, sourceData, password, afterAction){
+  function checkUpdateMilestone(newData, sourceData, password){
       const checkEndDate = checkUpdateMilestoneEndDate(newData, sourceData, userPassword)
       const checkCompleteness = checkUpdateMilestoneCompleteness(newData, sourceData, userPassword)
       const {shouldUpdateMilestone, newMilestone, oldMilestone} = combineCheckMilestone(checkEndDate, checkCompleteness)
       //console.log(shouldUpdateMilestoneEndDate, newMilestone, 'checkUpdateMilestoneEndDate')
+      let batch = [newData]
       if(shouldUpdateMilestone){
           //console.log('request list')
-          let batch = [newData]
           if (newMilestone!==null) {
               newMilestone['option'] = 'update'
               newMilestone['version'] = new Date()
@@ -93,12 +93,14 @@ export default function PlanPage(data) {
               oldMilestone['itemType'] = 'milestone'
               batch.push(oldMilestone)
           }
-          await processGithubItemBatch(batch, hostname, afterAction)
+          //await processGithubItemBatch(batch, hostname, afterAction)
       }
+      /*
       else {
           //console.log('single request')
-          await createGithubItem(newData, hostname, afterAction, 'issue')
-      }
+          //await createGithubItem(newData, hostname, afterAction, 'issue')
+      }*/
+      return [ shouldUpdateMilestone, batch ]
   }
   // Effects
   getHostname(setHostname)
@@ -449,7 +451,13 @@ export default function PlanPage(data) {
           form['option'] = 'create'
           form['itemType'] = 'issue'
           form['version'] = new Date()
-          await checkUpdateMilestone(form, form, userPassword, afterCreateAction)
+          const [updateMilestone, batch] = checkUpdateMilestone(form, form, userPassword)
+          if (updateMilestone){
+              await processGithubItemBatch(batch, hostname, afterCreateAction)
+          }
+          else{
+              await createGithubItem(form, hostname, afterCreateAction, 'issue')
+          }
           /*
           const checkEndDate = checkUpdateMilestoneEndDate(form, form, userPassword)
           const checkCompleteness = checkUpdateMilestoneCompleteness(form, form, userPassword)
@@ -495,7 +503,13 @@ export default function PlanPage(data) {
           data['option'] = 'update'
           data['version'] = new Date()
           setPageStatus('pending')
-          checkUpdateMilestone(data, sourceData, userPassword, afterEditAction)
+          const [updateMilestone, batch] = checkUpdateMilestone(data, sourceData, userPassword)
+          if (updateMilestone){
+              await processGithubItemBatch(batch, hostname, afterEditAction)
+          }
+          else{
+              await updateGithubItem(data, hostname, afterEditAction, 'issue')
+          }
           /*
           const checkEndDate = checkUpdateMilestoneEndDate(data, sourceData, userPassword)
           const checkCompleteness = checkUpdateMilestoneCompleteness(data, sourceData, userPassword)
@@ -547,7 +561,13 @@ export default function PlanPage(data) {
           setPageStatus('pending')
           newData['option'] = 'update'
           newData['version'] = new Date()
-          await checkUpdateMilestone(newData, sourceData, userPassword, afterEditAction)
+          const [updateMilestone, batch] = checkUpdateMilestone(newData, sourceData, userPassword)
+          if (updateMilestone){
+              await processGithubItemBatch(batch, hostname, afterEditAction)
+          }
+          else{
+              await updateGithubItem(newData, hostname, afterEditAction, 'issue')
+          }
           /*
           const checkEndDate = checkUpdateMilestoneEndDate(newData, sourceData, userPassword)
           const checkCompleteness = checkUpdateMilestoneCompleteness(newData, sourceData, userPassword)
@@ -602,8 +622,13 @@ export default function PlanPage(data) {
           newData['version'] = new Date()
          
           setPageStatus('pending')
-          await checkUpdateMilestone(newData, sourceData, userPassword, afterEditAction)
-          //await updateGithubItem(newData, hostname, afterEditAction, 'issue')
+          const [updateMilestone, batch] = checkUpdateMilestone(newData, sourceData, userPassword)
+          if (updateMilestone){
+              await processGithubItemBatch(batch, hostname, afterEditAction)
+          }
+          else{
+              await updateGithubItem(newData, hostname, afterEditAction, 'issue')
+          }
       }
       else if (userPassword==='' && adminPassword!==''){
           form['password'] = adminPassword

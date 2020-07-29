@@ -40,7 +40,7 @@ export default function IdeaPage(props) {
   const selectedRepo= sessionData?.selectedRepo
   const redirectPage = sessionData?.redirectPage || null
   const page = 'idea'
-  console.log(ideaItem, 'ideaItem')
+  //console.log(ideaItem, 'ideaItem')
 
   // States
   const [ orderBy, setOrderBy ] = useState("priority")

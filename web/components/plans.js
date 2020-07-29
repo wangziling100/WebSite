@@ -131,11 +131,14 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
               'itemId': data?.itemId || Math.random().toString(),
                   
       }
+      // create
       if (data?.id===undefined && data?.itemId===undefined){
           actions.createAction(form)
           return
       }
+      // edit
       if (data?.id!==undefined || data?.itemId!==undefined){
+          console.log('edit plan')
           form['id'] = data.id
           form['contentPerformance'] = contentPerformance
           actions.editAction(form, data)
