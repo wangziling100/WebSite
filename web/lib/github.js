@@ -700,7 +700,7 @@ export function getGithubInfo(){
     return {
         userId: data.userData.id,
         userName: data.userData.name,
-        repo: data.selectedRepo,
+        repo: data.repos[data.selectedRepo].repoName,
     }
 }
 
@@ -747,7 +747,7 @@ async function processGithubItem(data, hostname, afterAction, type, option){
         postData = item2Issue(data)
         postData = addGithubInfo(postData, hostname, type)
     }
-    //console.log(postData, 'postData')
+    console.log(postData, 'postData')
     let tmpAction = null
     //console.log(data, afterAction, 'processGithubItem')
     if (afterAction!==null) tmpAction = newData => afterAction(newData, data)

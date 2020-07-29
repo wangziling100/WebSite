@@ -13,8 +13,9 @@ import GithubList from '../components/github-drop-down-list'
 import { Button } from '../components/button'
 import  Select from '../components/select'
 import { switchAccount, updateAllInLocal, deleteLocalPlans, getSelectedRepo, checkIsolatedPlan, addAllToLocal, collectAllGithubData } from '../lib/localData'
-import { createGithubItemBatch, deleteGithubItemBatch, deleteGithubItem, remoteData2Local, sendAllGithubData } from '../lib/github'
+import { updateGithubItemBatch, createGithubItemBatch, deleteGithubItemBatch, deleteGithubItem, remoteData2Local, sendAllGithubData } from '../lib/github'
 import { flat, filterDuplicateItems } from '../lib/tools'
+import { setPageStatus } from '../lib/sessionData'
 
 export default function Navigation({ page, password, actions, states, logo, hostname, loginStatus, githubUserData, repos}){
     // Variable
@@ -103,6 +104,12 @@ export default function Navigation({ page, password, actions, states, logo, host
     }
     const afterSyncAction = async (newData) => {
         console.log(newData, 'after github sync')
+        if (newData===null){
+            setPageStatus('logout')
+            alert('No connection with server')
+            reloadPage()
+            return
+        } 
         const statusText = newData.statusText
         if ( statusText==='OK' ){
             //const downloadCreate = remoteData2Local(newData.data.downloadCreate)

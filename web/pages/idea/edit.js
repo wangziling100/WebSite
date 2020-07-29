@@ -1,5 +1,5 @@
 import { IdeaEditor } from '../../components/idea-editor'
-import { writeLocal, readLocal, readData, useUserPassword, useAdminPassword, getHostname, getImageByReference } from '../../lib/api'
+import { reloadPage, writeLocal, readLocal, readData, useUserPassword, useAdminPassword, getHostname, getImageByReference } from '../../lib/api'
 import Router, {useRouter} from 'next/router'
 import { useState, useEffect } from 'react'
 import Footer from '../../components/footer'
@@ -36,6 +36,10 @@ export default function EditPage(props){
     // Actions
     const afterEditAction = async (newData, sourceData=null) => {
         //console.log(newData,'edit new data')
+        if (newData===null){
+            alert('No connection with Server')
+            reloadPage()
+        }
         if(userPassword!=='' && !isGithubLogin()){
             await updateLocalItem('idea', userPassword, newData)
         }

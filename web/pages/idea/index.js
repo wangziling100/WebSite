@@ -36,12 +36,11 @@ export default function IdeaPage(props) {
   const loginStatus = sessionData?.loginStatus || 'logout'
   const githubUserData = sessionData?.userData || null
   const githubRepos = sessionData?.repos || null
-  console.log(sessionData)
+  //console.log(sessionData)
   const selectedRepo= sessionData?.selectedRepo
-  console.log(selectedRepo, 'selected repo')
   const redirectPage = sessionData?.redirectPage || null
   const page = 'idea'
-  //console.log(ideaItem, 'ideaItem')
+  console.log(ideaItem, 'ideaItem')
 
   // States
   const [ orderBy, setOrderBy ] = useState("priority")

@@ -8,7 +8,7 @@ const s3 = new AWS.S3()
 
 exports.lambdaHandler = async (event, context) =>{
     const body = JSON.parse(event.body)
-    //console.log(body, 'body')
+    console.log(body, 'body')
     const hostname = body.hostname
     const userId = body.userId
     let clientId = null
@@ -386,7 +386,7 @@ async function requestAllGithubData(token, repo, owner, condition, unit=100){
 function analyseAllData(all, queryTimes=0, unit=100){
     let stopSearchIssue = true
     let stopSearchMilestone = true
-    const ratelimit = all.data.rateLimit
+    //const rateLimit = all.data.rateLimit
     let numIssue = all.data.repository.A.totalCount - queryTimes*2*unit
     let numMilestone = all.data.repository.C.totalCount -queryTimes*2*unit
     numIssue = numIssue<0?0:numIssue
