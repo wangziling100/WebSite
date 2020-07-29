@@ -1,7 +1,7 @@
 import cn from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSortDown } from '@fortawesome/free-solid-svg-icons'
-export default function Select({items, setValue, action, css=[], defaultValue=0, showIcon=true}){
+export default function Select({items, setValue, action, css=[], defaultValue=0, showIcon=true, optionActions={}}){
   if (items===undefined){
       items = ['1', '2', '3']
   }
@@ -19,7 +19,15 @@ export default function Select({items, setValue, action, css=[], defaultValue=0,
         <select className={cn(...selectCSS)} onChange={onChange}>
           <option value={defaultValue} aria-selected="true"> {items[defaultValue]} </option>
           {items.map((e, index)=>{
-              return <option value={index} key={index}> {e} </option>
+              let option
+              if (optionActions[index]===undefined){
+                  option = <option value={index} key={index}> {e} </option>
+              }
+              else{
+                  option = <option value={index} key={index} onClick={optionActions[index]}> {e} </option>
+              }
+              return option
+              //return <option value={index} key={index}> {e} </option>
           })}
         </select>
 

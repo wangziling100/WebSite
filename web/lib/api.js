@@ -213,8 +213,13 @@ export async function sendGithubCode(code, isTest, updateFunction){
         if (message === undefined || message === null) return
         let password
         if (newData.message!=='error'){
-            const repoName = repos[0]?.repoName|| null
-            const repoId = repos[0]?.repoId || null
+            let repoName = null
+            let repoId = null
+            if (repos!==null){
+                repoName = repos[0]?.repoName|| null
+                repoId = repos[0]?.repoId || null
+            }
+            
             if (repoId!==null) {
                 password = 'github_'+userData.id+'_'+repoId
             }
@@ -224,7 +229,7 @@ export async function sendGithubCode(code, isTest, updateFunction){
                 userData: userData,
                 repos: repos,
                 userPassword: password,
-                selectedRepo: repoName,
+                selectedRepo: 0,
             })
             writeLocalGlobal({
                 githubCode: code.githubCode,
@@ -267,7 +272,7 @@ export async function sendGithubRegi(code, isTest, updateFunction){
                 userData: userData,
                 repos: repos,
                 userPassword: password,
-                selectedRepo: repoName,
+                selectedRepo: 0,
             })
             writeLocalGlobal({
                 githubCode: code.githubCode,
@@ -542,34 +547,6 @@ export function getHostname(setFunction){
         setFunction(hostname)
     },[hostname])
 }
-/*
-export function useGithubCode(setFunction, page, isTest=false){
-    let code
-    useEffect( () => {
-        let params = window.location.search
-        //code = params.match(/^?.*code\=(.*)$/)
-        const result = params.match(/code=(.*)/)
-        if (result!==null && result.length>1) code = result[1]
-        else { return}
-        const global = readLocalGlobal()
-        const previousCode = global.githubCode
-        if (code===previousCode) {
-            Router.push(page)
-            return
-        }
-
-        // send new code
-        const data = {
-            githubCode: code, 
-            previousCode: previousCode,
-        }
-        const response = sendGithubCode(data, isTest).then(response=>{return response})
-        setFunction(code)
-        writeLocalGlobal({githubCode: code})
-        Router.push(page)
-    }, [code])
-}
-*/
 
 export function toItemFormat(data){
     if (data.origin_content!==undefined){
@@ -854,4 +831,8 @@ export function getLabels(tags){
 
 export function deleteLabel(label, labelArray){
     return deleteValueFromArray(labelArray, label)
+}
+
+export function reloadPage(){
+    window.location.reload()
 }

@@ -36,6 +36,9 @@ export default function IdeaPage(props) {
   const loginStatus = sessionData?.loginStatus || 'logout'
   const githubUserData = sessionData?.userData || null
   const githubRepos = sessionData?.repos || null
+  console.log(sessionData)
+  const selectedRepo= sessionData?.selectedRepo
+  console.log(selectedRepo, 'selected repo')
   const redirectPage = sessionData?.redirectPage || null
   const page = 'idea'
   //console.log(ideaItem, 'ideaItem')
@@ -281,7 +284,8 @@ export default function IdeaPage(props) {
   const main = (
   
     <>
-      <Navigation page="idea" password={userPassword} actions={downflowActions} logo={logo} hostname={hostname} loginStatus={loginStatus} githubUserData={githubUserData} repos={githubRepos}/>
+          
+      <Navigation page="idea" password={userPassword} actions={downflowActions} logo={logo} hostname={hostname} loginStatus={loginStatus} githubUserData={githubUserData} repos={githubRepos} />
       <Notice title={noticeTitle} content={noticeContent} />
       <div className="mt-6">
         <div className="flex mx-12 mb-2 justify-end">

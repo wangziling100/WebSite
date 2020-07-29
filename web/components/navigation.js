@@ -1,18 +1,18 @@
 import Link from 'next/link'
 import cn from 'classnames'
 import Router, { useRouter } from 'next/router'
-import { useState, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Overlay } from '../components/overlay'
 import { Image } from 'react-datocms'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGithubSquare } from '@fortawesome/free-brands-svg-icons'
 import { faCaretDown, faRedoAlt } from '@fortawesome/free-solid-svg-icons'
-import { setCanUpdate, writeData } from '../lib/api'
+import { createNewUser, reloadPage, writeData } from '../lib/api'
 import Avatar from '../components/avatar'
 import GithubList from '../components/github-drop-down-list'
 import { Button } from '../components/button'
 import  Select from '../components/select'
-import { updateAllInLocal, deleteLocalPlans, checkIsolatedPlan, addAllToLocal, collectAllGithubData } from '../lib/localData'
+import { switchAccount, updateAllInLocal, deleteLocalPlans, getSelectedRepo, checkIsolatedPlan, addAllToLocal, collectAllGithubData } from '../lib/localData'
 import { createGithubItemBatch, deleteGithubItemBatch, deleteGithubItem, remoteData2Local, sendAllGithubData } from '../lib/github'
 import { flat, filterDuplicateItems } from '../lib/tools'
 
@@ -31,6 +31,13 @@ export default function Navigation({ page, password, actions, states, logo, host
     let redirectURL = null
     let githubURL = null
     let redirectPage = null
+    useEffect(()=>{
+        console.log('effect')
+        const selectedRepo = getSelectedRepo()
+        if (selectedRepo!==undefined){
+            setRepoIndex(getSelectedRepo())
+        }
+    }, [setRepoIndex])
     if (hostname==='localhost'){
         clientId = 'Iv1.f70dacffd5b15781'
         const tmpHostname = 'http://'+hostname+':3000'
@@ -143,7 +150,6 @@ export default function Navigation({ page, password, actions, states, logo, host
             alert('Synchronise failed')
         }
         console.log('----------------------')
-        //setCanUpdate(false)
         actions.reloadFunction()
         //actions.updateFunction()
         actions.setPageStatus('normal')
@@ -175,6 +181,11 @@ export default function Navigation({ page, password, actions, states, logo, host
         }
         setTimeout(tmpFunc, 200)
         
+    }
+    const newRepoAction = () => {
+        writeData({
+            loginStatus: 'github_pending'
+        })
     }
     // components
     const userData = githubUserData
@@ -209,13 +220,33 @@ export default function Navigation({ page, password, actions, states, logo, host
             const repoListSelect = repos.map(el=>el.repoName)
             const selectAction = (value) => {
                 writeData({
-                    selectedRepo: repoListSelect[value],
+                    selectedRepo: value,
                 })
             }
+            const onClick = (index) => () => {
+                const repoId = repos[index].repoId
+                const userData = githubUserData
+                const password = 'github_'+userData.id+'_'+repoId
+                console.log(password, 'password')
+                switchAccount(password)
+                createNewUser(password)
+                reloadPage()
+            }
+            let optionActions = {}
+            for (let index in repoListSelect){
+                optionActions[index] = onClick(index)
+            }
             repoSelect = (
-                <>
-                  <Select items={repoListSelect} setValue={setRepoIndex} defaultValue={repoIndex} action={selectAction}/>
-                </>
+                <div className='flex'>
+                    <div className='mr-3 cursor-pointer font-semibold' title='New repository' onClick={newRepoAction}>
+
+                      <a href={githubURL}>
+                      +
+                      </a>
+                    </div>
+                    <Select items={repoListSelect} setValue={setRepoIndex} defaultValue={repoIndex} action={selectAction} optionActions={optionActions}/>
+
+                </div>
             )
         }
         
@@ -225,6 +256,7 @@ export default function Navigation({ page, password, actions, states, logo, host
         case 'github_login':  
             loginComponent = (
               <div className='w-1/3 flex justify-between items-center'>
+                
                 <div>
                   { repoSelect }
                 </div>

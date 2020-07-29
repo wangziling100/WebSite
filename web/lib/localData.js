@@ -1,4 +1,4 @@
-import { checkRecord, checkUser, readData, readLocal, writeLocal } from '../lib/api'
+import { checkRecord, checkUser, writeData, readData, readLocal, writeLocal } from '../lib/api'
 import markdownToHtml from '../lib/markdownToHtml'
 import { getGithubInfo } from '../lib/github'
 import { deleteItem, updateItem, updateItems, deleteElementsFromArray, flat } from '../lib/tools'
@@ -47,6 +47,33 @@ function flatGithubData(data, page){
         ret.map(el => {el['itemType']='issue'})
         return ret
     }
+}
+
+export function signOut(){
+    writeData({
+        userData: null,
+        loginStatus: 'logout',
+        repos: null,
+        userPassword:'',
+        selectedRepo: null,
+    })
+}
+
+export function switchAccount(password){
+    const { userPassword } = readData()
+    const header1 = userPassword.slice(0, 6)
+    const header2 = password.slice(0,6)
+    if(header1==='github' && header2==='github'){
+        writeData({
+            userPassword: password,
+        })
+    }
+   
+}
+
+export function getSelectedRepo(){
+    const { selectedRepo } = readData()
+    return selectedRepo
 }
 
 export function addAllToLocal(password, data){
