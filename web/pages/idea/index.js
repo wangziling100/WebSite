@@ -197,14 +197,20 @@ export default function IdeaPage(props) {
       else if (userPassword!=='' && isGithubLogin()){
           const statusText = newData.statusText || null
           if (statusText==='OK'){
+              /*
               processLocalBatch(sourceData, userPassword)
               setCanUpdate(false)
               reloadFunction()
               updateFunction()
+              */
           }
           else {
-              alert('Sorry, delete failed')
+              alert('Sorry, delete failed, but the item is still deleted locally')
           }
+          processLocalBatch(sourceData, userPassword)
+          setCanUpdate(false)
+          reloadFunction()
+          updateFunction()
           setPageStatus('normal')
 
       }

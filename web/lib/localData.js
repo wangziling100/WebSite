@@ -408,7 +408,7 @@ export function getLocalItemByAttr(page, password, key, value){
     let items = null
     if (page==='idea') items = local.ideaItem
     else if (page==='plan') items = flat(local.layers)
-    if (items[0][key]===undefined){
+    if (items[0]===undefined || items[0][key]===undefined){
         return {
             succeed: false,
             item: null

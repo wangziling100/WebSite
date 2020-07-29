@@ -45,7 +45,14 @@ export async function processResponseBatch(responseBatch, sourceDataBatch, passw
             const responseData = response.data
             await processResponse(responseData, sourceData, password)
         }
-        else succeed = false
+        else { 
+            const option = sourceData!==null?sourceData.option:responseDatadata.option
+            if (option === 'delete'){
+                processResponse(null, sourceData, password)
+            }
+            succeed = false
+            
+        }
     }
     return succeed
 }

@@ -286,39 +286,9 @@ export default function PlanPage(data) {
           if (sourceData instanceof Array) sourceDataBatch=sourceData
           else sourceDataBatch = [sourceData]
           const succeed = await processResponseBatch(responseBatch, sourceDataBatch, userPassword)
-          if (!succeed) alert('Something wrong happens!')
+          if (!succeed) alert('Something wrong happens, but the item is still deleted locally.')
           setCanUpdate(false)
           reloadFunction()
-          /*
-          console.log(sourceData, newData, 'after delete')
-          const statusText = newData.statusText
-          if (statusText==='OK'){
-              for (let i of sourceData){
-                  if (i===null) return
-                  const id = i.itemId
-                  const layer = i.layer
-                  const option = i.option
-                  if (option==='delete'){
-                      deleteItemInLayer(id, layer)
-                      continue
-                  }
-                  else if (option==='update'){
-                      updateItemInLayer(id, layer+1, i)
-                      continue
-                  }
-              }
-              if (newData.completenessResult!==undefined && newData.completenessResult!==null){
-                  const result = newData.completenessResult
-                  const completeness = result.data.completeness
-                  const number = result.data.number
-                  updateGithubCompleteness('idea', userPassword, completeness, number)
-
-              }
-          }
-          else {
-              alert('Something wrong happens')
-          }
-          */
       }
       setPageStatus('normal')
       setUpdateCount(updateCount+1)
