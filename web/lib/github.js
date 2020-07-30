@@ -831,7 +831,7 @@ export async function sendGithubRequest(data, afterAction, isTest=false) {
     const postData = JSON.stringify(data)
     const host = 'wm1269hl6e.execute-api.eu-central-1.amazonaws.com'
     const path = 'github'
-    const [options, https] = setServerRequestOptions(host, path, 'POST', isTest)
+    const [options, https] = setServerRequestOptions(host, path, 'POST', true)
     //console.log('send github request')
     return sendRequest(options, https, postData, afterAction)
     

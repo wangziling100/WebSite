@@ -18,6 +18,7 @@ import { processGithubItemBatch, findAndUpdatePlanByMilestoneNumber, deleteGithu
 import { SyncOverlay } from '../../components/sync-overlay'
 import { processLocalBatch, getLayers } from '../../lib/localData'
 import { flat } from '../../lib/tools'
+import cn from 'classnames'
 
 export default function IdeaPage(props) {
   // Variables
@@ -39,6 +40,7 @@ export default function IdeaPage(props) {
   //console.log(sessionData)
   const selectedRepo= sessionData?.selectedRepo
   const redirectPage = sessionData?.redirectPage || null
+  const showPublic = loginStatus==='logout'
   const page = 'idea'
   //console.log(ideaItem, 'ideaItem')
 
@@ -55,6 +57,8 @@ export default function IdeaPage(props) {
   const [ updateLocal, setUpdateLocal ] = useState(0)
   const [ refresh, setRefresh ] = useState(false)
   const [ pageStatus, setPageStatus ] = useState('normal')
+  // CSS
+  const hiddenPublicCSS = [{'hidden':showPublic}]
 
   // Functions
   function updateFunction(password){
@@ -285,11 +289,11 @@ export default function IdeaPage(props) {
       <Navigation page="idea" password={userPassword} actions={downflowActions} logo={logo} hostname={hostname} loginStatus={loginStatus} githubUserData={githubUserData} repos={githubRepos} />
       <Notice title={noticeTitle} content={noticeContent} />
       <div className="mt-6">
-        <div className="flex mx-12 mb-2 justify-end">
+        <div className={cn("flex", "mx-12", "mb-2", "justify-end", ...hiddenPublicCSS)}>
             <button className="h-8 w-32 bg-red-400 rounded-lg text-white font-semibold hover:shadow-lg hover:bg-blue-400" onClick={()=>Router.push('/idea/new')}> + New Idea </button>
         </div>
         <IdeaHeader actions={downflowActions}/>
-        <Ideas data={ideaItem} orderBy={orderBy} selectedStatus={selectedStatus} savedPassword={adminPassword} actions={downflowActions}/>
+        <Ideas data={ideaItem} orderBy={orderBy} selectedStatus={selectedStatus} savedPassword={adminPassword} actions={downflowActions} loginStatus={loginStatus}/>
         { showOverlay && (option!='login') &&
             <Overlay page={'idea'} option={option} password={userPassword} actions={downflowActions}/>}
         { ideaItem.length===0 && 

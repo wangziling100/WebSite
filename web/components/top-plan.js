@@ -2,7 +2,7 @@ import cn from 'classnames'
 import { PlanItem } from '../components/plans'
 import { useState } from 'react'
 import { Overlay } from '../components/overlay'
-export function TopPlan({businessPlan=[], privatePlan=[], password, actions}){
+export function TopPlan({businessPlan=[], privatePlan=[], password, actions, loginStatus}){
     // CSS
     const textCSS = ['text-gray-400', 'hover:text-blue-400', 'cursor-pointer']
     // Status
@@ -48,14 +48,14 @@ export function TopPlan({businessPlan=[], privatePlan=[], password, actions}){
         if (i.id===undefined) tmpId=i.itemId
         if (i.id!==undefined) tmpId=i.id
 
-        businessPlans.push(<PlanItem data={i} key={tmpId+"_top"} password={password} editStatus={false} init={init} css={['mr-auto', 'ml-auto']} actions={itemActions}/>)
+        businessPlans.push(<PlanItem data={i} key={tmpId+"_top"} password={password} editStatus={false} init={init} css={['mr-auto', 'ml-auto']} actions={itemActions} loginStatus={loginStatus}/>)
     }
 
     for (let i of privatePlan){
         let tmpId 
         if (i.id===undefined) tmpId=i.itemId
         if (i.id!==undefined) tmpId=i.id
-        privatePlans.push(<PlanItem data={i} key={tmpId+"_top"} password={password} editStatus={false} init={init} css={['mr-auto', 'ml-auto']} actions={itemActions}/>)
+        privatePlans.push(<PlanItem data={i} key={tmpId+"_top"} password={password} editStatus={false} init={init} css={['mr-auto', 'ml-auto']} actions={itemActions} loginStatus={loginStatus}/>)
     }
     const main = (
         <>

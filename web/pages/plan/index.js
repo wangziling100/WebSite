@@ -59,10 +59,14 @@ export default function PlanPage(data) {
   const loginStatus = sessionData?.loginStatus || 'logout'
   const githubUserData = sessionData?.userData || null
   const githubRepos = sessionData?.repos || null
+  const showPublic = loginStatus==='logout'
+  // CSS
+  const hiddenPublicCSS = {'hidden':showPublic}
   //console.log(sessionData, 'sessionData')
   console.log(layers, 'layers')
   //console.log(localData, 'localData')
   //console.log(updateCount, 'updateCount')
+  console.log(loginStatus, 'loginStatus')
   // Function 
   function updateFunction(){
       setUpdateCount(updateCount+1)
@@ -873,7 +877,7 @@ export default function PlanPage(data) {
           }
           */
           parents = items[0].itemId
-          allLayers.push(<PlanLayer items={items} actions={actions} layer={index} key={index} password={adminPassword} update={index+'_'+items.length}/>)
+          allLayers.push(<PlanLayer items={items} actions={actions} layer={index} key={index} password={adminPassword} update={index+'_'+items.length} loginStatus={loginStatus}/>)
           allLayers.push(<FontAwesomeIcon icon={faArrowAltCircleDown} className="w-5 h-5 ml-5 cursor-pointer" key={index+'arrowdown'}/>) 
           tmpFirstItems.push(items[0])
       }
@@ -928,7 +932,7 @@ export default function PlanPage(data) {
     <>
       {allLayers}
       {/*new a child plan*/}
-      <FontAwesomeIcon icon={faPlus} className="w-5 h-5 ml-5 cursor-pointer" title={'new a child plan'} onClick={addNewAction} />
+      <FontAwesomeIcon icon={faPlus} className={cn("w-5", "h-5", "ml-5", "cursor-pointer", hiddenPublicCSS)} title={'new a child plan'} onClick={addNewAction} />
       { showNew &&
 
         <PlanItem editStatus={true} parents={parents} layer={parseInt((allLayers.length+1)/2)} actions={actionsNew} password={adminPassword}/>
@@ -959,7 +963,7 @@ export default function PlanPage(data) {
   let right
   switch (sidebar){
       case 'PlanRoute': right=planRoute; break;
-      case 'TopPlan': right=<TopPlan businessPlan={businessPlan} privatePlan={privatePlan} password={adminPassword} actions={topActions}/>; break;
+      case 'TopPlan': right=<TopPlan businessPlan={businessPlan} privatePlan={privatePlan} password={adminPassword} actions={topActions} loginStatus={loginStatus}/>; break;
       case 'dailySummary': right=dailySummary; break;
       case 'Setting': right=<PlanSetting password={adminPassword} actions={settingActions} userPassword={userPassword}/>; break;
   }

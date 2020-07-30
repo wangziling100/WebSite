@@ -16,7 +16,7 @@ const ItemTypes = {
     PLAN: 'plan'
 }
 
-export function PlanItem({data, layer, editStatus, actions, parents, brother, password, init, css=[], selected=false}){
+export function PlanItem({data, layer, editStatus, actions, parents, brother, password, init, loginStatus, css=[], selected=false}){
   // Variables
   const isTest = false
   const difficultySelect = [
@@ -49,8 +49,9 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
   const day = (date.getDate()+1).toString().padStart(2,'0')
   const dateString = year+'-'+month+'-'+day
   const commentUrl = data?.url
+  const showPublic = loginStatus==='logout'
   // Status
-  const [ contentPerformance, setContentPerformance] = useState(data?.contentPerformance || "Enter something")
+  const [ contentPerformance, setContentPerformance] = useState(data?.contentPerformance || "")
   const [ title, setTitle ] = useState(data?.title || "")
   const [ showMenu, setShowMenu ] = useState(false)
   const [ showTitle, setShowTitle ] = useState(true)
@@ -92,8 +93,10 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
   const text2CSS = ['text-sm', 'break-all', 'my-1']
   const text3CSS = ['ml-1', 'text-gray-400', 'text-sm', 'hover:text-blue-400', 'cursor-pointer']
   const iconCSS = ['mr-2', 'h-5', 'w-5']
-  const menuShow = {'hidden':!showMenu}
+  const menuShow = {'hidden':!showMenu&&!showPublic}
   const menuHidden = {'hidden':showMenu}
+  const hiddenPublicCSS = {'hidden':showPublic}
+  console.log(hiddenPublicCSS, loginStatus, showPublic, 'hiddenPublicCSS')
   // Actions
   //console.log(data?.itemStatus, data?.title, 'status')
   const startCompose = () => setCompose(true)
@@ -173,7 +176,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
       setPeriod((data?.period===undefined || data?.period===null)? 0: data.period)
       setTags(data?.tag || '')
       setContent(data?.content || "")
-      setContentPerformance(data?.contentPerformance || 'Enter something')
+      setContentPerformance(data?.contentPerformance || '')
 
       actions.cancelAction
   }
@@ -310,15 +313,15 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
       }}>
         {/* head */}
         <div className={cn("flex", "justify-end", "items-center",  {'hidden':!showEditbar})}>
-          <FontAwesomeIcon icon={faAngleDoubleRight} className={cn('w-3', 'h-3', 'cursor-pointer', menuShow, {'hidden':edit}) } onClick={()=>setShowMenu(false)} />
-          <FontAwesomeIcon icon={faAngleDoubleLeft} className={cn('w-3', 'h-3', 'cursor-pointer', menuHidden, {'hidden':edit}) } onClick={()=>setShowMenu(true)} />
+          <FontAwesomeIcon icon={faAngleDoubleRight} className={cn('w-3', 'h-3', 'cursor-pointer', menuShow, {'hidden':edit}, hiddenPublicCSS ) } onClick={()=>setShowMenu(false)} />
+          <FontAwesomeIcon icon={faAngleDoubleLeft} className={cn('w-3', 'h-3', 'cursor-pointer', menuHidden, {'hidden':edit}, hiddenPublicCSS) } onClick={()=>setShowMenu(true)} />
           <a href={commentUrl} className={cn(...text3CSS, {'hidden':edit}, menuShow)} target='_blank'>
             comment
           </a>
-          <div className={cn(...text3CSS, {'hidden':edit}, menuShow)} onClick={itemStatus==="completed"?activeAction:completeAction}>
+          <div className={cn(...text3CSS, {'hidden':edit}, menuShow, hiddenPublicCSS)} onClick={itemStatus==="completed"?activeAction:completeAction}>
             {itemStatus==="completed"?"active":"complete"}
           </div>
-          <div className={cn(...text3CSS, {'hidden':edit}, menuShow )} onClick={deleteAction}>
+          <div className={cn(...text3CSS, {'hidden':edit}, menuShow , hiddenPublicCSS)} onClick={deleteAction}>
             delete
           </div>
           <div className={cn(...text3CSS, {'hidden':selected})} onClick={selectAction}>
@@ -330,7 +333,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
           <div className={cn(...text3CSS, {'hidden':!edit})} onClick={confirmAction}>
             confirm
           </div>
-          <div className={cn(...text3CSS, {'hidden':edit}, menuShow )} onClick={editAction}>
+          <div className={cn(...text3CSS, {'hidden':edit}, menuShow , hiddenPublicCSS)} onClick={editAction}>
             edit
           </div>
         </div>
@@ -340,18 +343,18 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
                 <div className="text-red-600">
                  {diffDate}
                 </div>
-                <div className="text-red-600 ml-4">
+                <div className={cn("text-red-600", "ml-4", hiddenPublicCSS)}>
                  {leftTime}
                 </div>
               </div>
-              <div className={cn(...flexCSS,)}>
+              <div className={cn(hiddenPublicCSS, ...flexCSS, )}>
                 <button className={cn({'hidden': edit}, 'uppercase', 'mx-1', {'hidden':!stopCount})} onClick={topPlanStartAction}>
                   start
                 </button>
                 <div className={cn({'hidden': edit}, 'uppercase', 'mx-1', {'hidden':stopCount}, 'cursor-pointer')} onClick={topPlanStopAction}>
                   stop
                 </div>
-                <div className={cn({'hidden': edit}, 'uppercase', 'mx-1', 'cursor-pointer')} onClick={itemStatus==='completed'?activeAction:topPlanCompleteAction}>
+                <div className={cn({'hidden': edit}, 'uppercase', 'mx-1', 'cursor-pointer', )} onClick={itemStatus==='completed'?activeAction:topPlanCompleteAction}>
                   {itemStatus==='completed'?'active':'complete'}
                 </div>
               </div>
@@ -369,7 +372,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
         </div>
         {/* body */}
         <hr />
-        <div className={cn({'hidden':showBody})}>
+        <div className={cn({'hidden':showBody}, )}>
           {/*target*/}
           <div className={cn(...text2CSS, ...flexCSS)} >
             <FontAwesomeIcon icon={faCrosshairs} className={cn(...iconCSS)} title={'Target'} />
@@ -377,7 +380,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
             <Input value={target} setValue={setTarget} css={[{'hidden':showTarget||!edit}]} setState={()=>setShowTarget(true)}/>
           </div>
           {/*difficutly*/}
-          <div className={cn(...text2CSS, ...flexCSS)}>
+          <div className={cn(...text2CSS, ...flexCSS, hiddenPublicCSS)}>
               <FontAwesomeIcon icon={faHiking} className={cn(...iconCSS)} title={'Difficulty'}/>
               <div className={cn({'hidden':edit})} > 
                 {difficultySelect[difficulty]}
@@ -385,7 +388,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
               <Select items={difficultySelect} setValue={setDifficulty} defaultValue={difficulty} css={[{'hidden':!edit}]}/>
           </div>
           {/*priority and urgency*/}
-          <div className={cn(...text2CSS, ...flexCSS, 'w-full')}>
+          <div className={cn(...text2CSS, ...flexCSS, 'w-full', hiddenPublicCSS)}>
             <div className="w-2/3 flex">
               <FontAwesomeIcon icon={faStar} className={cn(...iconCSS)} title={'Priority'} />
               <div className={cn({'hidden':edit})} > 
@@ -402,7 +405,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
             </div>
           </div>
           {/*end date and duration */}
-          <div className={cn(...text2CSS, ...flexCSS, 'justify-between')}>
+          <div className={cn(...text2CSS, ...flexCSS, 'justify-between', hiddenPublicCSS)}>
             <div className="w-2/3 flex">
               <FontAwesomeIcon icon={faHourglassEnd} className={cn(...iconCSS)} title={'End date'} />
               <div className={cn({'hidden':edit},)} > 
@@ -424,7 +427,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
             
           </div>
           {/* period and types*/}
-          <div className={cn(...text2CSS, ...flexCSS, 'justify-between')}>
+          <div className={cn(...text2CSS, ...flexCSS, 'justify-between', hiddenPublicCSS)}>
             <div className="w-1/2 flex">
               <FontAwesomeIcon icon={faHistory} className={cn(...iconCSS)} title={'Period'} />
               <div className={cn({'hidden':!showPeriod&&edit}, {'cursor-pointer':edit})} onClick={()=>setShowPeriod(false)}> {period} days </div>
@@ -460,7 +463,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
             <div>
               <div className={cn({'hidden':!showDetails&&edit}, {'cursor-pointer':edit})} onClick={()=>setShowDetails(false)}>
                 <Markdown content={contentPerformance} />
-                {contentPerformance.length<=1 && 'Enter something'}
+                {contentPerformance.length<=1 && !showPublic && 'Enter something!'}
               </div>
               <TextArea value={content} setValue={setContent} setHtml={setContentPerformance} css={[{'hidden':showDetails||!edit}]} setState={()=>setShowDetails(true)} />
               <div className={cn({'hidden':showDetails}, 'flex')}>
@@ -483,16 +486,19 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
 }
 
 
-export function PlanLayer({items, layer, actions, password, update}){
-    // CSS
-    const flexCSS = ['flex', 'items-center', 'content-center' ]
-    const iconCSS = ['mr-2', 'h-10', 'w-10']
+export function PlanLayer({items, layer, actions, password, update, loginStatus}){
+    
     // Variables
     let plans = []
     const [showBrother, setShowBrother] = useState(false)
     const [showNew, setShowNew] = useState(false)
     let firstPlan
     const newKey = Math.random()
+    const showPublic = loginStatus==='logout'
+    // CSS
+    const flexCSS = ['flex', 'items-center', 'content-center' ]
+    const iconCSS = ['mr-2', 'h-10', 'w-10']
+    const hiddenPublicCSS = {'hidden':showPublic}
     // Actions
     
     const actionsNext = {
@@ -513,7 +519,7 @@ export function PlanLayer({items, layer, actions, password, update}){
     }
     // all children items
     for (let i of items){
-        plans.push(<PlanItem data={i} key={i.id||i.itemId} actions={actionsNext} layer={layer} password={password}/>)
+        plans.push(<PlanItem data={i} key={i.id||i.itemId} actions={actionsNext} layer={layer} password={password} loginStatus={loginStatus}/>)
     }
     firstPlan = plans[0]
     plans.splice(0, 1)
@@ -523,13 +529,13 @@ export function PlanLayer({items, layer, actions, password, update}){
           <div className={cn(...flexCSS, )}>
             {firstPlan}
             <div>
-              <FontAwesomeIcon icon={faPlus} className={cn('cursor-pointer', 'w-5', 'h-5', 'ml-2')} title={'add new plan'} onClick={()=>setShowNew(true)}/>
+              <FontAwesomeIcon icon={faPlus} className={cn('cursor-pointer', 'w-5', 'h-5', 'ml-2', hiddenPublicCSS)} title={'add new plan'} onClick={()=>setShowNew(true)}/>
               <FontAwesomeIcon icon={faAngleDoubleRight} className={cn(...iconCSS, 'cursor-pointer', {'hidden':showBrother})} title={'more'} onClick={()=>setShowBrother(true)}/>
               <FontAwesomeIcon icon={faAngleDoubleLeft} className={cn(...iconCSS, 'cursor-pointer', {'hidden':!showBrother})} title={'less'} onClick={()=>setShowBrother(false)}/>
             </div>
             {/*new brother*/}
             <div className={cn({'hidden':!showNew})}> 
-              <PlanItem actions={actionsNext} layer={layer} editStatus={true} key={newKey} parents={items[0].parents} password={password}/>
+              <PlanItem actions={actionsNext} layer={layer} editStatus={true} key={newKey} parents={items[0].parents} password={password} loginStatus={loginStatus}/>
             </div>
           </div>
           <div className={cn(...flexCSS, 'overflow-auto')}>

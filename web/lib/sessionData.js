@@ -13,3 +13,8 @@ export function useLoadSession(setSessionData){
         setSessionData(sessionData)
     }, [])
 }
+
+export function getLoginStatus(){
+    sessionData = readData()
+    return sessionData.loginStatus
+}

@@ -72,14 +72,16 @@ export function IdeaHeader({ actions }){
     </>
   )
 }
-export function IdeaItem({ data, password, actions, orderBy="priority", selectedStatus="active"}){
+export function IdeaItem({ data, password, actions, loginStatus, orderBy="priority", selectedStatus="active"}){
   // Variables
   const commentUrl = data.url
   let [ showAddComment, setShowAddComment ] = useState(false)
   const [ hideContent, setHideContent ] = useState(false)
   const [ showComment, setShowComment ] = useState(false)
+  const showPublic = loginStatus==='logout'
   const isTest = false
   const path = '/idea'
+  console.log(showPublic, 'loginStatus')
 
   // Actions
   const switchContentState = () => {
@@ -128,6 +130,8 @@ export function IdeaItem({ data, password, actions, orderBy="priority", selected
    
   // CSS
   const optionCSS = ['pr-1', 'hover:text-blue-500', 'cursor-pointer']
+  const showPublicCSS = [{'hidden':!showPublic}]
+  const hiddenPublicCSS = [{'hidden':showPublic}]
   // Attributes
   const startTime = new Date(data._createdAt||data.createdAt).toGMTString()
   const title = data.title
@@ -211,17 +215,17 @@ export function IdeaItem({ data, password, actions, orderBy="priority", selected
             contributors: {contributor}
           </div>
           <div className="flex">
-            <div className={cn(...optionCSS)} onClick={editAction}>
+            <div className={cn(...optionCSS, ...hiddenPublicCSS)} onClick={editAction}>
               edit
             </div >
-            <div className={cn(...optionCSS)} onClick={deleteAction}>
+            <div className={cn(...optionCSS, ...hiddenPublicCSS)} onClick={deleteAction}>
               delete
             </div>
             
             <a href={commentUrl} className={cn(...optionCSS)} target='_blank'>
               comment
             </a>
-            <div className={cn(...optionCSS)} onClick={activeCompletedAction}>
+            <div className={cn(...optionCSS, ...hiddenPublicCSS)} onClick={activeCompletedAction}>
               {(selectedStatus==='active')?'completed':'undo'}
             </div>
           </div>
@@ -252,11 +256,11 @@ export function IdeaItem({ data, password, actions, orderBy="priority", selected
     </>
   )
 }
-export function Ideas({ data, savedPassword, actions, orderBy="priority", selectedStatus="active"}){
+export function Ideas({ data, savedPassword, actions, loginStatus, orderBy="priority", selectedStatus="active"}){
   const items = []
   const testAction = () => { console.log('here') }
   for (let item of data){
-    items.push(<IdeaItem data={item} key={item.id||item.itemId} orderBy={orderBy}  selectedStatus={selectedStatus} onClick={testAction} password={savedPassword} actions={actions}/>)
+    items.push(<IdeaItem data={item} key={item.id||item.itemId} orderBy={orderBy}  selectedStatus={selectedStatus} onClick={testAction} password={savedPassword} actions={actions} loginStatus={loginStatus}/>)
   }
   return (
     <div className="flex flex-wrap">
