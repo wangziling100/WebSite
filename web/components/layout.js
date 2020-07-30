@@ -29,7 +29,7 @@ function IndexLayout({bg, children}){
     <>
       <Meta />
         <Background imgAndSetting={bg}>
-          <div className={cn('h-screen')}>
+          <div className=''>
             <Container>
               <main>{children}</main>
             </Container>

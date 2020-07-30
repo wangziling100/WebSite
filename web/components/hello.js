@@ -4,17 +4,17 @@ export default function Hello(){
   return(
     <>
     <div className="static text-white font-thin ml-40 text-purple-200 text-4xl font-sans-Roboto">
-      <HelloAppear className="mt-48 inline-block text-4xl font-normal " duration="6s">
+      <HelloAppear className="mt-48 inline-block text-4xl font-normal " duration="3s">
         Hey!
       </HelloAppear>
-      <HelloAppear className="inline text-4xl font-normal" duration="8s"> I'm </HelloAppear>
-      <HelloAppear className="font-momo text-red-500 text-6xl" duration="10s">
+      <HelloAppear className="inline text-4xl font-normal" duration="5s"> I'm </HelloAppear>
+      <HelloAppear className="font-momo text-red-500 text-6xl" duration="7s">
         Wang Xingbo 
       </HelloAppear>
-      <HelloAppear duration="12s"> Welcome to my website </HelloAppear>
+      <HelloAppear duration="9s"> Welcome to my website </HelloAppear>
       <div className="absolute top-0 left-0 mt-48 w-full h-40 z-20 flex justify-center text-center">
         <div className="w-1/3">  </div>
-        <Appear duration="14s" className="w-1/3"> 
+        <Appear duration="10s" className="w-1/3"> 
           <div className="bg-black bg-opacity-50 font-medium p-6">
             <div className="text-sm font-light italic"> 
                I am a slow walker, but i never walk backwards.  

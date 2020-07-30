@@ -1,10 +1,23 @@
 import cn from 'classnames'
+import Image from '../components/image'
 
 export default function Background({ imgAndSetting=[], children }) {
   const setting = imgAndSetting.setting
   const url = imgAndSetting.img.image.responsiveImage.src
+  const onLoadAction = () => {
+      console.log('Background', url)
+  }
+  const onLoad = () => {
+      console.log('bg loaded')
+  }
+  const actions = {
+      onLoadAction: onLoadAction,
+  }
   return (
-    <div className={cn("bg-img",...setting)}>
+
+    <>
+    {/*
+    <div className={cn("bg-img",...setting)} onLoad={onLoad}>
       <style jsx>{`
         .bg-img{
           background: url(${url});
@@ -15,5 +28,9 @@ export default function Background({ imgAndSetting=[], children }) {
       </style>
       {children}
     </div>
+    */}
+      <Image scr={url} actions={actions}/>
+      {children}
+    </>
   )
 }

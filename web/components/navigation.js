@@ -340,11 +340,11 @@ export default function Navigation({ page, password, actions, states, logo, host
     const nav = (
         <>
         <div className={cn("p-4 ", {"text-white": page=="index",}, 'flex', 'justify-between')}>
-          <div className="flex flex-raw items-center justify-start p-2 text-base font-serif-Georgia tracking-widest rounded-lg list-none ">
+          <div className="flex flex-raw items-center justify-start p-2 text-base font-serif-Georgia tracking-widest rounded-lg list-none z-20">
             
             { logo && <Image data={logo.image.responsiveImage}  className="w-24 h-10"/> }
             <div className={cn({"underline": page=="index"})}>
-                <a className="px-4 hover:underline cursor-pointer" onClick={()=>Router.push('/index')}>Home</a>
+                <a className="px-4 hover:underline cursor-pointer" onClick={()=>Router.push('/')}>Home</a>
             </div >
             <div className={cn({"underline": page=="idea"})}>
                 <a className="px-4 hover:underline cursor-pointer" onClick={()=>Router.push('/idea')}>Idea</a>
