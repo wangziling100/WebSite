@@ -687,38 +687,6 @@ function local2Item(local){
     return local
 }
 
-function allGithubData2List(all){
-    const milestones = all.data.repository.milestones.edges
-    let ret = []
-    for(let milestone of milestones){
-        const tmp = {
-            id: milestone.node.id,
-            title: milestone.node.title,
-            description: milestone.node.description,
-            creator: milestone.node.creator.login,
-            number: milestone.node.number,
-            itemType: 'milestone'
-        }
-        ret.push(tmp)
-        const issuesA = milestone.node.A.edges
-        const issuesB = milestone.node.B.edges
-        const issuesC = milestone.node.C.edges
-        const issues = issuesA.concat(issuesB, issuesC)
-        for (let issue of issues){
-            const tmp = {
-                id: issue.id,
-                body: issue.body,
-                number: issue.number,
-                state: issue.state,
-                title: issue.title,
-                url: issue.url
-            }
-            ret.push(tmp)
-        }
-    }
-    return ret
-}
-
 function bin2String(array) {
     var result = ""
     for (let i=0; i<array.length; i++){

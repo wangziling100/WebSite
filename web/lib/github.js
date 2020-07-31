@@ -77,7 +77,7 @@ export function remoteData2LocalFormat(remote){
             id: remote.id,
             itemId: remote.itemId,
             number: remote.number,
-            itemStatus: remote.state==='OPEN'?'active':'completed',
+            itemStatus: remote.state,
             title: remote.title,
             url: remote.url,
             content: content,
@@ -102,6 +102,7 @@ export function remoteData2LocalFormat(remote){
             layer: attrs.layer,
             parents: attrs.parents,
             itemType: itemType,
+            url: attrs.url,
             completeness: parseFloat(attrs.completeness) || 0,
         }
         return ret
@@ -240,6 +241,7 @@ export function item2Issue(item){
             }
             if (item.body!==undefined){
                 issue['body'] = item.body
+                issue['state'] = item.state
             }
             else{
                 const tmp = {
@@ -253,7 +255,7 @@ export function item2Issue(item){
                     planType: item.planType,
                     itemId: item.itemId,
                     createdAt: item._createdAt,
-                    version: new Date(),
+                    version: item.version,
                     parents: item.parents,
                     layer: item.layer,
                     completeness: item.completeness,
@@ -264,6 +266,7 @@ export function item2Issue(item){
                     startTime: item.startTime,
                     url: item.url,
                     tag: encodeTag(item.tag),
+                    itemStatus: item.itemStatus,
                 }
                 const [numMilestone, labels] = findMilestoneFromTags(item.tag)
                 tmp['labels'] = labels
