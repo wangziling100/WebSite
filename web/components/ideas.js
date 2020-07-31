@@ -5,6 +5,7 @@ import cn from 'classnames'
 import { Overlay } from '../components/overlay'
 import { writeData, setItem, getItemList, sendData } from '../lib/api'
 import { NewCommentItem, Comment } from '../components/comment'
+import { dateToDateFormat } from '../lib/tools'
 
 export function IdeaHeader({ actions }){
   const [ selectedStatus, setSelectedStatus ] = useState("active")
@@ -133,7 +134,8 @@ export function IdeaItem({ data, password, actions, loginStatus, orderBy="priori
   const showPublicCSS = [{'hidden':!showPublic}]
   const hiddenPublicCSS = [{'hidden':showPublic}]
   // Attributes
-  const startTime = new Date(data._createdAt||data.createdAt).toGMTString()
+  let dateFormat = dateToDateFormat(new Date(data._createdAt||data.createdAt))
+  const startTime = dateFormat.date.toString() + ' ' + dateFormat.time.toString()
   const title = data.title
   const content = data.content
   const owner = data.owner || "Public"
@@ -150,7 +152,9 @@ export function IdeaItem({ data, password, actions, loginStatus, orderBy="priori
   const evaluation = data.evaluation
   const icon = owner.substring(0,1) || "P"
   const startTimestamp = new Date(data._createdAt).getTime()-Date.now()
-  const endDate = data.endDate
+  dateFormat = dateToDateFormat(new Date(data.endDate))
+  console.log(dateFormat)
+  const endDate = dateFormat.date.toString()
   var orderNum
   //var selectedStatus
   switch ( orderBy ){

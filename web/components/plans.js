@@ -9,7 +9,7 @@ import TextArea from '../components/textarea'
 import { useInterval, sendData } from '../lib/api'
 import { useDrag, useDrop } from 'react-dnd'
 import { Overlay } from '../components/overlay'
-import { getDateDiff, s2Time } from '../lib/tools'
+import { dateToDateFormat, getDateDiff, s2Time } from '../lib/tools'
 import { isGithubLogin } from '../lib/github'
 
 const ItemTypes = {
@@ -44,10 +44,12 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
   // Variables
   const durationSelect= [1,2,3,4,5,6,7,8]
   const date = new Date()
-  const year = date.getFullYear()
-  const month = (date.getMonth()+1).toString().padStart(2,'0')
-  const day = (date.getDate()+1).toString().padStart(2,'0')
-  const dateString = year+'-'+month+'-'+day
+  const dateFormat = dateToDateFormat(date)
+  //const year = date.getFullYear()
+  //const month = (date.getMonth()+1).toString().padStart(2,'0')
+  //const day = (date.getDate()+1).toString().padStart(2,'0')
+  //const dateString = year+'-'+month+'-'+day
+  const dateString = dateFormat.date.toString()
   const commentUrl = data?.url
   const showPublic = loginStatus==='logout'
   // Status

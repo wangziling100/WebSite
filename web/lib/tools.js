@@ -1,4 +1,5 @@
 import {parseVersion} from '../lib/github'
+import { DateFormat, TimeFormat } from '../lib/format'
 export function getDateDiff(targetDate){
     const now = new Date()
     const target = new Date(targetDate)
@@ -7,14 +8,15 @@ export function getDateDiff(targetDate){
 
 export function s2Time(s){
     let hour = parseInt(s / 3600)
-    hour = hour.toString().padStart(2,'0')
+    //hour = hour.toString().padStart(2,'0')
     const hourLeft = s % 3600
     let min = parseInt(hourLeft / 60)
-    min = min.toString().padStart(2,'0')
+    //min = min.toString().padStart(2,'0')
     let sec = parseInt(hourLeft % 60)
-    sec = sec.toString().padStart(2,'0')
-    const ret = hour + ' : ' + min + ' : ' + sec
-    return (ret)
+    //sec = sec.toString().padStart(2,'0')
+    const timeFormat = new TimeFormat(hour, min, sec, false)
+    //const ret = hour + ' : ' + min + ' : ' + sec
+    return (timeFormat.toString())
 }
 
 export function compare(prop){
@@ -219,3 +221,22 @@ export function filterDuplicateItems(items){
     return {ret, invalid}
 }
 
+export function dateToDateFormat(date){
+    // date: Date Object
+    const year = date.getFullYear()
+    const month = date.getMonth()+1
+    const day = date.getDate()
+
+    const hour = date.getHours()
+    const min = date.getMinutes()
+    const sec = date.getSeconds()
+    console.log(year, month, day, hour, min, sec, 'date')
+
+    const dateFormat = new DateFormat(year, month, day)
+    const timeFormat = new TimeFormat(hour, min, sec)
+    return {
+        date: dateFormat,
+        time: timeFormat,
+    }
+    
+}
