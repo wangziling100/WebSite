@@ -183,6 +183,7 @@ exports.lambdaHandler = async (event, context) =>{
                     if (body.labels!==undefined && body.labels!==null){
                         data['labels'] = body.labels
                     }
+                    console.log(data, 'issue')
                     action = (token) => createIssue(token, data, userName, repo)
                     postProcess = (data) => getIssue(data, option)
                 }
@@ -240,6 +241,7 @@ exports.lambdaHandler = async (event, context) =>{
                     if (body.labels!==null){
                         data['labels'] = body.labels
                     }
+                    console.log(data, 'issue')
                     action = (token) => updateIssue(token, data, userName, repo, number)
                     postProcess = (data) => getIssue(data, option)
                 }

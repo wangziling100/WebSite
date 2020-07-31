@@ -230,7 +230,7 @@ export function dateToDateFormat(date){
     const hour = date.getHours()
     const min = date.getMinutes()
     const sec = date.getSeconds()
-    console.log(year, month, day, hour, min, sec, 'date')
+    //console.log(year, month, day, hour, min, sec, 'date')
 
     const dateFormat = new DateFormat(year, month, day)
     const timeFormat = new TimeFormat(hour, min, sec)

@@ -81,7 +81,7 @@ export function remoteData2LocalFormat(remote){
             title: remote.title,
             url: remote.url,
             content: content,
-            tag: attrs.tag || '',
+            tag: decodeTag(attrs.tag) || '',
             priority: parseInt(attrs.priority),
             target: attrs.target,
             difficulty: attrs.difficulty,
@@ -144,6 +144,15 @@ export function remoteData2LocalFormat(remote){
 
     }
     return ret
+}
+
+function encodeTag(tag){
+    return tag.replace('#', '#!')
+
+}
+
+function decodeTag(tag){
+    return tag.replace('#!', '#')
 }
 
 export function remoteData2Local(remote){
@@ -254,8 +263,7 @@ export function item2Issue(item){
                     owner: item.owner,
                     startTime: item.startTime,
                     url: item.url,
-                    tag: item.tag,
-
+                    tag: encodeTag(item.tag),
                 }
                 const [numMilestone, labels] = findMilestoneFromTags(item.tag)
                 tmp['labels'] = labels
@@ -264,8 +272,6 @@ export function item2Issue(item){
                 issue['labels'] = labels
                 issue['milestone'] = numMilestone
             }
-            
-            
             
         }
         return issue
