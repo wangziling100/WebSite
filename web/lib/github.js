@@ -826,7 +826,7 @@ export async function sendAllGithubData(data, hostname, afterAction, isTest=fals
     const postData = JSON.stringify(data)
     const host = 'z7yyx1kgf4.execute-api.eu-central-1.amazonaws.com'
     const path = 'github-sync'
-    const [options, https] = setServerRequestOptions(host, path, 'POST', isTest)
+    const [options, https] = setServerRequestOptions(host, path, 'POST', true)
     sendRequest(options, https, postData, afterAction)
 }
 

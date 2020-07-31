@@ -52,6 +52,7 @@ exports.lambdaHandler = async (event, context) =>{
     const repo = body.repo
     const owner = body.userName
     let [ githubIssues, githubMilestones ] = await queryInLoop(token, repo, owner, 100)
+    console.log(githubIssues.length, githubMilestones.length, '# github data1')
     githubIssues = validFilter(githubIssues)
     githubMilestones = validFilter(githubMilestones)
     //let local = local2Item(body.list)
@@ -219,6 +220,7 @@ async function queryInLoop(token, repo, owner, unit=100){
         milestones = b
         stopSearchIssue = c
         stopSearchMilestone = d
+        console.log('stop search issue milestone', c, d)
         returnIssues = returnIssues.concat(issues)
         returnMilestones = returnMilestones.concat(milestones)
 
@@ -391,7 +393,7 @@ function analyseAllData(all, queryTimes=0, unit=100){
     let numMilestone = all.data.repository.C.totalCount -queryTimes*2*unit
     numIssue = numIssue<0?0:numIssue
     numMilestone = numMilestone<0?0:numMilestone
-    //console.log(numIssue, numMilestone, 'count')
+    console.log(numIssue, numMilestone, 'count')
 
     const A = all.data.repository.A.edges
     const B = all.data.repository.B.edges
@@ -404,7 +406,10 @@ function analyseAllData(all, queryTimes=0, unit=100){
         stopSearchIssue = true
     }
     else if (numIssue>unit && numIssue<=2*unit){
-        issues = A.concat(B.slice(numIssue-unit))
+        let tmp = null
+        if (numIssue===2*unit) tmp = B
+        else tmp = B.slice(numIssue-unit)
+        issues = A.concat(tmp)
         stopSearchIssue = true
     }
     else {
@@ -418,7 +423,10 @@ function analyseAllData(all, queryTimes=0, unit=100){
         stopSearchMilestone = true
     }
     else if (numMilestone>unit && numMilestone<=2*unit){
-        milestones = C.concat(D.slice(numMilestone-unit))
+        let tmp = null
+        if (numMilestone===2*unit) tmp = D
+        else tmp = D.slice(numMilestone-unit)
+        milestones = C.concat(tmp)
         stopSearchMilestone = true
     }
     else {

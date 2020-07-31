@@ -188,7 +188,7 @@ export async function sendRequest(options, https, postData, afterAction){
             body = body.join('').toString()
             body = JSON.parse(body)
             console.log('response', body)
-            if(afterAction!==undefined){
+            if(afterAction!==undefined && afterAction!==null){
                 succeed = afterAction(body)
             }
         })
