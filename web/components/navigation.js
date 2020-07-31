@@ -13,7 +13,7 @@ import GithubList from '../components/github-drop-down-list'
 import { Button } from '../components/button'
 import  Select from '../components/select'
 import { switchAccount, updateAllInLocal, deleteLocalPlans, getSelectedRepo, checkIsolatedPlan, addAllToLocal, collectAllGithubData } from '../lib/localData'
-import { updateGithubItemBatch, createGithubItemBatch, deleteGithubItemBatch, deleteGithubItem, remoteData2Local, sendAllGithubData } from '../lib/github'
+import { addIssuesToLayers, checkIssueMilestoneNum, updateGithubItemBatch, createGithubItemBatch, deleteGithubItemBatch, deleteGithubItem, remoteData2Local, sendAllGithubData } from '../lib/github'
 import { flat, filterDuplicateItems } from '../lib/tools'
 import { setPageStatus } from '../lib/sessionData'
 
@@ -116,8 +116,8 @@ export default function Navigation({ page, password, actions, states, logo, host
             //const downloadUpdate = remoteData2Local(newData.data.downloadUpdate)
             let downloadCreate = newData.data.downloadCreate
             let downloadUpdate = newData.data.downloadUpdate 
-            const uploadCreate = newData.data.uploadCreate
-            const uploadUpdate = newData.data.uploadUpdate
+            let uploadCreate = newData.data.uploadCreate
+            let uploadUpdate = newData.data.uploadUpdate
             let invalid = []
             let tmp = null
             tmp = filterDuplicateItems(downloadCreate)
@@ -130,10 +130,24 @@ export default function Navigation({ page, password, actions, states, logo, host
             console.log(uploadCreate, uploadUpdate, 'upload')
             console.log(downloadCreate, downloadUpdate, 'download')
             console.log(password, 'password')
-            updateAllInLocal(password, downloadUpdate)
             tmp = addAllToLocal(password, downloadCreate)
             invalid = invalid.concat(tmp)
             console.log(tmp, 'invalid format')
+            console.log(downloadUpdate, 'down update')
+            if (downloadCreate.layers!==undefined){
+                const withNewMilestoneIssues = checkIssueMilestoneNum(password, flat(downloadCreate.layers))
+                console.log(withNewMilestoneIssues, 'withNewMilestoneIssues')
+                if (withNewMilestoneIssues.length>0){
+                    if (downloadUpdate.layers===undefined){
+                        downloadUpdate['layers'] = {}
+                    }
+                    downloadUpdate = addIssuesToLayers(withNewMilestoneIssues, downloadUpdate.layers)
+                    uploadUpdate = uploadUpdate.concat(withNewMilestoneIssues)
+                }
+                
+            }
+            
+            updateAllInLocal(password, downloadUpdate)
             const isolatedPlans = checkIsolatedPlan(password)
             console.log(isolatedPlans, 'isolated plans')
             invalid = invalid.concat(isolatedPlans)

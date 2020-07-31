@@ -691,6 +691,43 @@ export function combineCheckMilestone(endDate, completeness){
     }
 }
 
+export function checkIssueMilestoneNum(password, issues){
+    // check if issue's milestone num effective
+    console.log(issues, "check issue's milestone")
+    
+    let update = []
+    for (let issue of issues){
+        if (issue.itemType==='issue'){
+            console.log(issue, 'issue')
+            const tag = issue.tag
+            const [ milestoneNum, labels ] = findMilestoneFromTags(tag)
+            if (milestoneNum===null) continue
+            console.log(tag, milestoneNum, labels, "check issue's milestone")
+
+            const milestone = getMilestoneByNum(password, milestoneNum)
+            if (milestone===undefined || milestone===null){
+                issue.tag = labels.join(', ')
+                update.push(issue)
+            }
+        }
+    }
+    return update
+}
+
+export function addIssuesToLayers(issues, layers){
+    if (layers instanceof Array){
+        // Array
+    }
+    else{
+        // Object
+        for (let issue of issues){
+            if (layers[issue.layer]===undefined) layers[issue.layer] = []
+            layers[issue.layer].push(issue)
+        }
+    }
+    return layers
+}
+
 export function isGithubLogin(){
     const data = readData()
     if (data.userData===null) return false
@@ -826,7 +863,7 @@ export async function sendAllGithubData(data, hostname, afterAction, isTest=fals
     const postData = JSON.stringify(data)
     const host = 'z7yyx1kgf4.execute-api.eu-central-1.amazonaws.com'
     const path = 'github-sync'
-    const [options, https] = setServerRequestOptions(host, path, 'POST', true)
+    const [options, https] = setServerRequestOptions(host, path, 'POST', isTest)
     sendRequest(options, https, postData, afterAction)
 }
 

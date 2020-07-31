@@ -28,13 +28,13 @@ export function compare(prop){
 }
 export function flat(array){
     let result = []
-    for (let el of array){
+    for (let key in array){
         let tmp
-        if (Array.isArray(el)){
-            tmp = flat(el)
+        if (Array.isArray(array[key])){
+            tmp = flat(array[key])
             result = result.concat(tmp)
         }else{
-            result.push(el)
+            result.push(array[key])
         }
     }
     return result
