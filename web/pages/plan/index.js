@@ -66,7 +66,8 @@ export default function PlanPage(data) {
   console.log(layers, 'layers')
   //console.log(localData, 'localData')
   //console.log(updateCount, 'updateCount')
-  console.log(loginStatus, 'loginStatus')
+  console.log(userPassword, loginStatus, 'loginStatus')
+  console.log(selectedItem, 'selectedItem')
   // Function 
   function updateFunction(){
       setUpdateCount(updateCount+1)
@@ -152,13 +153,16 @@ export default function PlanPage(data) {
       let pointer = id
       while (i>=0){
           for (let item of searchArea[i]){
-              let tmpId
+              let tmpId = item.itemId
+              /*
               if (userPassword!==''){
                   tmpId = item.itemId
               }
               if (userPassword===''){
                   tmpId = item.id
               }
+              */
+              
               if (tmpId === pointer){
                   ancestors.splice(0, 0, pointer)
                   pointer = item.parents
@@ -699,7 +703,7 @@ export default function PlanPage(data) {
   const dragAction = async (source, target) => {
       let sourceId
       let targetId
-      if (userPassword!==''){
+      if (userPassword!=='' && userPassword!==undefined){
           sourceId = source.itemId
           targetId = target.itemId
       }

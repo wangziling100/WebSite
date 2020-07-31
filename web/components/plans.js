@@ -157,6 +157,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
       setShowBody(false)
   }
   const selectAction = () =>{
+      console.log('selected')
       actions.setSelectedItem(data)
   }
   const confirmAction = () =>{

@@ -5,13 +5,16 @@ export default function GithubList({name, actions}){
     const textCSS = ['flex justify-center cursor-pointer']
     // Actions
     const signOutAction = () => {
+        console.log('sign out')
         writeData({
             userData: null,
             loginStatus: 'logout',
             repos: null,
             userPassword:'',
             selectedRepo: null,
+            adminPassword: '',
         })
+        actions.setPassword('')
         actions.updateFunction()
         actions.cleanLocalData()
     }
