@@ -1016,6 +1016,7 @@ export async function getStaticProps({ preview=false }){
   // seperate items in layer
   let layers = {}
   for (let i of allItems){
+      i['contentPerformance'] = await markdownToHtml(i.content)
       if (layers[i.layer]===undefined) {
           layers[i.layer] = []
       }

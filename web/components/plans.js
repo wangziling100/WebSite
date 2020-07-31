@@ -96,7 +96,7 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
   const menuShow = {'hidden':!showMenu&&!showPublic}
   const menuHidden = {'hidden':showMenu}
   const hiddenPublicCSS = {'hidden':showPublic}
-  console.log(hiddenPublicCSS, loginStatus, showPublic, 'hiddenPublicCSS')
+  //console.log(hiddenPublicCSS, loginStatus, showPublic, 'hiddenPublicCSS')
   // Actions
   //console.log(data?.itemStatus, data?.title, 'status')
   const startCompose = () => setCompose(true)

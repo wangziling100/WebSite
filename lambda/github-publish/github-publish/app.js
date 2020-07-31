@@ -173,7 +173,7 @@ async function createItemBatch(createList){
             target: item.target,
             difficulty: item.difficulty,
             urgency: item.urgency,
-            endDate: item.endData,
+            endDate: item.endDate,
             duration: item.duration,
             period: item.period,
             planType: item.planType || 0,
@@ -205,6 +205,9 @@ async function updateItemBatch(updateList){
     for (let item of updateList){
         if (item.itemType==='milestone') ref = 'idea_item'
         else if (item.itemType==='issue') ref = 'plan_item'
+        let refId = null
+        if (item.refId===null || item.refId===undefined) refId = null
+        else refId = item.refId.toString()
         await client.items.update(item.id, {
             itemType: '238671',
             title: item.title,
@@ -215,7 +218,7 @@ async function updateItemBatch(updateList){
             evaluation: item.evaluation,
             allowPriorityChange: item.allowPriorityChange,
             ref: ref,
-            refId: item.refId.toString(),
+            refId: refId,
             owner: item.owner,
             contributor: item.contributor,
             tag: item.tag,
@@ -226,7 +229,7 @@ async function updateItemBatch(updateList){
             target: item.target,
             difficulty: item.difficulty,
             urgency: item.urgency,
-            endDate: item.endData,
+            endDate: item.endDate,
             duration: item.duration,
             period: item.period,
             planType: item.planType || 0,

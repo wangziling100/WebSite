@@ -115,6 +115,10 @@ export function PlanSetting({ password, actions, userPassword}){
       }
   }
   const afterPublishGithubData = (newData) => {
+      if (newData===undefined || newData===null ){
+          alert('No connection with server')
+          return
+      }
       const statusText = newData.statusText
       //console.log('after publish github data:', statusText, newData)
       actions.setPageStatus('normal')
@@ -125,7 +129,7 @@ export function PlanSetting({ password, actions, userPassword}){
       actions.setPageStatus('pending')
       //console.log(password, 'publish github data')
       const allData = collectAllGithubData()
-      //console.log(allData, 'all github data')
+      //console.log(allData, 'all github data publish')
       const postData = {
           data: allData,
           password: password,

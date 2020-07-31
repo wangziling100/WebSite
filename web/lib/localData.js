@@ -30,7 +30,7 @@ export function collectAllGithubData(){
         tmpData = flatGithubData(tmpData, page)
         allData = allData.concat(tmpData)
     }
-    //console.log(allData, 'allData')
+    console.log(allData, 'allData')
     return allData
 }
 

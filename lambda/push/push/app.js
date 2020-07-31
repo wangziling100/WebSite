@@ -122,6 +122,7 @@ exports.lambdaHandler = async (event, context) =>{
         if(!isBase64){
             data = JSON.parse(event.body)
         }
+        console.log(data)
 
         if (data.data === undefined){
             res = await processData(data)
