@@ -299,7 +299,10 @@ function findMilestoneFromTags(tags){
             catch(error){
             }
         }
-        labels.push(label.replace(/(^\s*)|(\s*$)/g, ""))
+        label =label.replace(/(^\s*)|(\s*$)/g, "")
+        if (label==='') continue
+        labels.push(label)
+        //labels.push(label.replace(/(^\s*)|(\s*$)/g, ""))
     }
     return [numMilestone, labels]
 }
