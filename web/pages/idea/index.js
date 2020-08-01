@@ -279,6 +279,14 @@ export default function IdeaPage(props) {
       setPageStatus: setPageStatus,
       reloadFunction: reloadFunction,
   }
+
+  const stateItems = []
+  for (let item of ideaItem){
+      if (item.itemStatus===selectedStatus) {
+          stateItems.push(item)
+      }
+  }
+  
   
 
   
@@ -293,10 +301,10 @@ export default function IdeaPage(props) {
             <button className="h-8 w-32 bg-red-400 rounded-lg text-white font-semibold hover:shadow-lg hover:bg-blue-400" onClick={()=>Router.push('/idea/new')}> + New Idea </button>
         </div>
         <IdeaHeader actions={downflowActions}/>
-        <Ideas data={ideaItem} orderBy={orderBy} selectedStatus={selectedStatus} savedPassword={adminPassword} actions={downflowActions} loginStatus={loginStatus}/>
+        <Ideas data={stateItems} orderBy={orderBy} selectedStatus={selectedStatus} savedPassword={adminPassword} actions={downflowActions} loginStatus={loginStatus}/>
         { showOverlay && (option!='login') &&
             <Overlay page={'idea'} option={option} password={userPassword} actions={downflowActions}/>}
-        { ideaItem.length===0 && 
+        { stateItems.length===0 && 
           <div className='bg-white mx-10 my-4 py-4 flex justify-center'>
             <div className='text-6xl tracking-widest text-green-400 italic '>
               No Idea
