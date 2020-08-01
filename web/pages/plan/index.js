@@ -66,7 +66,7 @@ export default function PlanPage(data) {
   console.log(layers, 'layers')
   //console.log(localData, 'localData')
   //console.log(updateCount, 'updateCount')
-  //console.log(userPassword, loginStatus, 'loginStatus')
+  console.log(userPassword, loginStatus, 'loginStatus')
   //console.log(selectedItem, 'selectedItem')
   // Function 
   function updateFunction(){

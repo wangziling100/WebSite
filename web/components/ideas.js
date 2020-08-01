@@ -75,11 +75,11 @@ export function IdeaHeader({ actions }){
 }
 export function IdeaItem({ data, password, actions, loginStatus, orderBy="priority", selectedStatus="active"}){
   // Variables
+  const showPublic = loginStatus==='logout'
   const commentUrl = data.url
   let [ showAddComment, setShowAddComment ] = useState(false)
-  const [ hideContent, setHideContent ] = useState(false)
+  const [ hideContent, setHideContent ] = useState(false||showPublic)
   const [ showComment, setShowComment ] = useState(false)
-  const showPublic = loginStatus==='logout'
   const isTest = false
   const path = '/idea'
   //console.log(showPublic, 'loginStatus')
@@ -237,7 +237,7 @@ export function IdeaItem({ data, password, actions, loginStatus, orderBy="priori
         </div>
       </div>
       <div className="w-1/6 flex items-center">
-        <div className="w-full text-center text-6xl justify-center"> {priority} </div>
+        <div className="w-full text-center text-6xl justify-center cursor-default" title='priority'> {priority} </div>
       </div>
     </div>
       { showAddComment &&  <NewCommentItem itemData={data} page={'idea'} onSubmit={newCommentAction} actions={actions}/>}
