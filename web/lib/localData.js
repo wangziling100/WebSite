@@ -76,6 +76,20 @@ export function getSelectedRepo(){
     return selectedRepo
 }
 
+export function clearLocal(password){
+    const existUser = checkUser(password)
+    if (existUser){
+        const idea = {
+            ideaItem: []
+        }
+        const plan = {
+            layers: []
+        }
+        writeLocal('idea', password, idea)
+        writeLocal('plan', password, plan)
+    }
+}
+
 export function addAllToLocal(password, data){
     //console.log('add all locally', data)
     let invalid = []
