@@ -152,11 +152,13 @@ export async function remoteData2LocalFormat(remote){
 }
 
 function encodeTag(tag){
+    if (tag===undefined || tag===null) return ''
     return tag.replace('#', '#!')
 
 }
 
 function decodeTag(tag){
+    if(tag===undefined || tag===null) return ''
     return tag.replace('#!', '#')
 }
 
