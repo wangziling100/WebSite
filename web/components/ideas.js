@@ -82,7 +82,7 @@ export function IdeaItem({ data, password, actions, loginStatus, orderBy="priori
   const showPublic = loginStatus==='logout'
   const isTest = false
   const path = '/idea'
-  console.log(showPublic, 'loginStatus')
+  //console.log(showPublic, 'loginStatus')
 
   // Actions
   const switchContentState = () => {
@@ -153,7 +153,7 @@ export function IdeaItem({ data, password, actions, loginStatus, orderBy="priori
   const icon = owner.substring(0,1) || "P"
   const startTimestamp = new Date(data._createdAt).getTime()-Date.now()
   dateFormat = dateToDateFormat(new Date(data.endDate))
-  console.log(dateFormat)
+  //console.log(dateFormat)
   const endDate = dateFormat.date.toString()
   var orderNum
   //var selectedStatus

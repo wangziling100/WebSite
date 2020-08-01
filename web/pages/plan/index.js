@@ -533,37 +533,6 @@ export default function PlanPage(data) {
           else{
               await updateGithubItem(newData, hostname, afterEditAction, 'issue')
           }
-          /*
-          const checkEndDate = checkUpdateMilestoneEndDate(newData, sourceData, userPassword)
-          const checkCompleteness = checkUpdateMilestoneCompleteness(newData, sourceData, userPassword)
-          const {shouldUpdateMilestone, newMilestone, oldMilestone}= combineCheckMilestone(checkEndDate, checkCompleteness)
-          console.log(shouldUpdateMilestone, newMilestone, oldMilestone, 'check update milestone')
-          if(shouldUpdateMilestone){
-              //console.log('request list')
-              let batch = [newData]
-              if (newMilestone!==null) {
-                  console.log('add newMilestone')
-                  newMilestone['option'] = 'update'
-                  newMilestone['version'] = new Date()
-                  newMilestone['itemType'] = 'milestone'
-                  batch.push(newMilestone)
-              }
-              if (oldMilestone!==null){
-                  oldMilestone['option'] = 'update'
-                  oldMilestone['version'] = new Date()
-                  oldMilestone['itemType'] = 'milestone'
-                  batch.push(oldMilestone)
-              } 
-              console.log(batch, 'update action')
-              await processGithubItemBatch(batch, hostname, afterEditAction)
-
-          }
-          else{
-              //console.log('single request')
-              await updateGithubItem(newData, hostname, afterEditAction, 'issue')
-          }
-          */
-
       }
       if (userPassword==='' && adminPassword!==''){
           form['password'] = adminPassword

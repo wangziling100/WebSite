@@ -33,6 +33,7 @@ function item2Milestone(item){
                 issueNumber: item.issueNumber || null,
                 completeness: item.completeness, 
                 endDate: item.endDate,
+                itemStatus: item.itemStatus,
             }
             milestone['description'] = JSON.stringify(tmp)
         }
@@ -77,7 +78,7 @@ export function remoteData2LocalFormat(remote){
             id: remote.id,
             itemId: remote.itemId,
             number: remote.number,
-            itemStatus: remote.state,
+            itemStatus: attrs.itemStatus,
             title: remote.title,
             url: remote.url,
             content: content,
@@ -102,7 +103,7 @@ export function remoteData2LocalFormat(remote){
             layer: attrs.layer,
             parents: attrs.parents,
             itemType: itemType,
-            url: attrs.url,
+            url: attrs.url||remote.url,
             completeness: parseFloat(attrs.completeness) || 0,
         }
         return ret
@@ -124,7 +125,7 @@ export function remoteData2LocalFormat(remote){
             refId: attrs.refId || null,
             owner: attrs.owner || null,
             contributor: attrs.contributor || '',
-            itemStatus: remote.state==='OPEN'?'active':'completed',
+            itemStatus: attrs.itemStatus,
             version: attrs.version,
             layer: attrs.layer,
             parents: attrs.parents,

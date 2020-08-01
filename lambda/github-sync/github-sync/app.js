@@ -446,6 +446,7 @@ function analyseAllData(all, queryTimes=0, unit=100){
 function validFilter(list){
     let ret = []
     for (let el of list){
+        //console.log(el.creator)
         if (el.creator!=='test-app-wangziling100' &&
             el.creator!=='plan-schedule-system-netlify' &&
             el.creator!=='plan-schedule-system-vercel'){
@@ -458,7 +459,10 @@ function validFilter(list){
             if (itemId===undefined) continue
             //console.log(itemId)
         }
-        catch {continue}
+        catch (err){
+            //console.log(err, 'error')
+            continue
+        }
         ret.push(el)
     }
     return ret
