@@ -152,9 +152,10 @@ export function IdeaItem({ data, password, actions, loginStatus, orderBy="priori
   const evaluation = data.evaluation
   const icon = owner.substring(0,1) || "P"
   const startTimestamp = new Date(data._createdAt).getTime()-Date.now()
+  
   dateFormat = dateToDateFormat(new Date(data.endDate))
   //console.log(dateFormat)
-  const endDate = dateFormat.date.toString()
+  const endDate = data.endDate?dateFormat.date.toString():null
   var orderNum
   //var selectedStatus
   switch ( orderBy ){
