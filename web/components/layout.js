@@ -50,14 +50,12 @@ function NormalLayout({bg, children, hostname}){
   const main = (
     <>
       <Meta />
-        <Background imgAndSetting={bg}>
           <div>
             <Container>
               <main>{children}</main>
             </Container>
             <Footer hostname={hostname} />
           </div>
-        </Background>
  
     </>
   )
