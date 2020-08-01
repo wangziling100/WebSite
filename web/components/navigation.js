@@ -121,10 +121,11 @@ export default function Navigation({ page, password, actions, states, logo, host
             let invalid = []
             let tmp = null
             tmp = filterDuplicateItems(downloadCreate)
-            downloadCreate = remoteData2Local(tmp.ret)
+            downloadCreate = await remoteData2Local(tmp.ret)
+            console.log(downloadCreate, 'create download')
             invalid = invalid.concat(tmp.invalid)
             tmp = filterDuplicateItems(downloadUpdate)
-            downloadUpdate = remoteData2Local(tmp.ret)
+            downloadUpdate = await remoteData2Local(tmp.ret)
             invalid = invalid.concat(tmp.invalid)
             console.log(tmp.ret, tmp.invalid, 'filter duplicate')
             console.log(uploadCreate, uploadUpdate, 'upload')

@@ -1,6 +1,7 @@
 import { getLabels, deleteLabel, setServerRequestOptions, sendRequest, readData } from '../lib/api'
 import { copy } from '../lib/tools'
 import { getFlatPlans, getLocalItemByAttr, getLocalItemsByAttr } from '../lib/localData'
+import markdownToHtml from '../lib/markdownToHtml'
 function item2Milestone(item){
     let milestone = null
     const option = item.option
@@ -69,7 +70,7 @@ export function milestone2Item(milestone, oldData){
     oldData['url'] = milestone.data.url
     return oldData
 }
-export function remoteData2LocalFormat(remote){
+export async function remoteData2LocalFormat(remote){
     const itemType = remote.itemType
     let ret
     if (itemType==='issue'){
@@ -105,6 +106,7 @@ export function remoteData2LocalFormat(remote){
             itemType: itemType,
             url: attrs.url||remote.url,
             completeness: parseFloat(attrs.completeness) || 0,
+            contentPerformance: await markdownToHtml(content || ''),
         }
         return ret
     }
@@ -142,6 +144,7 @@ export function remoteData2LocalFormat(remote){
             itemType: itemType,
             number: remote.number,
             issueNumber: attrs.issueNumber,
+            contentPerformance: await markdownToHtml(content),
         }
 
     }
@@ -157,11 +160,11 @@ function decodeTag(tag){
     return tag.replace('#!', '#')
 }
 
-export function remoteData2Local(remote){
+export async function remoteData2Local(remote){
     //console.log('remote 2 local', remote)
     let ret = {}
     for (let el of remote){
-        const formatedItem = remoteData2LocalFormat(el)
+        const formatedItem = await remoteData2LocalFormat(el)
         //console.log(formatedItem, 'formatedItem')
         ret = reconstructRemote2LocalForEach(ret, formatedItem)
     }

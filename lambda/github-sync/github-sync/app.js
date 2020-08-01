@@ -55,6 +55,7 @@ exports.lambdaHandler = async (event, context) =>{
     console.log(githubIssues.length, githubMilestones.length, '# github data1')
     githubIssues = validFilter(githubIssues)
     githubMilestones = validFilter(githubMilestones)
+    console.log(githubIssues.length, githubMilestones.length, 'issue, milestone, after valid filter')
     //let local = local2Item(body.list)
     let local = validLocalFilter(body.list)
     console.log(local.length, '# local data')
@@ -182,7 +183,14 @@ async function requestRepoList(token){
 function extractItemId(item){
     let ret
     if (item.itemType==='issue') {
-        ret = JSON.parse(item.body).itemId
+        let [attrs, content] = item.body.split('\n')
+        //console.log(attrs, 'attrs of issue')
+        //console.log(content, 'content of issue')
+
+        attrs = JSON.parse(attrs)
+        ret = attrs.itemId
+
+        //ret = JSON.parse(item.body).itemId
     }
     else if (item.itemType==='milestone') {
         //console.log(item, 'milestone')
@@ -194,7 +202,8 @@ function extractItemId(item){
 function extractItemVersion(item){
     let ret
     if (item.itemType==='issue'){
-        ret = JSON.parse(item.body).version
+        let [attrs, content] = item.body.split('\n')
+        ret = JSON.parse(attrs).version
     }
     else if (item.itemType==='milestone'){
         ret = JSON.parse(item.description).version
@@ -393,7 +402,7 @@ function analyseAllData(all, queryTimes=0, unit=100){
     let numMilestone = all.data.repository.C.totalCount -queryTimes*2*unit
     numIssue = numIssue<0?0:numIssue
     numMilestone = numMilestone<0?0:numMilestone
-    console.log(numIssue, numMilestone, 'count')
+    console.log(numIssue, numMilestone, 'issue, milestone, count')
 
     const A = all.data.repository.A.edges
     const B = all.data.repository.B.edges
@@ -460,7 +469,7 @@ function validFilter(list){
             //console.log(itemId)
         }
         catch (err){
-            //console.log(err, 'error')
+            console.log(err, 'error')
             continue
         }
         ret.push(el)
