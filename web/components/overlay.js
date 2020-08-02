@@ -7,12 +7,13 @@ import { withRouter } from 'next/router'
 export function Overlay({ page, option, overlayData, password, actions }){
     let child
     switch (option){
-        case "delete": child = (<> <DeleteWnd page={page} actions={actions}/></>);break;
+        case "delete": child = (<> <DeleteWnd page={page} actions={actions} option='delete'/></>);break;
         case "login": child = (<> <LoginWnd actions={actions} option="login" /></>); break;
         case "disclaimer": child = (<> <DisclaimerWnd hostname={overlayData.hostname}/></>); break;
         case "signUp": child = (<> <LoginWnd option="signUp" actions={actions}/></>); break;
         case "adminLogin": child = (<> <LoginWnd actions={actions} option="adminLogin" /></>); break;
         case "publish": child = (<> <LoginWnd actions={actions} option="publish" /></>); break;
+        case "clearLocal": child = (<><DeleteWnd page={page} actions={actions} option='clearLocal'/></>); break;
         default: child=""; break;
     }
     return(
@@ -34,6 +35,10 @@ export function Overlay({ page, option, overlayData, password, actions }){
             }
             {
               option==='publish' &&
+                <Style1 child={child} page={page} password={password} actions={actions} />
+            }
+            {
+              option==='clearLocal' &&
                 <Style1 child={child} page={page} password={password} actions={actions} />
             }
         </>
@@ -130,7 +135,7 @@ function LoginWnd({ option, actions }){
     )
 }
 
-function DeleteWnd({ page, actions }){
+function DeleteWnd({ page, actions, option}){
     // Variable
     let text
     let verb = 'delete'
@@ -148,10 +153,15 @@ function DeleteWnd({ page, actions }){
     // Actions
     
     const confirmOpt = async () => {
-        actions?.deleteAction && actions.deleteAction(password)
-        actions.setShowOverlay && actions.setShowOverlay(false)
-        actions.setOption && actions.setOption("")
-        actions?.topPlanCompleteAction && actions.topPlanCompleteAction()
+        if (option==='delete'){
+            actions?.deleteAction && actions.deleteAction(password)
+            actions.setShowOverlay && actions.setShowOverlay(false)
+            actions.setOption && actions.setOption("")
+            actions?.topPlanCompleteAction && actions.topPlanCompleteAction()
+        }
+        else if (option==='clearLocal'){
+            actions.clearFunction()
+        }
         
     }
 

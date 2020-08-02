@@ -54,6 +54,12 @@ export function PlanSetting({ password, actions, userPassword}){
       }
       return pageData
   }
+  // Functions
+  function clearFunction(){
+      clearLocal(userPassword)
+      reloadPage()
+  }
+
   // Actions
   
   const afterSyncAction = (newData, page) => {
@@ -107,8 +113,12 @@ export function PlanSetting({ password, actions, userPassword}){
   const clearAction = () => {
       console.log('clear')
       if (isGithubLogin()){
-          clearLocal(userPassword)
-          reloadPage()
+
+          downflowActions['clearFunction'] = clearFunction
+          setOption('clearLocal')
+          setShowOverlay(true)
+          //clearLocal(userPassword)
+          //reloadPage()
       }
   }
   
