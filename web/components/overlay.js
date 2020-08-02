@@ -3,16 +3,19 @@ import Router from 'next/router'
 import { useState } from 'react'
 import { writeData, checkUser, createNewUser, sendData } from '../lib/api'
 import { withRouter } from 'next/router'
+import { isGithubLogin } from '../lib/github'
+import { isLocalLogin } from '../lib/local'
 
 export function Overlay({ page, option, overlayData, password, actions }){
     let child
     switch (option){
-        case "delete": child = (<> <DeleteWnd page={page} actions={actions}/></>);break;
+        case "delete": child = (<> <DeleteWnd page={page} actions={actions} option='delete'/></>);break;
         case "login": child = (<> <LoginWnd actions={actions} option="login" /></>); break;
         case "disclaimer": child = (<> <DisclaimerWnd hostname={overlayData.hostname}/></>); break;
         case "signUp": child = (<> <LoginWnd option="signUp" actions={actions}/></>); break;
         case "adminLogin": child = (<> <LoginWnd actions={actions} option="adminLogin" /></>); break;
         case "publish": child = (<> <LoginWnd actions={actions} option="publish" /></>); break;
+        case "clearLocal": child = (<><DeleteWnd page={page} actions={actions} option='clearLocal'/></>); break;
         default: child=""; break;
     }
     return(
@@ -34,6 +37,10 @@ export function Overlay({ page, option, overlayData, password, actions }){
             }
             {
               option==='publish' &&
+                <Style1 child={child} page={page} password={password} actions={actions} />
+            }
+            {
+              option==='clearLocal' &&
                 <Style1 child={child} page={page} password={password} actions={actions} />
             }
         </>
@@ -130,7 +137,7 @@ function LoginWnd({ option, actions }){
     )
 }
 
-function DeleteWnd({ page, actions }){
+function DeleteWnd({ page, actions, option}){
     // Variable
     let text
     let verb = 'delete'
@@ -138,6 +145,7 @@ function DeleteWnd({ page, actions }){
         case 'idea': text='idea'; break;
         case 'plan': text='plan'; break;
         case 'top_plan': text='item'; verb='complete'; break;
+        case 'plan/setting': text='repository locally'; break;
     }
     const [ password, setPassword ] = useState("")
     let isTest = false
@@ -148,10 +156,15 @@ function DeleteWnd({ page, actions }){
     // Actions
     
     const confirmOpt = async () => {
-        actions?.deleteAction && actions.deleteAction(password)
-        actions.setShowOverlay && actions.setShowOverlay(false)
-        actions.setOption && actions.setOption("")
-        actions?.topPlanCompleteAction && actions.topPlanCompleteAction()
+        if (option==='delete'){
+            actions?.deleteAction && actions.deleteAction(password)
+            actions.setShowOverlay && actions.setShowOverlay(false)
+            actions.setOption && actions.setOption("")
+            actions?.topPlanCompleteAction && actions.topPlanCompleteAction()
+        }
+        else if (option==='clearLocal'){
+            actions.clearFunction()
+        }
         
     }
 
@@ -165,8 +178,14 @@ function DeleteWnd({ page, actions }){
       <div className="text-center flex flex-wrap">
         <div className="w-full mt-2 font-semibold text-red-600 text-xl">Do you want to {verb} the {text}?</div>
         <div className="flex mt-5 w-full">
-          <div className={cn('mt-2', 'p-2', 'ml-4')}> Password: </div>
-          <input className={cn(...inputCSS, 'mr-10')} id='password' type='password' placeholder='your password' onChange={(e)=>getPassword(e)}/>
+          {
+
+            (!isGithubLogin() && !isLocalLogin()) &&
+            <>
+              <div className={cn('mt-2', 'p-2', 'ml-4')}> Password: </div>
+              <input className={cn(...inputCSS, 'mr-10')} id='password' type='password' placeholder='your password' onChange={(e)=>getPassword(e)}/>
+            </>
+          }
         </div>
         <div className="flex justify-around my-5 w-full">
           <button className={cn(...buttonCSS)} onClick={returnAction}>
@@ -220,7 +239,7 @@ function Style1({ child, page, actions}){
     // Actions
     const hideOverlay = ()=>{
         actions.setShowOverlay(false)
-        actions.setShowRootOverlay(false)
+        actions.setShowRootOverlay && actions.setShowRootOverlay(false)
         actions.setOption && actions.setOption("") 
     }
     

@@ -4,6 +4,8 @@ import { Overlay } from '../components/overlay'
 import { useState } from 'react'
 import { sendPublishRequest, isGithubLogin } from '../lib/github'
 import { clearLocal, collectAllGithubData } from '../lib/localData'
+import { isLocalLogin } from '../lib/local'
+import cn from 'classnames'
 export function PlanSetting({ password, actions, userPassword}){
   const isTest = false
   const [showOverlay, setShowOverlay] = useState(false)
@@ -15,6 +17,8 @@ export function PlanSetting({ password, actions, userPassword}){
   const [ downflowActions, setDownflowActions ] = useState(tmpActions)
   const loginTxt = password?'Logout':'Admin Login'
   const [ option, setOption ] = useState()
+  const textCSS = ['text-gray-600', 'my-2', 'font-semibold']
+  const wholeCSS = ['ml-2']
   // Functions
   const updateItems = (newItems, targetDataSet) => {
       for (let newItem of newItems){
@@ -54,6 +58,12 @@ export function PlanSetting({ password, actions, userPassword}){
       }
       return pageData
   }
+  // Functions
+  function clearFunction(){
+      clearLocal(userPassword)
+      reloadPage()
+  }
+
   // Actions
   
   const afterSyncAction = (newData, page) => {
@@ -105,10 +115,14 @@ export function PlanSetting({ password, actions, userPassword}){
       
   }
   const clearAction = () => {
-      console.log('clear')
-      if (isGithubLogin()){
-          clearLocal(userPassword)
-          reloadPage()
+      console.log('clear', isLocalLogin())
+      if (isGithubLogin() || isLocalLogin()){
+
+          downflowActions['clearFunction'] = clearFunction
+          setOption('clearLocal')
+          setShowOverlay(true)
+          //clearLocal(userPassword)
+          //reloadPage()
       }
   }
   
@@ -147,11 +161,21 @@ export function PlanSetting({ password, actions, userPassword}){
   
   const main = (
     <>
-      <Button bn='Build' onClick={buildAction}/>
-      <Button bn={loginTxt} onClick={logInOutAction}/>
-      <Button bn='Sync' onClick={syncAction} />
-      <Button bn='Publish' onClick={publishAction} />
-      <Button bn='Clear' onClick={clearAction} />
+      <div className={cn(...wholeCSS)}>
+        <div className={cn(...textCSS)}>
+          General
+        </div>
+        <Button bn='Clear' onClick={clearAction} />
+      </div>
+      <div className={cn(...wholeCSS)}>
+        <div className={cn(...textCSS)}>
+          Admin
+        </div>
+        <Button bn='Build' onClick={buildAction}/>
+        <Button bn={loginTxt} onClick={logInOutAction}/>
+        <Button bn='Sync' onClick={syncAction} />
+        <Button bn='Publish' onClick={publishAction} />
+      </div>
       {
           showOverlay &&
           <Overlay page='plan/setting' option={option} actions={downflowActions} />
