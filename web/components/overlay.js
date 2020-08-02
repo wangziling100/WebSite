@@ -3,6 +3,8 @@ import Router from 'next/router'
 import { useState } from 'react'
 import { writeData, checkUser, createNewUser, sendData } from '../lib/api'
 import { withRouter } from 'next/router'
+import { isGithubLogin } from '../lib/github'
+import { isLocalLogin } from '../lib/local'
 
 export function Overlay({ page, option, overlayData, password, actions }){
     let child
@@ -143,6 +145,7 @@ function DeleteWnd({ page, actions, option}){
         case 'idea': text='idea'; break;
         case 'plan': text='plan'; break;
         case 'top_plan': text='item'; verb='complete'; break;
+        case 'plan/setting': text='repository locally'; break;
     }
     const [ password, setPassword ] = useState("")
     let isTest = false
@@ -175,8 +178,14 @@ function DeleteWnd({ page, actions, option}){
       <div className="text-center flex flex-wrap">
         <div className="w-full mt-2 font-semibold text-red-600 text-xl">Do you want to {verb} the {text}?</div>
         <div className="flex mt-5 w-full">
-          <div className={cn('mt-2', 'p-2', 'ml-4')}> Password: </div>
-          <input className={cn(...inputCSS, 'mr-10')} id='password' type='password' placeholder='your password' onChange={(e)=>getPassword(e)}/>
+          {
+
+            (!isGithubLogin() && !isLocalLogin()) &&
+            <>
+              <div className={cn('mt-2', 'p-2', 'ml-4')}> Password: </div>
+              <input className={cn(...inputCSS, 'mr-10')} id='password' type='password' placeholder='your password' onChange={(e)=>getPassword(e)}/>
+            </>
+          }
         </div>
         <div className="flex justify-around my-5 w-full">
           <button className={cn(...buttonCSS)} onClick={returnAction}>
@@ -230,7 +239,7 @@ function Style1({ child, page, actions}){
     // Actions
     const hideOverlay = ()=>{
         actions.setShowOverlay(false)
-        actions.setShowRootOverlay(false)
+        actions.setShowRootOverlay && actions.setShowRootOverlay(false)
         actions.setOption && actions.setOption("") 
     }
     

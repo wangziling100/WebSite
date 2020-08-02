@@ -4,6 +4,7 @@ import { Overlay } from '../components/overlay'
 import { useState } from 'react'
 import { sendPublishRequest, isGithubLogin } from '../lib/github'
 import { clearLocal, collectAllGithubData } from '../lib/localData'
+import { isLocalLogin } from '../lib/local'
 export function PlanSetting({ password, actions, userPassword}){
   const isTest = false
   const [showOverlay, setShowOverlay] = useState(false)
@@ -111,8 +112,8 @@ export function PlanSetting({ password, actions, userPassword}){
       
   }
   const clearAction = () => {
-      console.log('clear')
-      if (isGithubLogin()){
+      console.log('clear', isLocalLogin())
+      if (isGithubLogin() || isLocalLogin()){
 
           downflowActions['clearFunction'] = clearFunction
           setOption('clearLocal')
