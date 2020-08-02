@@ -294,7 +294,7 @@ export default function PlanPage(data) {
           if (sourceData instanceof Array) sourceDataBatch=sourceData
           else sourceDataBatch = [sourceData]
           const succeed = await processResponseBatch(responseBatch, sourceDataBatch, userPassword)
-          if (!succeed) alert('Something wrong happens, but the item is still deleted locally.')
+          if (!succeed) alert('Something wrong happens, but the item is still deleted locally.\n\nWarning: To ensure synchronization, in this case, the system only supports tail deletion. If the node is not the last node in this chain and you want to complete this operation, you can drag the child node of the deleted node to another place, and then delete the node.')
           setCanUpdate(false)
           reloadFunction()
       }

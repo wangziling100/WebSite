@@ -180,7 +180,7 @@ export default function IdeaPage(props) {
   }
   const afterDeleteAction = (newData, sourceData=null) => {
       if (newData===undefined || newData===null) {
-          alert('No connection with server, but the item is still deleted locally')
+          alert('No connection with server, but the item is still deleted locally\n\nTip: If you want to undo this operation, you can try to synchronize the data.')
           processLocalBatch(sourceData, userPassword)
           setCanUpdate(false)
           reloadFunction()
