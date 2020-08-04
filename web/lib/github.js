@@ -837,7 +837,6 @@ export async function processGithubItemBatch(batch, hostname, afterAction,option
     console.log(postData, 'processGithubItemBatch')
     return await sendGithubRequest(postData, tmpAction)
     //console.log(page, 'get local item by attr')
-
 }
 
 export async function createGithubItem(data, hostname, afterAction, type='milestone'){
@@ -880,16 +879,12 @@ export async function sendAllGithubData(data, hostname, afterAction, isTest=fals
 }
 
 export async function sendGithubRequest(data, afterAction, isTest=false) {
-    //if (data.itemType==='milestone') data = item2Milestone(data)
-    //else if (data.itemType==='issue') data = item2Issue(data)
-    //console.log(data, 'send github')
     const postData = JSON.stringify(data)
     const host = 'wm1269hl6e.execute-api.eu-central-1.amazonaws.com'
     const path = 'github'
     const [options, https] = setServerRequestOptions(host, path, 'POST', isTest)
     //console.log('send github request')
     return sendRequest(options, https, postData, afterAction)
-    
 }
 
 export async function sendPublishRequest(data, afterAction, isTest=false){

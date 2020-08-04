@@ -2,7 +2,13 @@ import cn from 'classnames'
 import { useState, useRef } from 'react'
 import markdownToHtml from '../lib/markdownToHtml'
 
-export default function TextArea({value, setValue, setState, setHtml, placeholder='write something...', css=[]}){
+export default function TextArea({  value, 
+                                    setValue, 
+                                    setState, 
+                                    setHtml, 
+                                    placeholder='write something...', 
+                                    css=[],
+                                    useBlur=true}){
     // CSS
     const textAreaCSS = ['mt-2', 'p-2', 'w-full', 'shadow', 'appearance-none', 'border', 'rounded', 'text-gray-700', 'leading-tight', 'focus:outline-none', 'focus:shadow-outline', 'focus:border-red-500', 'resize-none' ]
     // Variables
@@ -30,7 +36,7 @@ export default function TextArea({value, setValue, setState, setHtml, placeholde
         setFocus(false)
         const html = await markdownToHtml(value)
         html && setHtml(html)
-        setState()
+        if (useBlur) setState()
     }
 
     const main = (
