@@ -457,8 +457,17 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
           <div className={cn(...text2CSS, ...flexCSS, 'justify-between',)}>
             <div className={cn('flex', 'w-9/10')}>
               <FontAwesomeIcon icon={faTags} className={cn(...iconCSS,)} title={'Tags'} />
-              <div className={cn({'hidden':!showTags&&edit}, {'cursor-pointer':edit})} onClick={()=>setShowTags(false)}> {tagPerformance || 'your tags'} </div>
-              <Input value={tags} setValue={setTags} css={[{'hidden':showTags||!edit}]} setState={()=>setShowTags(true)} placeholder='please seperate tags with ","'/>
+              <div  className={cn({'hidden':!showTags&&edit}, 
+                                  {'cursor-pointer':edit})} 
+                    onClick={()=>setShowTags(false)}> 
+                    {tags || 'your tags'} 
+              </div>
+              <Input  value={tags} 
+                      setValue={setTags} 
+                      css={[{'hidden':showTags||!edit}]} 
+                      setState={()=>setShowTags(true)} 
+                      placeholder='please seperate tags with ","'
+              />
             </div>
             {/*details symbol*/}
             <div className="w-1/10">
