@@ -11,6 +11,7 @@ import { useDrag, useDrop } from 'react-dnd'
 import { Overlay } from '../components/overlay'
 import { dateToDateFormat, getDateDiff, s2Time } from '../lib/tools'
 import { isGithubLogin } from '../lib/github'
+import markdownToHtml from '../lib/markdownToHtml'
 
 const ItemTypes = {
     PLAN: 'plan'
@@ -243,6 +244,11 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
           setShowBody(!showBody)
       }
   }
+  const confirmContentAction = async () => {
+    const html = await markdownToHtml(content)
+    setContentPerformance(html)
+    setShowDetails(true)
+  }
   function attachRef(el){
       if (edit) return
       drop(el)
@@ -451,8 +457,17 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
           <div className={cn(...text2CSS, ...flexCSS, 'justify-between',)}>
             <div className={cn('flex', 'w-9/10')}>
               <FontAwesomeIcon icon={faTags} className={cn(...iconCSS,)} title={'Tags'} />
-              <div className={cn({'hidden':!showTags&&edit}, {'cursor-pointer':edit})} onClick={()=>setShowTags(false)}> {tagPerformance || 'your tags'} </div>
-              <Input value={tags} setValue={setTags} css={[{'hidden':showTags||!edit}]} setState={()=>setShowTags(true)} placeholder='please seperate tags with ","'/>
+              <div  className={cn({'hidden':!showTags&&edit}, 
+                                  {'cursor-pointer':edit})} 
+                    onClick={()=>setShowTags(false)}> 
+                    {tags || 'your tags'} 
+              </div>
+              <Input  value={tags} 
+                      setValue={setTags} 
+                      css={[{'hidden':showTags||!edit}]} 
+                      setState={()=>setShowTags(true)} 
+                      placeholder='please seperate tags with ","'
+              />
             </div>
             {/*details symbol*/}
             <div className="w-1/10">
@@ -468,9 +483,26 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
                 <Markdown content={contentPerformance} />
                 {contentPerformance.length<=1 && !showPublic && 'Enter something!'}
               </div>
-              <TextArea value={content} setValue={setContent} setHtml={setContentPerformance} css={[{'hidden':showDetails||!edit}]} setState={()=>setShowDetails(true)} />
-              <div className={cn({'hidden':showDetails}, 'flex')}>
-                <button onClick={()=>setShowDetails(true)} className={cn({'hidden':showDetails||!edit})}> Confirm </button>
+              <TextArea value={content} 
+                        setValue={setContent} 
+                        setHtml={setContentPerformance} 
+                        css={[{'hidden':showDetails||!edit}]} 
+                        setState={()=>setShowDetails(true)} 
+                        useBlur={false}
+              />
+              <div className={cn({'hidden':showDetails}, 'flex', 'justify-between')}>
+                <button onClick={confirmContentAction} 
+                        className={cn({'hidden':showDetails||!edit})}> 
+                        Confirm 
+                </button>
+                <a href='https://stackedit.io/app' 
+                   target='_blank'
+                   className={cn({'hidden':showDetails||!edit})}
+                   >
+                  <div>
+                    Markdown Editor
+                  </div>
+                </a>
               </div>
             </div>
           }
