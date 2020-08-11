@@ -1,3 +1,3 @@
 [![Netlify Status](https://api.netlify.com/api/v1/badges/7203fb0a-98f3-40e2-bdfa-a56808b6a109/deploy-status)](https://app.netlify.com/sites/wangxingbo/deploys)
-# WebSite
-My personal web site
+# Introduction
+This is my personal website, and it is also a GitHub App. At first I only wanted to use it as a display platform for my other projects, but gradually I added new functions to it, such as project schedule management and task planning. In July 2020, I changed it to Github App so that other users can also use these functions. In the future, I will build this website as an automation platform and provide more artificial intelligence services.
