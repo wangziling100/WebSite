@@ -33,14 +33,14 @@ export default (function (props) {
             if (config !== null) {
                 console.log(config);
                 setSucceed(true);
-                var configs = stateManager.getState('index', 'configs');
+                var configs = stateManager.getState('soft-plugin-index', 'configs');
                 var name_1 = config.name;
                 var storedConfig = {};
                 storedConfig[name_1] = config;
                 configs = Object.assign(configs);
-                var setConfigs = stateManager.getFunction('index', 'setConfigs');
+                var setConfigs = stateManager.getFunction('soft-plugin-index', 'setConfigs');
                 setConfigs(Object.assign(configs, storedConfig));
-                stateManager.writeLocal('index');
+                stateManager.writeLocal('soft-plugin-index');
                 if (props !== undefined) {
                     props.setConfig(config);
                 }
