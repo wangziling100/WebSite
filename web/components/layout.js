@@ -78,7 +78,7 @@ function SidebarLayout({top, left, right, hostname}){
             <div className="relative flex flex-col h-full bg-white border-r border-gray-300 shadow-xl md:block w-1/5" >
               {left}
             </div>
-            <div className="right-0 flex flex-col pb-2 bg-white border-l border-gray-300 xl:block w-5/6 overflow-auto">
+            <div className="relative right-0 flex flex-col pb-2 bg-white border-l border-gray-300 xl:block w-5/6 overflow-auto">
               <DndProvider backend={HTML5Backend}>
                 {right}
               </DndProvider>
