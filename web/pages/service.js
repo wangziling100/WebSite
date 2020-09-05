@@ -1,22 +1,27 @@
 import Head from 'next/head'
-import Container from '../components/container'
+//import Container from '../components/container'
 import Navigation from '../components/navigation'
 import Layout from '../components/layout'
 import { useUserPassword, useAdminPassword, getHostname, getItem, getItemList, setItem, getImageByReference } from '../lib/api'
-import { useState } from 'react'
-import { Image } from 'react-datocms'
+import { useState, Children } from 'react'
+//import { Image } from 'react-datocms'
 import cn from 'classnames'
+import { Typography, Space } from 'antd'
 
 export default function ServicePage(data) {
-  const img = data.serviceBg
-  const setting=[ 'h-full', 'w-full']
-  const bgImgAndSetting={img, setting}
+  // Variables
   const logo = data.logo
+  const children = {}
+  const sidebarCSS = ['font-semifont', 'text-lg', 'ml-10', 'mt-10', 'min-h-screen']
+  const sidebarCSS2 = ['text-base', 'text-gray-500', 'cursor-pointer', 'hover:text-blue-400']
+  const { Text } = Typography
   // States
   const [ showOverlay, setShowOverlay ] = useState(false)
   const [ hostname, setHostname ] = useState()
   const [ userPassword, setUserPassword ] = useState()
   const [ adminPassword, setAdminPassword ] = useState()
+  const [ sidebar, setSidebar ] = useState('customer')
+  // Init
   const downflowActions = {
       setPassword: setAdminPassword,
       setShowOverlay: setShowOverlay,
@@ -31,16 +36,35 @@ export default function ServicePage(data) {
       <Navigation page="service" password={userPassword} actions={downflowActions} logo={logo}/>
     </>
   )
-  const body = (
+  
+  const itemList = (
     <>
-      <Image data={img.image.responsiveImage} className={cn(...setting)} />
-      <div className='flex justify-end'>
-        <a href='http://www.freepik.com' target='_blank'>
-          Designed by brgfx / Freepik & Xingbo Wang
-        </a>
+      <div className={cn(...sidebarCSS)}>
+        <Space direction='vertical'>
+          <Text>Type</Text>
+          <div className={cn(...sidebarCSS2)}
+          onClick={()=>setSidebar('customer')}>
+            Customer
+          </div>
+          <div className={cn(...sidebarCSS2)}
+          onClick={()=>setSidebar('bussiness')}>
+            Bussiness
+          </div>
+        </Space>
       </div>
     </>
   )
+  let body
+  switch (sidebar) {
+    case 'customer': body=<>customer</>; break;
+    case 'bussiness': body=<>bussiness</>;break
+    default:
+      break;
+  }
+  children['top'] = header
+  children['right'] = body
+  children['left'] = itemList
+  
   return (
     <div>
       <Head>
@@ -49,9 +73,7 @@ export default function ServicePage(data) {
         </title>
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
       </Head>
-      <Layout page={'service'} hostname={hostname} bgImgAndSetting={bgImgAndSetting} curtain={header}>
-        {body}
-      </Layout>
+      <Layout page={'service'} hostname={hostname}  children={children}/>
     </div>
   )
 }
