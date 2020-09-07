@@ -109,8 +109,21 @@ export async function getStaticProps({ preview=false }){
   const path = require('path')
   const logo = await getImageByReference('logo', preview)
   const serviceBg = await getImageByReference('service_bg', preview)
-  const pluginConfigPaths = getAssetPaths(fs, './public/plugin/config')
-  const pluginImgPaths = getAssetPaths(fs, './public/plugin/bg')
+  let pluginConfigPaths = []
+  let pluginImgPaths = []
+  try{
+    pluginConfigPaths = getAssetPaths(fs, './public/plugin/config')
+  }
+  catch(err){
+    console.log(err)
+  }
+
+  try{
+    pluginImgPaths = getAssetPaths(fs, './public/plugin/bg')
+  }
+  catch(err){
+    console.log(err)
+  }
   const pluginConfigs = {}
   const pluginImgs = {}
 
@@ -123,7 +136,7 @@ export async function getStaticProps({ preview=false }){
   for (let p of pluginImgPaths){
     const key = path.basename(p, '.png')
     const newPath = path.join('/plugin/config', p)
-    pluginImgs[key] = p
+    pluginImgs[key] = newPath
   }
   const data = {logo, serviceBg, pluginConfigs, pluginImgs}
   return{
