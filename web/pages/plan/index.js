@@ -18,6 +18,7 @@ import markdownToHtml from '../../lib/markdownToHtml'
 import { SyncOverlay } from '../../components/sync-overlay'
 import { updateGithubCompleteness } from '../../lib/localData'
 import { parseResponseAsBatch, processResponseBatch } from '../../lib/after-process'
+import SoftPlugin from '../../components/soft-plugin'
 
 export default function PlanPage(data) {
   // Variables
@@ -55,6 +56,7 @@ export default function PlanPage(data) {
   const [ pageStatus, setPageStatus ] = useState('normal')
   const layers = localData?.layers || data.layers
   const [ firstItems, setFirstItems ] = useState([])
+  const [ pluginVisible, setPluginVisible] = useState(false)
   // Variables
   const loginStatus = sessionData?.loginStatus || 'logout'
   const githubUserData = sessionData?.userData || null
@@ -910,11 +912,13 @@ export default function PlanPage(data) {
 
         <PlanItem editStatus={true} parents={parents} layer={parseInt((allLayers.length+1)/2)} actions={actionsNew} password={adminPassword}/>
       }
+      <SoftPlugin visible={pluginVisible} setVisible={setPluginVisible} />
     </>
   )
   
   const dailySummary= (
     <>
+      <div>abc</div>
     </>
   )
   const left = (
@@ -930,6 +934,14 @@ export default function PlanPage(data) {
       </div>
       <div className={cn(...textCSS)} onClick={()=>setSidebar('Setting')}>
         Setting
+      </div>
+      <div className={cn(...textCSS)} onClick={
+          ()=> {
+            setSidebar('PlanRoute');
+            setPluginVisible(true);
+          }
+      }>
+        Plugin
       </div>
     </>
   )

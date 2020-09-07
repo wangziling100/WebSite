@@ -1,0 +1,73 @@
+name: Plugin Builder
+lines:
+  1:
+    - props:
+        css: ['w-screen']
+    - drawer:
+      - props:
+          css: []
+          name: drawer
+          visible: false
+          placement: left
+          title: drawer
+          width: 80%
+          actions:
+            - onClose:
+                object: drawer
+                type: visible
+                option: turnOff
+      - group:
+        - props:
+            css: ['w-full', 'h-full', 'flex']
+        - group:
+            - props:
+                css: ['w-1/2', 'mx-2', 'h-full']
+            - label:
+                content: Input
+            - textarea:
+                rows: 20
+                name: builder-source
+                action:
+                  object: builder1
+                  type: io
+                  option: set
+        - group:
+            - props:
+                css: ['w-1/2', 'mx-2', 'h-full']
+            - label:
+                content: Component
+            - builder:
+                name: builder1
+
+
+  2:
+    - props:
+        css: []
+    - group:
+        - props:
+            css: ['flex', 'justify-between']
+        - button:
+            content: Create
+            action:
+              object: drawer
+              type: visible
+              option: turnOn
+        - button:
+            content: Save
+            action: 
+              object: notification1
+              type: info
+              option: notification
+        - button:
+            content: Publish
+            action: 
+              object: notification1
+              type: info
+              option: notification
+        - notification:
+            type: warning
+            message: Not Implemented
+            description: Not Implemented
+            duration: 4
+            placement: topLeft
+            name: notification1

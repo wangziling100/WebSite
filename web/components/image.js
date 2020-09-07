@@ -1,6 +1,11 @@
 import { useRef, useState, useEffect } from 'react'
 import cn from 'classnames'
 export default function Image({src, alt, css=[], actions}){
+    // Functions
+    const defalutFunction = ()=>{}
+    const defalutActions = {onLoadAction: defalutFunction}
+    if (actions===undefined) actions = defalutActions
+    // Init
     const imgRef = useRef(null)
     const [ showImage, setShowImage ] = useState(false)
     useEffect(()=>{
