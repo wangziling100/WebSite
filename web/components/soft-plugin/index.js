@@ -12,16 +12,18 @@ var __assign = (this && this.__assign) || function () {
 //import './css/tailwind.css';
 import * as React from 'react';
 import { useState } from 'react';
-import { Divider, Drawer, Collapse } from 'antd';
+import { Divider, Drawer, Empty } from 'antd';
 //import 'antd/dist/antd.css';
 import LoadConfig from './components/load-config';
 import { stateManager, useLocal } from '@wangziling100/state-manager';
 import PluginList from './components/plugin-list';
 export default (function (props) {
+    console.log('index');
     // States
     var _a = useState(), loadConfig = _a[0], setLoadConfig = _a[1];
     //const [visible, setVisible] = useState(false)
     var _b = useState({}), configs = _b[0], setConfigs = _b[1];
+    var _c = useState(true), refresh = _c[0], setRefresh = _c[1];
     // Variables
     var id = 'soft-plugin-index';
     var data, drawerProps, visible;
@@ -37,13 +39,6 @@ export default (function (props) {
         visible = false;
         setVisible = function () { };
     }
-    var Panel = Collapse.Panel;
-    // Functions
-    /*
-    const showDrawer = () => {
-        setVisible(true)
-    }
-    */
     var onClose = function () {
         setVisible(false);
     };
@@ -56,15 +51,17 @@ export default (function (props) {
     stateManager.addState(id, 'configs', configs);
     stateManager.addFunction(id, 'setConfigs', setConfigs);
     stateManager.addToLocalSet(id, 'configs');
+    stateManager.addState(id, 'refresh', refresh);
+    stateManager.addFunction(id, 'setRefresh', setRefresh);
     // Effect
     useLocal('soft-plugin-index');
     // Components
-    var tmp = [];
-    tmp.push(React.createElement("div", null, " test here "));
     return (React.createElement(React.Fragment, null,
         React.createElement(Drawer, __assign({ title: "Plugin System", placement: "right", closable: false, onClose: onClose, visible: visible }, drawerProps),
             React.createElement(LoadConfig, { setConfig: setLoadConfig, onLoaded: onConfigLoaded }),
             React.createElement(Divider, null, " Plugin List "),
+            Object.keys(configs).length === 0
+                && React.createElement(Empty, { description: 'No Plugin', image: Empty.PRESENTED_IMAGE_SIMPLE }),
             React.createElement(PluginList, { data: configs }))));
 });
 /*

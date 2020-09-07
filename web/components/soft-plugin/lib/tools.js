@@ -17,9 +17,11 @@ import Modal from '../components/modal';
 import Textarea from '../components/textarea';
 import Drawer from '../components/drawer';
 import Builder from '../components/builder';
+import Notification from '../components/notification';
 import * as React from 'react';
 import * as Switch from '../actions/switch';
 import * as IO from '../actions/io';
+import * as Info from '../actions/info';
 import { stateManager } from '@wangziling100/state-manager';
 export function dataMapComponent(data, field, key) {
     try {
@@ -29,7 +31,6 @@ export function dataMapComponent(data, field, key) {
         var component = void 0;
         switch (type) {
             case 'group': {
-                //console.log(props, 'group props')
                 var newProps = extractProps(props, 'group');
                 newProps['field'] = field;
                 component = React.createElement(Group, __assign({}, newProps, { key: key }));
@@ -39,7 +40,6 @@ export function dataMapComponent(data, field, key) {
                 var newProps = extractProps(props, 'modal');
                 newProps['field'] = field;
                 newProps = xToProps(newProps);
-                console.log(data, props, newProps, 'modal props');
                 component = React.createElement(Modal, __assign({}, newProps, { key: key }));
                 break;
             }
@@ -66,6 +66,9 @@ export function dataMapComponent(data, field, key) {
             case 'button':
                 component = React.createElement(Button, __assign({}, props, { key: key }));
                 break;
+            case 'notification':
+                component = React.createElement(Notification, __assign({}, props, { key: key }));
+                break;
             default:
                 component = null;
                 break;
@@ -78,6 +81,8 @@ export function dataMapComponent(data, field, key) {
     }
 }
 export function dataMapAction(data) {
+    if (data.action === undefined)
+        return null;
     var actionType = data.action.type;
     var id = data.field;
     var option = data.action.option;
@@ -88,7 +93,7 @@ export function dataMapAction(data) {
     return ret;
 }
 export function typeMapActionName(name, type) {
-    var actions = ['visible', 'io'];
+    var actions = ['visible', 'io', 'info'];
     var exist = false;
     for (var _i = 0, actions_1 = actions; _i < actions_1.length; _i++) {
         var n = actions_1[_i];
@@ -121,10 +126,7 @@ export function xToProps(props) {
                 break;
             }
             case 'actions': {
-                //extractPropsFromAction(field, actions)
-                // TODO
                 ret = extractPropsFromAction(field, actions);
-                console.log(ret, 'xToProps');
                 ret = Object.assign(props, ret);
                 break;
             }
@@ -136,22 +138,18 @@ export function xToProps(props) {
     return ret;
 }
 export function extractPropsFromAction(field, actions) {
-    //console.log(field, actions, 'extract props from action')
     var ret = {};
     for (var index in actions) {
         var action = void 0;
         action = actions[index];
         var propName = Object.keys(action)[0];
         action = action[propName];
-        //console.log(action, 'action in loop')
         var actionObj = action.object;
         var actionOption = action.option;
         var actionType = action.type;
         var actionName = typeMapActionName(actionObj, actionType);
-        //console.log(actionName, actionOption, field, 'name map action')
         ret[propName] = nameMapAction(actionName, actionOption, field);
     }
-    //console.log(ret, 'props from action result')
     return ret;
 }
 export function nameMapAction(name, option, id) {
@@ -170,6 +168,9 @@ export function nameMapAction(name, option, id) {
             ret = function (value) { IO.setData(id, '', name, value, null); };
             break;
         }
+        case 'notification':
+            ret = function () { return Info.notificate(id, name); };
+            break;
         default: throw ('It failed mapping data to action!!');
     }
     return ret;

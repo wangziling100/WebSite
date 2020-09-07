@@ -1,10 +1,14 @@
 import Image from '../components/image'
 //import { Image } from 'antd'
 import cn from 'classnames'
-export default function ServiceCard({name, bg, logo}){
+import { useState } from 'react'
+import { Modal, Button } from 'antd';
+import { addPluginConfig } from '../lib/tools';
+export default function ServiceCard({config, bg, logo}){
     // Variables
+    const name = config.name || 'No Name'
+    const description = config.description || 'No description'
     let logoText, logoComponent
-    
     const cardCSS = ['relative', 'h-40', 'max-w-xs',
     'shadow', 'cursor-pointer']
     const bgCSS = ['h-full', 'w-full', 
@@ -12,6 +16,23 @@ export default function ServiceCard({name, bg, logo}){
     const logoCSS = ['h-24', 'w-24', 'rounded-full', ]
     const nameCSS = ['font-semibold', 'text-4xl',
     'w-full', 'flex', 'justify-center']
+    // States
+    const [ visible, setVisible] = useState(false)
+    const [ loading, setLoading ] = useState(false)
+
+    // Functions
+    const clickCard = ()=>{
+      setVisible(true)
+    }
+    const handleOk = ()=>{
+      addPluginConfig(config)
+      setVisible(false)
+      setLoading(false)
+    }
+    const handleCancel = ()=>{
+      setVisible(false)
+      setLoading(false)
+    }
 
     // Init
     if (logo.text!==undefined){
@@ -39,7 +60,7 @@ export default function ServiceCard({name, bg, logo}){
 
     const main = (
       <>
-        <div className={cn(...cardCSS)}>
+        <div className={cn(...cardCSS)} onClick={clickCard}>
           { bg && <Image src={bg.src} css={bgCSS}/> }
           <div className='absolute inset-0 
           flex-col pt-3
@@ -53,6 +74,27 @@ export default function ServiceCard({name, bg, logo}){
           </div>
           
         </div>
+        <Modal
+          visible={visible}
+          title="Description"
+          onOk={handleOk}
+          onCancel={handleCancel}
+          footer={[
+            <Button key="back" type="primary" onClick={handleCancel}>
+              Return
+            </Button>,
+            <Button key="install" type="primary" loading={loading} onClick={handleOk}>
+              Install 
+            </Button>,
+          ]}
+        >
+          {
+            description &&
+            <div>
+              {description}
+            </div>
+          }
+        </Modal>
       </>
     )
     return (

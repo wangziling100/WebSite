@@ -12,8 +12,6 @@ var __assign = (this && this.__assign) || function () {
 import * as React from 'react';
 import { Button } from 'antd';
 import cn from 'classnames';
-//import 'antd/dist/antd.css'
-//import { stateManager } from '@wangziling100/state-manager'
 import { dataMapAction } from '../lib/tools';
 export default (function (props) {
     var css = props.css || [];
@@ -21,11 +19,12 @@ export default (function (props) {
     var content = props.content;
     function onClick(e) {
         var action = dataMapAction(props);
+        if (action === null)
+            return;
         action();
     }
     if (name !== undefined) {
     }
-    console.log(props, 'button');
     return (React.createElement("div", { className: cn.apply(void 0, css) },
         React.createElement(Button, __assign({}, props, { onClick: onClick }), content)));
 });

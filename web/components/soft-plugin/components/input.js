@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { useState } from 'react';
 import cn from 'classnames';
-//import 'antd/dist/antd.css'
 import { stateManager } from '@wangziling100/state-manager';
 import { copy, strToBoolean } from '../lib/tools';
 import base from './base';

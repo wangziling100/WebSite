@@ -17,7 +17,7 @@
     "@fortawesome/react-fontawesome": "^0.1.11",
     "@wangziling100/react-template": "^0.0.6",
     "@wangziling100/soft-plugin": "^0.1.18",
-    "@wangziling100/state-manager": "^0.5.8",
+    "@wangziling100/state-manager": "^0.6.2",
     "@wangziling100/store-manager": "^0.4.2",
     "antd": "^4.6.2",
     "babel-plugin-import": "^1.13.0",

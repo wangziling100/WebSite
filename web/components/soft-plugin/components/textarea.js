@@ -1,19 +1,7 @@
-/*
-import * as React from 'react'
-
-export default (props: any) => {
-    return(
-        <div>
-            Textare
-        </div>
-    )
-}
-*/
 import * as React from 'react';
 import { useState } from 'react';
 import cn from 'classnames';
-//import '../css/tailwind.css';
-//import 'antd/dist/antd.css';
+//import 'antd/dist/antd.css'
 import { stateManager } from '@wangziling100/state-manager';
 import { copy, strToBoolean, dataMapAction } from '../lib/tools';
 import base from './base';
@@ -31,6 +19,8 @@ export default (function (props) {
     function onChange(e) {
         setData(e.target.value);
         var action = dataMapAction(props);
+        if (action === null)
+            return;
         action(e.target.value);
     }
     childProps['onChange'] = props.onChange || onChange;

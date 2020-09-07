@@ -17,30 +17,4 @@ export default (function (props) {
     var childProps = copy(props);
     childProps['type'] = 'modal';
     return React.createElement(Line, __assign({}, childProps));
-    /*
-    const css = props.css || []
-    const id = props.field
-    const name = props.name
-    const saveString:string = props.save
-    const save = strToBoolean(saveString, false)
-
-    // States
-    // Functions
-    // Init
-    const {inner} = base('input', childProps)
-    //<Input {...props} onChange={onChange}/>
-    const main = (
-        <div className={cn(...css)}>
-            {inner}
-        </div>
-    )
- 
-
-    //{visible && main}
-    return(
-        <>
-          {main}
-        </>
-    )
-    */
 });

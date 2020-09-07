@@ -1,5 +1,8 @@
 import {parseVersion} from '../lib/github'
 import { DateFormat, TimeFormat } from '../lib/format'
+import yaml from 'js-yaml'
+import { stateManager } from '@wangziling100/state-manager'
+
 export function getDateDiff(targetDate){
     const now = new Date()
     const target = new Date(targetDate)
@@ -239,4 +242,33 @@ export function dateToDateFormat(date){
         time: timeFormat,
     }
     
+}
+
+export function yamlToPluginConfig(fs, path){
+    try {
+        const obj = yaml.safeLoad(fs.readFileSync(path, 'utf8'));
+        const config = {
+            name: obj.name,
+            lines: obj.lines
+        }
+        return config
+    } 
+    catch (e) {
+        console.error(e);
+        return null 
+    }
+}
+
+export function getAssetPaths(fs, path){
+    return fs.readdirSync(path)
+}
+
+export function addPluginConfig(config){
+    let configs = stateManager.getState('soft-plugin-index', 'configs')
+    const name = config.name
+    const storedConfig = {}
+    storedConfig[name] = config
+    const setConfigs = stateManager.getFunction('soft-plugin-index', 'setConfigs')
+    setConfigs(Object.assign(configs, storedConfig))
+    stateManager.writeLocal('soft-plugin-index')
 }
