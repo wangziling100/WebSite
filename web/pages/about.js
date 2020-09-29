@@ -2,28 +2,39 @@ import Head from 'next/head'
 import Container from '../components/container'
 import Navigation from '../components/navigation'
 import Layout from '../components/layout'
-import { getBlogByReference, useUserPassword, useAdminPassword, getHostname, getItem, getItemList, setItem, getImageByReference } from '../lib/api'
+import { useUpdateData, useLoadData, getBlogByReference, useUserPassword, useAdminPassword, getHostname, getItem, getItemList, setItem, getImageByReference } from '../lib/api'
 import { useState } from 'react'
 import markdownToHtml from '../lib/markdownToHtml'
 import Markdown from '../components/markdown'
 
 export default function PlanPage(data) {
   const logo = data.logo
+  const [ sessionData, setSessionData ] = useState()
+  const [ localData, setLocalData ] = useState()
   const [ showOverlay, setShowOverlay ] = useState(false)
   const [ hostname, setHostname ] = useState()
   const [ userPassword, setUserPassword ] = useState()
   const [ adminPassword, setAdminPassword ] = useState()
+  const [ updateCount, setUpdateCount ] = useState(0)
+  const [ reload, setReload ] = useState(false)
   const downflowActions = {
       setPassword: setUserPassword,
       setShowOverlay: setShowOverlay,
   }
+
+  // Variables
+  const loginStatus = sessionData?.loginStatus || 'logout'
+  const githubUserData = sessionData?.userData || null
+  const githubRepos = sessionData?.repos || null
   
   getHostname(setHostname)
   useUserPassword(userPassword, setUserPassword)
   useAdminPassword(adminPassword, setAdminPassword)
+  useLoadData('service', userPassword, setLocalData, setSessionData, [updateCount], reload)
+  useUpdateData('service', userPassword, localData, [localData?.layers?.length, updateCount])
 
   const header = (
-    <Navigation page="about" password={userPassword} actions={downflowActions} logo={logo}/>
+    <Navigation page="about" password={userPassword} actions={downflowActions} logo={logo} hostname={hostname} loginStatus={loginStatus} githubUserData={githubUserData} repos={githubRepos}/>
   )
   const body = (
     <>

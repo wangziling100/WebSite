@@ -2,7 +2,7 @@ import Head from 'next/head'
 import Navigation from '../components/navigation'
 import Layout from '../components/layout'
 import ServiceCard from '../components/service-card'
-import { useUserPassword, useAdminPassword, getHostname, getItem, getItemList, setItem, getImageByReference } from '../lib/api'
+import { useUpdateData, useUserPassword, useAdminPassword, getHostname, getItem, getItemList, setItem, getImageByReference, useLoadData } from '../lib/api'
 import { useState } from 'react'
 import cn from 'classnames'
 import { Typography, Space } from 'antd'
@@ -17,11 +17,19 @@ export default function ServicePage(data) {
   const pluginCSS = ['flex', 'flex-wrap', 'justify-between']
   const { Text } = Typography
   // States
+  const [ localData, setLocalData ] = useState()
+  const [ sessionData, setSessionData ] = useState()
   const [ showOverlay, setShowOverlay ] = useState(false)
   const [ hostname, setHostname ] = useState()
   const [ userPassword, setUserPassword ] = useState()
   const [ adminPassword, setAdminPassword ] = useState()
   const [ sidebar, setSidebar ] = useState('plugin')
+  const [ updateCount, setUpdateCount ] = useState(0)
+  const [ reload, setReload ] = useState(false)
+  // Variables
+  const loginStatus = sessionData?.loginStatus || 'logout'
+  const githubUserData = sessionData?.userData || null
+  const githubRepos = sessionData?.repos || null
   // Init
   const downflowActions = {
       setPassword: setAdminPassword,
@@ -31,6 +39,8 @@ export default function ServicePage(data) {
   getHostname(setHostname)
   useUserPassword(userPassword, setUserPassword)
   useAdminPassword(adminPassword, setAdminPassword)
+  useLoadData('service', userPassword, setLocalData, setSessionData, [updateCount], reload)
+  useUpdateData('service', userPassword, localData, [localData?.layers?.length, updateCount])
 
   // Components
   const cards = []
@@ -65,9 +75,10 @@ export default function ServicePage(data) {
 
   }
 
+      //<Navigation page="service" password={userPassword} actions={downflowActions} logo={logo}/>
   const header = (
     <>
-      <Navigation page="service" password={userPassword} actions={downflowActions} logo={logo}/>
+      <Navigation page="service" password={userPassword} actions={downflowActions} logo={logo} hostname={hostname} loginStatus={loginStatus} githubUserData={githubUserData} repos={githubRepos}/>
     </>
   )
   
