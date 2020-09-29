@@ -30,8 +30,8 @@ export default function PlanPage(data) {
   getHostname(setHostname)
   useUserPassword(userPassword, setUserPassword)
   useAdminPassword(adminPassword, setAdminPassword)
-  useLoadData('service', userPassword, setLocalData, setSessionData, [updateCount], reload)
-  useUpdateData('service', userPassword, localData, [localData?.layers?.length, updateCount])
+  useLoadData('about', userPassword, setLocalData, setSessionData, [updateCount], reload)
+  useUpdateData('about', userPassword, localData, [localData?.layers?.length, updateCount])
 
   const header = (
     <Navigation page="about" password={userPassword} actions={downflowActions} logo={logo} hostname={hostname} loginStatus={loginStatus} githubUserData={githubUserData} repos={githubRepos}/>
