@@ -29,7 +29,7 @@ export default function Background({ imgAndSetting=[], children }) {
       {children}
     </div>
     */}
-      <Image scr={url} actions={actions}/>
+      <Image src={url} actions={actions} css={setting}/>
       {children}
     </>
   )
