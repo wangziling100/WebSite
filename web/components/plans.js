@@ -44,7 +44,10 @@ export function PlanItem({data, layer, editStatus, actions, parents, brother, pa
   ]
   // Variables
   const durationSelect= [1,2,3,4,5,6,7,8]
-  const date = new Date()
+  let date = new Date()
+  date = new Date(date)
+  date.setDate(date.getDate() + 1)
+
   const dateFormat = dateToDateFormat(date)
   //const year = date.getFullYear()
   //const month = (date.getMonth()+1).toString().padStart(2,'0')
