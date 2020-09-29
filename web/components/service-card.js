@@ -9,12 +9,12 @@ export default function ServiceCard({config, bg, logo}){
     const name = config.name || 'No Name'
     const description = config.description || 'No description'
     let logoText, logoComponent
-    const cardCSS = ['relative', 'h-40', 'max-w-xs',
+    const cardCSS = ['relative', 'h-40', 'w-full', 'max-w-xs', 'my-10',
     'shadow', 'cursor-pointer']
     const bgCSS = ['h-full', 'w-full', 
     'rounded-md']
     const logoCSS = ['h-24', 'w-24', 'rounded-full', ]
-    const nameCSS = ['font-semibold', 'text-4xl',
+    const nameCSS = ['font-semibold', 'text-2xl',
     'w-full', 'flex', 'justify-center']
     // States
     const [ visible, setVisible] = useState(false)

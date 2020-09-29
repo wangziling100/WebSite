@@ -34,6 +34,7 @@ export default function ServicePage(data) {
 
   // Components
   const cards = []
+  let cnt = 0
   for (let key in data.pluginConfigs){
     let com, bg, logo
     const config = data.pluginConfigs[key]
@@ -53,8 +54,14 @@ export default function ServicePage(data) {
       color: config.icon?.color||'blue',
       src: config.icon?.src||undefined
     }
-    com = <ServiceCard config={config} bg={bg} logo={logo}/>
+    console.log(config, logo, 'config and logo')
+    com = (
+      <div key={cnt} className='w-full'>
+        <ServiceCard config={config} bg={bg} logo={logo}/>
+      </div>
+    )
     cards.push(com)
+    cnt++
 
   }
 
@@ -78,7 +85,7 @@ export default function ServicePage(data) {
     </>
   )
   const plugin = (
-    <div className='p-20'>
+    <div className='w-full p-20 flex justify-between'>
       {cards}
     </div>
   )

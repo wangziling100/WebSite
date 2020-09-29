@@ -18,7 +18,6 @@ import LoadConfig from './components/load-config';
 import { stateManager, useLocal } from '@wangziling100/state-manager';
 import PluginList from './components/plugin-list';
 export default (function (props) {
-    console.log('index');
     // States
     var _a = useState(), loadConfig = _a[0], setLoadConfig = _a[1];
     //const [visible, setVisible] = useState(false)

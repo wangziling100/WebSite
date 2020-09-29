@@ -9,7 +9,7 @@ lines:
           name: drawer
           visible: false
           placement: left
-          title: drawer
+          title: Create a new config
           width: 80%
           actions:
             - onClose:
