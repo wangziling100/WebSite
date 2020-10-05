@@ -3,7 +3,7 @@ import { Collapse } from 'antd';
 import PluginItem from './plugin-item';
 export default (function (props) {
     var data = props.data;
-    console.log(data, 'plugin list');
+    //console.log(data, 'plugin list')
     var panels = [];
     var Panel = Collapse.Panel;
     var cnt = 1;

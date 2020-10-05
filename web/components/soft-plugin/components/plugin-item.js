@@ -41,7 +41,6 @@ export default (function (props) {
         var line = React.createElement(Line, __assign({}, props_1));
         lines.push(line);
     }
-    console.log(lines, 'lines');
     var main = (React.createElement(React.Fragment, null,
         React.createElement("div", { className: 'flex justify-end\n                   text-gray-400 hover:text-blue-300 \n                   cursor-pointer', onClick: deleteAction }, "delete"),
         lines));

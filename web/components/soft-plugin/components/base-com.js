@@ -10,7 +10,7 @@ var __assign = (this && this.__assign) || function () {
     return __assign.apply(this, arguments);
 };
 import * as React from 'react';
-import { Modal, Drawer } from 'antd';
+import { Modal, Drawer, Menu, Dropdown } from 'antd';
 import { strToBoolean, typeMapActionName } from '../lib/tools';
 import { useState } from 'react';
 import { stateManager } from '@wangziling100/state-manager';
@@ -46,8 +46,16 @@ export default (function (props) {
             break;
         }
         case 'drawer': {
-            console.log(props, 'base com drawer');
+            //console.log(props, 'base com drawer')
             main = React.createElement(Drawer, __assign({}, props, { visible: visible }), props.children);
+            break;
+        }
+        case 'menu': {
+            main = React.createElement(Menu, __assign({}, props), props.children);
+            break;
+        }
+        case 'dropdown': {
+            main = React.createElement(Dropdown, __assign({}, props, { overlay: props.overlay }), props.children);
             break;
         }
         default:

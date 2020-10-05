@@ -249,7 +249,8 @@ export function yamlToPluginConfig(fs, path){
         const obj = yaml.safeLoad(fs.readFileSync(path, 'utf8'));
         const config = {
             name: obj.name,
-            lines: obj.lines
+            lines: obj.lines,
+            icon: obj.icon || {}
         }
         return config
     } 

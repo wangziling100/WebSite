@@ -20,6 +20,7 @@ export default function Image({src, alt, css=[], actions}){
         setShowImage(true)
         actions.onLoadAction()
     }
+    console.log(src, 'src')
 
     const main = (
         <>

@@ -11,36 +11,37 @@ var __assign = (this && this.__assign) || function () {
 };
 import * as React from 'react';
 import { useState } from 'react';
-import { Button } from 'antd';
-import cn from 'classnames';
-import { dataMapAction, copy, extractEvents, strToBoolean } from '../lib/tools';
+import { copy, strToBoolean, extractEvents, dataMapAction } from '../lib/tools';
+import Line from './line';
 import { stateManager } from '@wangziling100/state-manager';
 export default (function (props) {
-    var css = props.css || [];
+    // Variables
+    var childProps = copy(props);
+    childProps['type'] = 'menu';
     var name = props.name;
     var id = props.field;
     var saveString = props.save;
     var save = strToBoolean(saveString, false);
-    var childProps = copy(props);
-    childProps = extractEvents(childProps).props;
+    var actions = extractEvents(childProps).actions;
     // State
-    var _a = useState(props.content), content = _a[0], setContent = _a[1];
+    var _a = useState(''), data = _a[0], setData = _a[1];
     // Init
     if (name !== undefined && save) {
-        stateManager.addState(id, name, content);
-        stateManager.addFunction(id, name, setContent);
+        stateManager.addState(id, name, data);
+        stateManager.addFunction(id, name, setData);
     }
-    // Function
-    function onClick(e) {
-        //console.log(childProps.onClick, 'button onclick')
-        childProps.onClick && childProps.onClick(e);
+    // Functions
+    var onClick = function (_a) {
+        var key = _a.key;
+        //setData(key)
+        setData(key);
+        actions.onClick && actions.onClick(key);
+        props.onClick && props.onClick(key);
         var action = dataMapAction(props);
         if (action === null)
             return;
         action();
-    }
-    if (name !== undefined) {
-    }
-    return (React.createElement("div", { className: cn.apply(void 0, css) },
-        React.createElement(Button, __assign({}, childProps, { onClick: onClick }), content)));
+    };
+    childProps['onClick'] = onClick;
+    return React.createElement(Line, __assign({}, childProps));
 });

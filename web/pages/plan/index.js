@@ -425,31 +425,6 @@ export default function PlanPage(data) {
           else{
               await createGithubItem(form, hostname, afterCreateAction, 'issue')
           }
-          /*
-          const checkEndDate = checkUpdateMilestoneEndDate(form, form, userPassword)
-          const checkCompleteness = checkUpdateMilestoneCompleteness(form, form, userPassword)
-          const {shouldUpdateMilestone, newMilestone, oldMilestone} = combineCheckMilestone(checkEndDate, checkCompleteness)
-          //console.log(shouldUpdateMilestoneEndDate, newMilestone, 'checkUpdateMilestoneEndDate')
-          if(shouldUpdateMilestone){
-              //console.log('request list')
-              let batch = [form]
-              if (newMilestone!==null) {
-                  newMilestone['option'] = 'update'
-                  newMilestone['version'] = new Date()
-                  batch.push(newMilestone)
-              }
-              if (oldMilestone!==null){
-                  oldMilestone['option'] = 'update'
-                  oldMilestone['version'] = new Date()
-                  batch.push(oldMilestone)
-              }
-              await processGithubItemBatch(batch, hostname, afterCreateAction)
-          }
-          else {
-              //console.log('single request')
-              await createGithubItem(form, hostname, afterCreateAction, 'issue')
-          }
-          */
 
       }
       else if (userPassword==='' && adminPassword!==''){
@@ -477,33 +452,6 @@ export default function PlanPage(data) {
           else{
               await updateGithubItem(data, hostname, afterEditAction, 'issue')
           }
-          /*
-          const checkEndDate = checkUpdateMilestoneEndDate(data, sourceData, userPassword)
-          const checkCompleteness = checkUpdateMilestoneCompleteness(data, sourceData, userPassword)
-          const {shouldUpdateMilestone, newMilestone, oldMilestone}= combineCheckMilestone(checkEndDate, checkCompleteness)
-          //const { shouldUpdateMilestoneEndDate, newMilestone, oldMilestone } = checkUpdateMilestoneEndDate(data, sourceData, userPassword)
-          if(shouldUpdateMilestone){
-              //console.log('request list')
-              let batch = [data]
-              if (newMilestone!==null) {
-                  newMilestone['option'] = 'update'
-                  newMilestone['version'] = new Date()
-                  batch.push(newMilestone)
-              }
-              if (oldMilestone!==null){
-                  oldMilestone['option'] = 'update'
-                  oldMilestone['version'] = new Date()
-                  batch.push(oldMilestone)
-              } 
-              //console.log(batch, 'update action')
-              await processGithubItemBatch(batch, hostname, afterEditAction)
-
-          }
-          else{
-              //console.log('single request')
-              await updateGithubItem(data, hostname, afterEditAction, 'issue')
-          }
-          */
       }
 
       if (userPassword==='' && adminPassword!==''){
