@@ -33,7 +33,7 @@
     "react-dom": "^16.13.1",
     "react-keyframes": "^0.2.3",
     "remark": "12.0.1",
-    "remark-html": "12.0.0",
+    "remark-html": "13.0.2",
     "styled-components": "^5.1.0",
     "tailwindcss": "^1.4.6",
     "typescript": "^4.0.2"
